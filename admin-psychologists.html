@@ -5,7 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Administração de psicólogos da Cuidare">
   <title>Psicólogos | Cuidare</title>
+  <script>document.documentElement.classList.add('auth-checking');</script>
+  <script>
+    (async () => {
+      const token = sessionStorage.getItem('cuidare_access_token');
+      const apiUrl = `${window.CUIDARE_API_URL || 'http://127.0.0.1:5000'}/api/auth/verify`;
+
+      if (!token) {
+        window.location.replace('admlogin.html');
+        return;
+      }
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: token })
+        });
+        const result = await response.json();
+        if (!response.ok || result.user?.account_type !== 'admin') {
+          throw new Error('Sessão administrativa inválida.');
+        }
+        document.documentElement.classList.remove('auth-checking');
+      } catch (_error) {
+        sessionStorage.removeItem('cuidare_access_token');
+        window.location.replace('admlogin.html');
+      }
+    })();
+  </script>
   <style>
+    html.auth-checking body { visibility: hidden; }
     :root {
       --ink: #17211d;
       --muted: #6c7972;
@@ -190,7 +219,7 @@
     menuButton.addEventListener('click', () => setMenu(!sidebar.classList.contains('open')));
     overlay.addEventListener('click', () => setMenu(false));
     document.querySelector('#notification-button').addEventListener('click', () => showToast('Você tem 3 notificações novas.'));
-    document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.href = 'admlogin.html'; });
+    document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('admlogin.html'); });
     document.querySelector('#new-psychologist').addEventListener('click', () => setModal(true));
     document.querySelector('#close-modal').addEventListener('click', () => setModal(false));
     document.querySelector('#cancel-modal').addEventListener('click', () => setModal(false));
