@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Painel administrativo da Cuidare">
+  <title>Painel administrativo | Cuidare</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #6c7972;
+      --paper: #f3f6f1;
+      --panel: #ffffff;
+      --line: #dfe7df;
+      --accent: #196a52;
+      --accent-dark: #0f4d3b;
+      --mint: #d9eee3;
+      --gold: #c68b37;
+      --coral: #b65b4d;
+      --shadow: 0 18px 40px rgba(28, 62, 47, .07);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Arial, sans-serif;
+    }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 17rem minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 1.5rem 1rem;
+      color: #eef7f1;
+      background: var(--accent-dark);
+      background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.11) 0 1px, transparent 1px),
+        linear-gradient(160deg, #0f4d3b, #196a52 70%, #2b8062);
+      background-size: 22px 22px, auto;
+      z-index: 20;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .7rem;
+      margin: .25rem .65rem 2.5rem;
+      color: inherit;
+      font: bold 1.2rem Georgia, 'Times New Roman', serif;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 50%;
+      font-size: .9rem;
+    }
+
+    .nav-label {
+      margin: 0 .8rem .7rem;
+      color: #add7c3;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .nav-list { display: grid; gap: .35rem; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      min-height: 2.9rem;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      padding: .65rem .8rem;
+      color: #cce6d8;
+      font-size: .82rem;
+      text-decoration: none;
+      transition: background-color .2s, color .2s, border-color .2s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #fff;
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.1);
+    }
+
+    .nav-icon {
+      display: grid;
+      place-items: center;
+      width: 1.35rem;
+      color: #a9d9c2;
+      font-size: 1rem;
+    }
+
+    .nav-count {
+      margin-left: auto;
+      min-width: 1.35rem;
+      border-radius: 10px;
+      padding: .15rem .35rem;
+      color: var(--accent-dark);
+      background: #d8eee2;
+      font-size: .68rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      border-top: 1px solid rgba(255,255,255,.15);
+      padding: 1rem .65rem .25rem;
+    }
+
+    .admin-mini { display: flex; align-items: center; gap: .65rem; margin-bottom: .9rem; }
+    .avatar { display: grid; place-items: center; flex: 0 0 auto; width: 2.25rem; height: 2.25rem; border-radius: 50%; color: var(--accent-dark); background: #d8eee2; font-weight: 700; }
+    .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+
+    .logout-button {
+      width: 100%;
+      border: 0;
+      padding: .55rem 0;
+      color: #cce6d8;
+      background: transparent;
+      cursor: pointer;
+      font-size: .75rem;
+      text-align: left;
+    }
+    .logout-button:hover { color: #fff; }
+
+    .main { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3rem; margin-bottom: 2.35rem; }
+    .mobile-menu, .icon-button { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--panel); cursor: pointer; }
+    .mobile-menu { display: none; font-size: 1.25rem; }
+    .topbar-actions { display: flex; align-items: center; gap: .7rem; margin-left: auto; }
+    .icon-button { position: relative; font-size: 1.1rem; }
+    .notification-dot { position: absolute; top: .48rem; right: .48rem; width: .38rem; height: .38rem; border: 2px solid var(--panel); border-radius: 50%; background: var(--coral); }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.9rem; }
+    .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
+    .date { margin: 0 0 .15rem; color: var(--muted); font-size: .8rem; }
+
+    .primary-button { display: inline-flex; align-items: center; gap: .55rem; border: 0; border-radius: 4px; padding: .8rem 1rem; color: #fff; background: var(--accent); cursor: pointer; font-size: .78rem; font-weight: 700; transition: background-color .2s, transform .2s; }
+    .primary-button:hover { background: var(--accent-dark); }
+    .primary-button:active { transform: translateY(1px); }
+    .primary-button:focus-visible, .icon-button:focus-visible, .mobile-menu:focus-visible, .nav-link:focus-visible, .logout-button:focus-visible { outline: 3px solid var(--mint); outline-offset: 2px; }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+    .metric { min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 1.2rem; background: var(--panel); box-shadow: var(--shadow); }
+    .metric-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .metric-label { color: var(--muted); font-size: .73rem; }
+    .metric-icon { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 4px; color: var(--accent-dark); background: var(--mint); font-size: .95rem; }
+    .metric strong { display: block; margin-top: .8rem; font: 2rem Georgia, 'Times New Roman', serif; }
+    .metric-change { display: block; margin-top: .35rem; color: var(--accent); font-size: .68rem; }
+    .metric-change.neutral { color: var(--muted); }
+
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(17rem, .8fr); gap: 1.25rem; }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.35rem 1rem; }
+    .panel-header h2 { margin: 0; font-size: 1.25rem; }
+    .panel-link { color: var(--accent); font-size: .72rem; text-decoration: none; }
+    .panel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    .user-table-wrap { overflow-x: auto; padding: 0 1.35rem 1rem; }
+    .user-table { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: .72rem; }
+    .user-table th { padding: .75rem .55rem; color: var(--muted); font-size: .64rem; font-weight: 700; text-align: left; text-transform: uppercase; }
+    .user-table td { border-top: 1px solid var(--line); padding: .75rem .55rem; vertical-align: middle; }
+    .user-table th:first-child, .user-table td:first-child { padding-left: 0; }
+    .user { display: flex; align-items: center; gap: .65rem; min-width: 12rem; }
+    .user-avatar { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; color: var(--accent-dark); background: var(--mint); font-size: .62rem; font-weight: 700; }
+    .user strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .user span { display: block; margin-top: .18rem; color: var(--muted); font-size: .65rem; }
+    .account-status { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
+    .account-status::before { width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; content: ''; }
+    .account-status.active { color: #28734e; }
+    .account-status.pending { color: #a56c19; }
+    .table-action { border: 0; color: var(--accent); background: transparent; cursor: pointer; font-size: .7rem; }
+    .table-action:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    .pending-list { display: grid; gap: 0; padding: 0 1.35rem 1rem; }
+    .pending-item { display: flex; align-items: center; justify-content: space-between; gap: .75rem; border-top: 1px solid var(--line); padding: .85rem 0; }
+    .pending-info { min-width: 0; }
+    .pending-info strong { display: block; overflow: hidden; font: .82rem Georgia, 'Times New Roman', serif; text-overflow: ellipsis; white-space: nowrap; }
+    .pending-info span { display: block; margin-top: .25rem; color: var(--muted); font-size: .66rem; }
+    .review-button { border: 1px solid var(--line); border-radius: 3px; padding: .4rem .5rem; color: var(--accent-dark); background: #fbfcfa; cursor: pointer; font-size: .65rem; white-space: nowrap; }
+    .review-button:hover { border-color: var(--accent); background: var(--mint); }
+    .status { border-radius: 12px; padding: .3rem .48rem; font-size: .6rem; font-weight: 700; white-space: nowrap; }
+    .status.confirmed { color: #246647; background: #e0f2e7; }
+    .status.pending { color: #8a5a17; background: #fbefd9; }
+
+    .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem; padding: 0 1.35rem 1.35rem; }
+    .quick-action { display: flex; align-items: center; gap: .6rem; min-height: 3.3rem; border: 1px solid var(--line); border-radius: 4px; padding: .65rem .7rem; color: var(--ink); background: #fbfcfa; cursor: pointer; font-size: .7rem; text-align: left; transition: border-color .2s, background-color .2s; }
+    .quick-action:hover { border-color: var(--accent); background: #f1f8f3; }
+    .quick-action span { display: grid; place-items: center; width: 1.65rem; height: 1.65rem; border-radius: 4px; color: var(--accent-dark); background: var(--mint); font-size: .9rem; }
+
+    .overlay { display: none; }
+    .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; max-width: 20rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; z-index: 50; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 1050px) {
+      .app-shell { grid-template-columns: 14.5rem minmax(0, 1fr); }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell { display: block; }
+      .sidebar { position: fixed; left: 0; top: 0; width: min(18rem, 86vw); transform: translateX(-100%); transition: transform .25s ease; box-shadow: 12px 0 30px rgba(15, 77, 59, .2); }
+      .sidebar.open { transform: translateX(0); }
+      .overlay { position: fixed; inset: 0; display: block; background: rgba(16, 35, 27, .35); opacity: 0; pointer-events: none; transition: opacity .25s ease; z-index: 10; }
+      .overlay.open { opacity: 1; pointer-events: auto; }
+      .main { padding: 1rem 1rem 2rem; }
+      .topbar { margin-bottom: 2rem; }
+      .mobile-menu { display: grid; }
+      .topbar-actions .icon-button { display: none; }
+      .page-heading { display: block; margin-bottom: 1.35rem; }
+      .page-heading .primary-button { width: 100%; justify-content: center; margin-top: 1.25rem; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+      .metric { padding: .95rem; }
+      .metric strong { font-size: 1.65rem; }
+      .metric-label { font-size: .66rem; }
+      .content-grid { gap: .9rem; }
+      .panel-header { padding: 1rem; }
+      .user-table-wrap { padding-inline: 1rem; }
+      .user-table { min-width: 0; }
+      .user-table thead { display: none; }
+      .user-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .35rem 1rem; padding: .75rem 0; }
+      .user-table td { border: 0; padding: .15rem 0; }
+      .user-table td:first-child { grid-column: 1 / -1; }
+      .user-table td:nth-child(2)::before { margin-right: .3rem; color: var(--muted); content: 'Tipo: '; }
+      .user-table td:nth-child(3)::before { margin-right: .3rem; color: var(--muted); content: 'Status: '; }
+      .user-table td:nth-child(4) { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
+      .pending-list { padding-inline: 1rem; }
+      .quick-actions { padding-inline: 1rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="admin-dashboard.html" aria-label="Página inicial da Cuidare">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        Cuidare
+      </a>
+
+      <p class="nav-label">Menu principal</p>
+      <nav class="nav-list">
+        <a class="nav-link active" href="#inicio"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a>
+        <a class="nav-link" href="admin-psychologists.html"><span class="nav-icon" aria-hidden="true">♧</span>Psicólogos<span class="nav-count">24</span></a>
+        <a class="nav-link" href="#usuarios"><span class="nav-icon" aria-hidden="true">○</span>Usuários<span class="nav-count">186</span></a>
+        <a class="nav-link" href="#relatorios"><span class="nav-icon" aria-hidden="true">↗</span>Relatórios</a>
+      </nav>
+
+      <p class="nav-label" style="margin-top: 2rem;">Sistema</p>
+      <nav class="nav-list">
+        <a class="nav-link" href="#configuracoes"><span class="nav-icon" aria-hidden="true">⚙</span>Configurações</a>
+        <a class="nav-link" href="#suporte"><span class="nav-icon" aria-hidden="true">?</span>Ajuda e suporte</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-mini">
+          <span class="avatar" aria-hidden="true">AD</span>
+          <div><strong>Admin Cuidare</strong><span>Administrador</span></div>
+        </div>
+        <button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button>
+      </div>
+    </aside>
+
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+    <main class="main" id="inicio">
+      <header class="topbar">
+        <button class="mobile-menu" id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menu">☰</button>
+        <div class="topbar-actions">
+          <button class="icon-button" id="notification-button" type="button" aria-label="Ver notificações">♢<span class="notification-dot" aria-hidden="true"></span></button>
+          <span class="topbar-avatar" aria-hidden="true">AD</span>
+        </div>
+      </header>
+
+      <section class="page-heading" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Painel administrativo</p>
+          <h1 id="page-title">Bom dia, admin.</h1>
+          <p class="date" id="current-date"></p>
+        </div>
+        <button class="primary-button" id="new-user" type="button"><span aria-hidden="true">+</span> Cadastrar usuário</button>
+      </section>
+
+      <section class="metrics" aria-label="Resumo da plataforma">
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Usuários ativos</span><span class="metric-icon" aria-hidden="true">○</span></div>
+          <strong>186</strong><span class="metric-change">↑ 12% este mês</span>
+        </article>
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Psicólogos ativos</span><span class="metric-icon" aria-hidden="true">♧</span></div>
+          <strong>24</strong><span class="metric-change">↑ 8% este mês</span>
+        </article>
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Aprovações pendentes</span><span class="metric-icon" aria-hidden="true">!</span></div>
+          <strong>07</strong><span class="metric-change neutral">Revisar hoje</span>
+        </article>
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Novos este mês</span><span class="metric-icon" aria-hidden="true">+</span></div>
+          <strong>18</strong><span class="metric-change">↑ 4 novos hoje</span>
+        </article>
+      </section>
+
+      <section class="content-grid" aria-label="Dados da plataforma">
+        <article class="panel" id="usuarios">
+          <div class="panel-header"><h2>Usuários recentes</h2><a class="panel-link" href="#usuarios">Ver todos →</a></div>
+          <div class="user-table-wrap">
+            <table class="user-table">
+              <thead><tr><th>Usuário</th><th>Tipo</th><th>Status</th><th>Ação</th></tr></thead>
+              <tbody>
+                <tr><td><div class="user"><span class="user-avatar">MA</span><div><strong>Marina Alves</strong><span>marina@email.com</span></div></div></td><td>Paciente</td><td><span class="account-status active">Ativo</span></td><td><button class="table-action" type="button" data-message="Abrindo perfil de Marina Alves...">Ver</button></td></tr>
+                <tr><td><div class="user"><span class="user-avatar">RC</span><div><strong>Rafael Costa</strong><span>rafael@cuidare.com</span></div></div></td><td>Psicólogo</td><td><span class="account-status active">Ativo</span></td><td><button class="table-action" type="button" data-message="Abrindo perfil de Rafael Costa...">Ver</button></td></tr>
+                <tr><td><div class="user"><span class="user-avatar">BL</span><div><strong>Beatriz Lima</strong><span>beatriz@email.com</span></div></div></td><td>Paciente</td><td><span class="account-status pending">Pendente</span></td><td><button class="table-action" type="button" data-message="Abrindo aprovação de Beatriz Lima...">Revisar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel" id="psicologos">
+          <div class="panel-header"><h2>Aprovações pendentes</h2><a class="panel-link" href="#psicologos">Ver todas →</a></div>
+          <div class="pending-list">
+            <div class="pending-item"><div class="pending-info"><strong>Camila Nunes</strong><span>Psicóloga · há 18 min</span></div><button class="review-button" type="button" data-message="Abrindo documentos de Camila Nunes...">Revisar</button></div>
+            <div class="pending-item"><div class="pending-info"><strong>Bruno Oliveira</strong><span>Psicólogo · há 42 min</span></div><button class="review-button" type="button" data-message="Abrindo documentos de Bruno Oliveira...">Revisar</button></div>
+            <div class="pending-item"><div class="pending-info"><strong>Laura Reis</strong><span>Psicóloga · há 1 h</span></div><button class="review-button" type="button" data-message="Abrindo documentos de Laura Reis...">Revisar</button></div>
+          </div>
+        </article>
+
+        <article class="panel" id="configuracoes">
+          <div class="panel-header"><h2>Ações rápidas</h2></div>
+          <div class="quick-actions">
+            <button class="quick-action" type="button" data-message="Abrindo cadastro de usuário..."><span aria-hidden="true">+</span>Novo usuário</button>
+            <button class="quick-action" type="button" data-message="Abrindo lista de usuários..."><span aria-hidden="true">○</span>Ver usuários</button>
+            <button class="quick-action" type="button" data-message="Abrindo aprovações pendentes..."><span aria-hidden="true">!</span>Revisar aprovações</button>
+            <button class="quick-action" type="button" data-message="Abrindo configurações..."><span aria-hidden="true">⚙</span>Configurações</button>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const sidebar = document.querySelector('#sidebar');
+    const overlay = document.querySelector('#overlay');
+    const menuButton = document.querySelector('#menu-button');
+    const toast = document.querySelector('#toast');
+
+    function setMenu(open) {
+      sidebar.classList.toggle('open', open);
+      overlay.classList.toggle('open', open);
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+    }
+
+    menuButton.addEventListener('click', () => setMenu(!sidebar.classList.contains('open')));
+    overlay.addEventListener('click', () => setMenu(false));
+    document.querySelectorAll('.nav-link').forEach((link) => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.nav-link').forEach((item) => item.classList.remove('active'));
+        link.classList.add('active');
+        setMenu(false);
+      });
+    });
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.clearTimeout(showToast.timeout);
+      showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    document.querySelector('#notification-button').addEventListener('click', () => showToast('Você tem 3 notificações novas.'));
+    document.querySelector('#new-user').addEventListener('click', () => showToast('Abrindo cadastro de usuário...'));
+    document.querySelectorAll('.quick-action, .table-action, .review-button').forEach((button) => button.addEventListener('click', () => showToast(button.dataset.message)));
+    document.querySelector('#logout-button').addEventListener('click', () => {
+      sessionStorage.removeItem('cuidare_access_token');
+      window.location.href = 'admlogin.html';
+    });
+
+    const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+    document.querySelector('#current-date').textContent = date.charAt(0).toUpperCase() + date.slice(1);
+  </script>
+</body>
+</html>

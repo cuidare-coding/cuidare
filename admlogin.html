@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Acesso seguro para administradores da Cuidare">
+	<title>Entrar como administrador | Cuidare</title>
+	<style>
+		:root {
+			--ink: #17211d;
+			--muted: #68756e;
+			--paper: #f5f7f2;
+			--panel: #ffffff;
+			--line: #dce4dc;
+			--accent: #196a52;
+			--accent-dark: #0f4d3b;
+			--focus: #a8d8c4;
+			--error: #a13b34;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			min-width: 320px;
+			min-height: 100vh;
+			color: var(--ink);
+			background: var(--paper);
+			font-family: Georgia, 'Times New Roman', serif;
+		}
+
+		.page {
+			display: grid;
+			grid-template-columns: minmax(280px, 0.8fr) minmax(420px, 1.2fr);
+			min-height: 100vh;
+		}
+
+		.intro {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			padding: clamp(2rem, 6vw, 5.5rem);
+			color: #edf6f0;
+			background: var(--accent-dark);
+			background-image: radial-gradient(circle at 15% 15%, rgba(255,255,255,.12) 0 1px, transparent 1px),
+				linear-gradient(145deg, #0f4d3b 0%, #196a52 58%, #2d8163 100%);
+			background-size: 24px 24px, auto;
+		}
+
+		.brand {
+			display: inline-flex;
+			align-items: center;
+			gap: .75rem;
+			width: fit-content;
+			color: inherit;
+			font-size: 1.25rem;
+			font-weight: bold;
+			letter-spacing: .02em;
+			text-decoration: none;
+		}
+
+		.brand-mark {
+			display: grid;
+			place-items: center;
+			width: 2.35rem;
+			height: 2.35rem;
+			border: 1px solid rgba(255,255,255,.55);
+			border-radius: 50%;
+			font-family: Arial, sans-serif;
+			font-size: .95rem;
+			font-weight: 700;
+		}
+
+		.intro-copy { max-width: 27rem; margin-block: auto; padding-block: 4rem; }
+
+		.eyebrow {
+			margin: 0 0 1.25rem;
+			color: #b9e3d0;
+			font-family: Arial, sans-serif;
+			font-size: .73rem;
+			font-weight: 700;
+			letter-spacing: .16em;
+			text-transform: uppercase;
+		}
+
+		h1 {
+			max-width: 12ch;
+			margin: 0;
+			font-size: clamp(2.7rem, 5vw, 5.3rem);
+			font-weight: 400;
+			line-height: .98;
+			letter-spacing: 0;
+		}
+
+		.intro-copy p:last-child {
+			max-width: 24rem;
+			margin: 1.5rem 0 0;
+			color: #d4e9dd;
+			font-family: Arial, sans-serif;
+			font-size: .96rem;
+			line-height: 1.65;
+		}
+
+		.privacy {
+			margin: 0;
+			color: #b9e3d0;
+			font-family: Arial, sans-serif;
+			font-size: .72rem;
+			letter-spacing: .04em;
+		}
+
+		.form-area {
+			display: grid;
+			place-items: center;
+			padding: clamp(2rem, 7vw, 7rem);
+			background: var(--panel);
+		}
+
+		.login-form { width: min(100%, 28rem); }
+
+		.form-heading { margin-bottom: 2.25rem; }
+
+		.form-heading h2 {
+			margin: 0 0 .6rem;
+			font-size: clamp(1.8rem, 3vw, 2.45rem);
+			font-weight: 400;
+		}
+
+		.form-heading p {
+			margin: 0;
+			color: var(--muted);
+			font-family: Arial, sans-serif;
+			font-size: .88rem;
+		}
+
+		.field { margin-bottom: 1.2rem; }
+
+		label {
+			display: block;
+			margin-bottom: .5rem;
+			font-family: Arial, sans-serif;
+			font-size: .78rem;
+			font-weight: 700;
+			letter-spacing: .04em;
+		}
+
+		input {
+			width: 100%;
+			min-height: 3.25rem;
+			border: 1px solid var(--line);
+			border-radius: 3px;
+			padding: .8rem .95rem;
+			color: var(--ink);
+			background: #fbfcfa;
+			font: 1rem Arial, sans-serif;
+			transition: border-color .2s, box-shadow .2s, background-color .2s;
+		}
+
+		input:focus {
+			outline: none;
+			border-color: var(--accent);
+			background: #fff;
+			box-shadow: 0 0 0 3px var(--focus);
+		}
+
+		.password-wrap { position: relative; }
+		.password-wrap input { padding-right: 5rem; }
+
+		.password-toggle {
+			position: absolute;
+			top: 50%;
+			right: .7rem;
+			border: 0;
+			padding: .4rem;
+			color: var(--accent-dark);
+			background: transparent;
+			cursor: pointer;
+			font: 700 .72rem Arial, sans-serif;
+			transform: translateY(-50%);
+		}
+
+		.password-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+		.form-options {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+			margin: .15rem 0 1.8rem;
+			font: .78rem Arial, sans-serif;
+		}
+
+		.remember { display: flex; align-items: center; gap: .5rem; color: var(--muted); cursor: pointer; }
+		.remember input { width: 1rem; min-height: 1rem; accent-color: var(--accent); }
+		.forgot { color: var(--accent-dark); text-decoration: underline; text-underline-offset: 3px; }
+
+		.submit-button {
+			width: 100%;
+			min-height: 3.25rem;
+			border: 0;
+			border-radius: 3px;
+			color: #fff;
+			background: var(--accent);
+			cursor: pointer;
+			font: 700 .82rem Arial, sans-serif;
+			letter-spacing: .08em;
+			text-transform: uppercase;
+			transition: background-color .2s, transform .2s;
+		}
+
+		.submit-button:hover { background: var(--accent-dark); }
+		.submit-button:active { transform: translateY(1px); }
+		.submit-button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+		.status {
+			min-height: 1.4rem;
+			margin: 1rem 0 0;
+			color: var(--error);
+			font: .8rem Arial, sans-serif;
+		}
+
+		@media (max-width: 760px) {
+			.page { grid-template-columns: 1fr; }
+			.intro { min-height: 23rem; padding: 1.75rem; }
+			.intro-copy { padding-block: 2.5rem 1.5rem; }
+			h1 { font-size: clamp(2.6rem, 14vw, 4rem); }
+			.form-area { padding: 3rem 1.75rem 4rem; }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+		}
+	</style>
+</head>
+<body>
+	<main class="page">
+		<section class="intro" aria-labelledby="welcome-heading">
+			<a class="brand" href="#" aria-label="Página inicial da Cuidare">
+				<span class="brand-mark" aria-hidden="true">C</span>
+				Cuidare
+			</a>
+
+			<div class="intro-copy">
+				<p class="eyebrow">Portal administrativo</p>
+				<h1 id="welcome-heading">O cuidado começa nos bastidores.</h1>
+				<p>Gerencie os detalhes que tornam cada experiência Cuidare atenciosa, segura e conectada.</p>
+			</div>
+
+			<p class="privacy">Acesso privado para administradores autorizados</p>
+		</section>
+
+		<section class="form-area" aria-labelledby="login-heading">
+			<form class="login-form" id="admin-login-form" novalidate>
+				<div class="form-heading">
+					  <h2 id="login-heading">Boas-vindas</h2>
+					  <p>Entre para continuar até o seu painel.</p>
+				</div>
+
+				<div class="field">
+					  <label for="email">E-mail profissional</label>
+					  <input id="email" name="email" type="email" autocomplete="username" placeholder="voce@cuidare.com" required>
+				</div>
+
+				<div class="field">
+					  <label for="password">Senha</label>
+					<div class="password-wrap">
+						<input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required minlength="8">
+						<button class="password-toggle" id="password-toggle" type="button" aria-controls="password" aria-label="Mostrar senha">Mostrar</button>
+					</div>
+				</div>
+
+				<div class="form-options">
+					<label class="remember" for="remember">
+						<input id="remember" name="remember" type="checkbox">
+						Lembrar de mim
+					</label>
+					  <a class="forgot" href="mailto:admin@cuidare.com?subject=Redefini%C3%A7%C3%A3o%20de%20senha">Esqueceu a senha?</a>
+				</div>
+
+				<button class="submit-button" type="submit">Entrar</button>
+				<p class="status" id="form-status" role="status" aria-live="polite"></p>
+			</form>
+		</section>
+	</main>
+
+	<script>
+		const form = document.querySelector('#admin-login-form');
+		const password = document.querySelector('#password');
+		const toggle = document.querySelector('#password-toggle');
+		const status = document.querySelector('#form-status');
+		const submitButton = form.querySelector('.submit-button');
+		const apiUrl = `${window.CUIDARE_API_URL || 'http://127.0.0.1:5000'}/api/auth/admin/login`;
+
+		toggle.addEventListener('click', () => {
+			const isPassword = password.type === 'password';
+			password.type = isPassword ? 'text' : 'password';
+			toggle.textContent = isPassword ? 'Ocultar' : 'Mostrar';
+			toggle.setAttribute('aria-label', `${isPassword ? 'Ocultar' : 'Mostrar'} senha`);
+		});
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			status.textContent = '';
+			status.style.color = 'var(--error)';
+
+			if (!form.reportValidity()) {
+				return;
+			}
+
+			submitButton.disabled = true;
+			submitButton.textContent = 'Entrando...';
+
+			try {
+				const response = await fetch(apiUrl, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						identifier: form.email.value,
+						password: form.password.value
+					})
+				});
+				const result = await response.json();
+
+				if (!response.ok) {
+					throw new Error(result.error || 'Não foi possível entrar.');
+				}
+
+				(sessionStorage).setItem('cuidare_access_token', result.access_token);
+				window.location.href = 'admin-dashboard.html';
+			} catch (error) {
+				status.textContent = error.message === 'Failed to fetch'
+					? 'Não foi possível conectar ao servidor.'
+					: error.message;
+			} finally {
+				submitButton.disabled = false;
+				submitButton.textContent = 'Entrar';
+			}
+		});
+	</script>
+</body>
+</html>
