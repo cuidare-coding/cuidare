@@ -146,7 +146,8 @@
       emptyNote.hidden = weekAppointments.length > 0;
     }
     function setAppointmentModal(open) { appointmentModal.classList.toggle('open', open); if (open) appointmentForm.elements.client_id.focus(); }
-    function openAppointment(start) { appointmentForm.reset(); appointmentForm.elements.starts_at.value = new Date(start).toISOString().slice(0, 16); setAppointmentModal(true); }
+    function localDateTimeValue(value) { const date = new Date(value); const pad = (part) => String(part).padStart(2, '0'); return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; }
+    function openAppointment(start) { appointmentForm.reset(); appointmentForm.elements.starts_at.value = localDateTimeValue(start); setAppointmentModal(true); }
     calendar.addEventListener('click', (event) => { const slot = event.target.closest('.slot.clickable'); if (slot) openAppointment(slot.dataset.start); });
     appointmentModal.addEventListener('click', (event) => { if (event.target === appointmentModal) setAppointmentModal(false); });
     document.querySelector('#close-appointment').addEventListener('click', () => setAppointmentModal(false));
