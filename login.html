@@ -287,7 +287,7 @@
     const toggle = document.querySelector('#password-toggle');
     const status = document.querySelector('#form-status');
     const submitButton = form.querySelector('.submit-button');
-    const apiUrl = `${window.CUIDARE_API_URL || 'http://127.https://cuidareapi.onrender.com.0.1:5000'}/api/auth/user/login`;
+    const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/user/login`;
 
     toggle.addEventListener('click', () => {
       const isPassword = password.type === 'password';
