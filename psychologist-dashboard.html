@@ -82,9 +82,9 @@
     </aside>
     <main class="main">
       <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
-      <section class="hero"><div><p class="eyebrow">Área do psicólogo</p><h1 id="welcome-title">Bom dia.</h1><p class="page-description">Seu espaço de trabalho para acompanhar a prática clínica.</p></div></section>
-      <section class="metrics" aria-label="Resumo da agenda"><article class="metric"><span>Sessões hoje</span><strong>0</strong><small>Agenda atualizada</small></article><article class="metric"><span>Pacientes ativos</span><strong>0</strong><small>Próxima etapa</small></article><article class="metric"><span>Perfil</span><strong id="profile-status">--</strong><small>Dados profissionais</small></article></section>
-      <section class="content-grid"><article class="panel" id="agenda"><div class="panel-header"><h2>Agenda de hoje</h2></div><div class="empty-state">Nenhuma sessão agendada para hoje.</div></article><article class="panel" id="pacientes"><div class="panel-header"><h2>Meu perfil</h2></div><div class="profile"><div class="profile-row"><span>Nome</span><strong id="profile-name">Carregando...</strong></div><div class="profile-row"><span>E-mail</span><strong id="profile-email">Carregando...</strong></div><div class="profile-row"><span>CRP</span><strong id="profile-crp">Carregando...</strong></div><div class="profile-row"><span>Especialidade</span><strong id="profile-specialty">Carregando...</strong></div></div></article></section>
+      <section class="hero"><div><p class="eyebrow">Área do psicólogo</p><h1 id="welcome-title">Bom dia.</h1><p class="page-description" id="welcome-description">Seu espaço de trabalho para acompanhar a prática clínica.</p></div></section>
+      <section class="metrics" aria-label="Resumo da agenda"><article class="metric"><span>Sessões hoje</span><strong>0</strong><small>Nenhuma sessão cadastrada</small></article><article class="metric"><span>Pacientes ativos</span><strong>0</strong><small>Nenhum paciente cadastrado</small></article><article class="metric"><span>Perfil</span><strong id="profile-status">--</strong><small id="profile-crp-metric">CRP carregando...</small></article></section>
+      <section class="content-grid"><article class="panel" id="agenda"><div class="panel-header"><h2>Agenda de hoje</h2></div><div class="empty-state">Nenhuma sessão agendada para hoje.</div></article><article class="panel" id="pacientes"><div class="panel-header"><h2>Meu perfil</h2></div><div class="profile"><div class="profile-row"><span>Nome</span><strong id="profile-name">Carregando...</strong></div><div class="profile-row"><span>E-mail</span><strong id="profile-email">Carregando...</strong></div><div class="profile-row"><span>CRP</span><strong id="profile-crp">Carregando...</strong></div><div class="profile-row"><span>Especialidade</span><strong id="profile-specialty">Carregando...</strong></div><div class="profile-row"><span>Biografia</span><strong id="profile-bio">Carregando...</strong></div></div></article></section>
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -102,12 +102,15 @@
         const profile = result.psychologist;
         const shortName = profile.name.split(/\s+/)[0];
         document.querySelector('#welcome-title').textContent = `Bom dia, ${shortName}.`;
+        document.querySelector('#welcome-description').textContent = `${profile.specialty || 'Psicólogo'} · CRP ${profile.crp}`;
         document.querySelector('#sidebar-name').textContent = profile.name;
         document.querySelector('#profile-name').textContent = profile.name;
         document.querySelector('#profile-email').textContent = profile.email;
         document.querySelector('#profile-crp').textContent = profile.crp;
         document.querySelector('#profile-specialty').textContent = profile.specialty || 'Não informada';
+        document.querySelector('#profile-bio').textContent = profile.bio || 'Não informada';
         document.querySelector('#profile-status').textContent = profile.verified ? 'Verificado' : 'Pendente';
+        document.querySelector('#profile-crp-metric').textContent = `CRP ${profile.crp}`;
         document.querySelector('#sidebar-avatar').textContent = initials(profile.name);
         document.querySelector('#topbar-avatar').textContent = initials(profile.name);
       } catch (error) { showToast(error.message); }
