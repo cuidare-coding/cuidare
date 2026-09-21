@@ -211,7 +211,7 @@
     </main>
   </div>
 
-  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal"><div class="modal-header"><h2 id="modal-title">Cadastrar psicólogo</h2><button class="close-button" id="close-modal" type="button" aria-label="Fechar">×</button></div><form id="psychologist-form" class="form-grid"><label>Nome completo<input name="name" type="text" placeholder="Nome do psicólogo" required></label><label>E-mail profissional<input name="email" type="email" placeholder="nome@cuidare.com" required></label><label>CRP<input name="crp" type="text" placeholder="06/00000" required></label><label>Senha<input name="password" type="password" placeholder="Senha de acesso" minlength="8" required></label><label>Especialidade (opcional)<input name="specialty" type="text" placeholder="Ex.: Psicologia clínica"></label><label>Bio (opcional)<textarea name="bio" placeholder="Apresentação profissional"></textarea></label><label class="checkbox-label"><input name="verified" type="checkbox"> Psicólogo verificado</label><div class="modal-actions"><button class="secondary-button" id="cancel-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Cadastrar psicólogo</button></div></form></div></div>
+  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal"><div class="modal-header"><h2 id="modal-title">Cadastrar psicólogo</h2><button class="close-button" id="close-modal" type="button" aria-label="Fechar">×</button></div><form id="psychologist-form" class="form-grid"><label>Nome completo<input name="name" type="text" placeholder="Nome do psicólogo" required></label><label>E-mail profissional<input name="email" type="email" placeholder="nome@cuidare.com" required></label><label>CRP<input name="crp" type="text" placeholder="06/00000" required></label><label>Senha<input name="password" type="password" placeholder="Senha de acesso" minlength="8" required></label><label>Especialidade (opcional)<input name="specialty" type="text" placeholder="Ex.: Psicologia clínica"></label><label>Bio (opcional)<textarea name="bio" placeholder="Apresentação profissional"></textarea></label><label class="checkbox-label"><input name="verified" type="checkbox"> Psicólogo verificado</label><div class="modal-actions"><button class="secondary-button" id="cancel-modal" type="button">Cancelar</button><button class="primary-button" id="submit-psychologist" type="submit">Cadastrar psicólogo</button></div></form></div></div>
   <div class="modal-backdrop" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title"><div class="modal"><div class="modal-header"><h2 id="profile-title">Perfil do psicólogo</h2><button class="close-button" id="close-profile" type="button" aria-label="Fechar">×</button></div><div id="profile-content"></div></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -223,6 +223,8 @@
     const profileModal = document.querySelector('#profile-modal');
     const profileContent = document.querySelector('#profile-content');
     const toast = document.querySelector('#toast');
+    const psychologistForm = document.querySelector('#psychologist-form');
+    let editingPsychologistId = null;
     const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
 
     function setMenu(open) { sidebar.classList.toggle('open', open); overlay.classList.toggle('open', open); menuButton.setAttribute('aria-expanded', String(open)); }
@@ -234,18 +236,26 @@
     overlay.addEventListener('click', () => setMenu(false));
     document.querySelector('#notification-button').addEventListener('click', () => showToast('Você tem 3 notificações novas.'));
     document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('admlogin.html'); });
-    document.querySelector('#new-psychologist').addEventListener('click', () => setModal(true));
+    document.querySelector('#new-psychologist').addEventListener('click', () => {
+      editingPsychologistId = null;
+      psychologistForm.reset();
+      document.querySelector('#modal-title').textContent = 'Cadastrar psicólogo';
+      document.querySelector('#submit-psychologist').textContent = 'Cadastrar psicólogo';
+      psychologistForm.elements.password.required = true;
+      psychologistForm.elements.password.placeholder = 'Senha de acesso';
+      setModal(true);
+    });
     document.querySelector('#close-modal').addEventListener('click', () => setModal(false));
     document.querySelector('#cancel-modal').addEventListener('click', () => setModal(false));
     modal.addEventListener('click', (event) => { if (event.target === modal) setModal(false); });
     document.querySelector('#close-profile').addEventListener('click', () => setProfileModal(false));
     profileModal.addEventListener('click', (event) => { if (event.target === profileModal) setProfileModal(false); });
-    document.querySelector('#psychologist-form').addEventListener('submit', async (event) => {
+    psychologistForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = event.target;
       const submitButton = form.querySelector('[type="submit"]');
       const token = sessionStorage.getItem('cuidare_access_token');
-      const apiUrl = `${apiBase}/api/psychologists`;
+      const apiUrl = `${apiBase}/api/psychologists${editingPsychologistId ? `/${editingPsychologistId}` : ''}`;
       const formData = new FormData(form);
       const payload = Object.fromEntries(formData.entries());
       payload.verified = formData.has('verified');
@@ -253,7 +263,7 @@
 
       try {
         const response = await fetch(apiUrl, {
-          method: 'POST',
+          method: editingPsychologistId ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify(payload)
         });
@@ -262,7 +272,8 @@
         setModal(false);
         form.reset();
         await loadPsychologists();
-        showToast('Psicólogo cadastrado com sucesso.');
+        showToast(editingPsychologistId ? 'Dados atualizados com sucesso.' : 'Psicólogo cadastrado com sucesso.');
+        editingPsychologistId = null;
       } catch (error) {
         showToast(error.message);
       } finally {
@@ -296,7 +307,7 @@
       psychologistsList.innerHTML = psychologists.length ? psychologists.map((psychologist) => {
         const status = psychologist.verified ? 'active' : 'pending';
         const statusLabel = psychologist.verified ? 'Ativo' : 'Pendente';
-        return `<tr data-status="${status}" data-id="${psychologist.id}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span></td><td><div class="action-group"><button class="table-button profile-action" type="button">Ver perfil</button><div class="action-menu"><button class="table-button options-action" type="button" aria-label="Abrir opções">•••</button><div class="action-menu-list"><button type="button" data-action="profile">Ver perfil</button><button class="delete-action" type="button" data-action="delete">Excluir cadastro</button></div></div></div></td></tr>`;
+        return `<tr data-status="${status}" data-id="${psychologist.id}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span></td><td><div class="action-group"><button class="table-button profile-action" type="button">Ver perfil</button><div class="action-menu"><button class="table-button options-action" type="button" aria-label="Abrir opções">•••</button><div class="action-menu-list"><button type="button" data-action="edit">Editar cadastro</button><button class="delete-action" type="button" data-action="delete">Excluir cadastro</button></div></div></div></td></tr>`;
       }).join('') : '<tr><td colspan="5">Nenhum psicólogo cadastrado.</td></tr>';
       filterRows();
     }
@@ -304,6 +315,22 @@
     function openProfile(psychologist) {
       profileContent.innerHTML = `<div class="form-grid"><p><strong>Nome</strong><br>${escapeHtml(psychologist.name)}</p><p><strong>E-mail</strong><br>${escapeHtml(psychologist.email)}</p><p><strong>CRP</strong><br>${escapeHtml(psychologist.crp)}</p><p><strong>Especialidade</strong><br>${escapeHtml(psychologist.specialty || 'Não informada')}</p><p><strong>Bio</strong><br>${escapeHtml(psychologist.bio || 'Não informada')}</p><p><strong>Status</strong><br>${psychologist.verified ? 'Verificado' : 'Pendente'}</p></div>`;
       setProfileModal(true);
+    }
+
+    function openEdit(psychologist) {
+      editingPsychologistId = psychologist.id;
+      psychologistForm.elements.name.value = psychologist.name || '';
+      psychologistForm.elements.email.value = psychologist.email || '';
+      psychologistForm.elements.crp.value = psychologist.crp || '';
+      psychologistForm.elements.password.value = '';
+      psychologistForm.elements.password.required = false;
+      psychologistForm.elements.password.placeholder = 'Deixe vazio para manter a senha';
+      psychologistForm.elements.specialty.value = psychologist.specialty || '';
+      psychologistForm.elements.bio.value = psychologist.bio || '';
+      psychologistForm.elements.verified.checked = Boolean(psychologist.verified);
+      document.querySelector('#modal-title').textContent = 'Editar psicólogo';
+      document.querySelector('#submit-psychologist').textContent = 'Salvar alterações';
+      setModal(true);
     }
 
     async function deletePsychologist(psychologist) {
@@ -334,7 +361,10 @@
         return;
       }
       const action = event.target.closest('[data-action]')?.dataset.action;
-      if (action === 'profile' || event.target.closest('.profile-action')) {
+      if (action === 'edit') {
+        event.target.closest('.action-menu').classList.remove('open');
+        openEdit(psychologist);
+      } else if (action === 'profile' || event.target.closest('.profile-action')) {
         openProfile(psychologist);
       } else if (action === 'delete') {
         event.target.closest('.action-menu').classList.remove('open');
