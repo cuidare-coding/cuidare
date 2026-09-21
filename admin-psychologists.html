@@ -9,7 +9,7 @@
   <script>
     (async () => {
       const token = sessionStorage.getItem('cuidare_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'http://127.0.0.1:5000'}/api/auth/verify`;
+      const apiUrl = `${window.CUIDARE_API_URL || 'http://https://cuidareapi.onrender.com.0.0.1:5000'}/api/auth/verify`;
 
       if (!token) {
         window.location.replace('admlogin.html');
@@ -225,7 +225,7 @@
     const toast = document.querySelector('#toast');
     const psychologistForm = document.querySelector('#psychologist-form');
     let editingPsychologistId = null;
-    const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
+    const apiBase = window.CUIDARE_API_URL || 'http://https://cuidareapi.onrender.com.0.0.1:5000';
 
     function setMenu(open) { sidebar.classList.toggle('open', open); overlay.classList.toggle('open', open); menuButton.setAttribute('aria-expanded', String(open)); }
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timeout); showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2600); }
