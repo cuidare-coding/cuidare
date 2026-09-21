@@ -68,10 +68,24 @@
     .calendar-header.today { color: var(--accent); background: #f1f8f3; }
     .time-label { min-height: 4.3rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .55rem .45rem; color: var(--muted); font-size: .65rem; text-align: right; }
     .slot { min-height: 4.3rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .35rem; }
+    .slot.clickable { cursor: pointer; }
+    .slot.clickable:hover { background: #f1f8f3; }
     .slot:last-child, .calendar-header:last-child { border-right: 0; }
     .appointment { min-height: 3.55rem; border-left: 3px solid var(--accent); border-radius: 3px; padding: .45rem .5rem; color: var(--accent-dark); background: var(--mint); font-size: .68rem; }
     .appointment strong { display: block; margin-bottom: .25rem; font-size: .72rem; }
     .empty-note { padding: 1.5rem; color: var(--muted); font-size: .78rem; }
+    .modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(16,35,27,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal { width: min(100%, 32rem); border-radius: 6px; padding: 1.5rem; background: #fff; box-shadow: 0 24px 60px rgba(16,35,27,.2); }
+    .modal-header { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.3rem; }
+    .modal-header h2 { margin: 0; font-size: 1.5rem; }
+    .close-button { border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 1.35rem; }
+    .form-grid { display: grid; gap: .9rem; }
+    .form-grid label { display: grid; gap: .4rem; color: var(--ink); font-size: .72rem; font-weight: 700; }
+    .form-grid input, .form-grid select, .form-grid textarea { min-height: 2.8rem; border: 1px solid var(--line); border-radius: 4px; padding: .65rem .75rem; color: var(--ink); background: #fbfcfa; font-size: .8rem; }
+    .form-grid textarea { min-height: 5rem; resize: vertical; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.4rem; }
+    .secondary-button { border: 1px solid var(--line); border-radius: 4px; padding: .75rem 1rem; color: var(--muted); background: #fff; cursor: pointer; font-size: .75rem; }
     .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
     .toast.show { opacity: 1; transform: translateY(0); }
     @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } .page-heading { display: block; } .week-controls { margin-top: 1.2rem; } .summary { grid-template-columns: 1fr; } }
@@ -92,6 +106,7 @@
       <section class="calendar-panel" aria-label="Agenda semanal"><div class="calendar-scroll"><div class="calendar" id="calendar"></div></div><p class="empty-note" id="empty-note">Sua agenda semanal ainda não possui sessões cadastradas.</p></section>
     </main>
   </div>
+  <div class="modal-backdrop" id="appointment-modal" role="dialog" aria-modal="true" aria-labelledby="appointment-title"><div class="modal"><div class="modal-header"><h2 id="appointment-title">Cadastrar atendimento</h2><button class="close-button" id="close-appointment" type="button" aria-label="Fechar">×</button></div><form id="appointment-form" class="form-grid"><label>Cliente<select name="client_id" id="appointment-client" required><option value="">Selecione um cliente</option></select></label><label>Data e horário<input name="starts_at" id="appointment-starts-at" type="datetime-local" required></label><label>Duração<select name="duration_minutes"><option value="50">50 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="90">1h30</option></select></label><label>Tipo de atendimento<input name="type" value="Sessão" required></label><label>Observações (opcional)<textarea name="notes" placeholder="Observações do atendimento"></textarea></label><div class="modal-actions"><button class="secondary-button" id="cancel-appointment" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar atendimento</button></div></form></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script>
     const token = sessionStorage.getItem('cuidare_access_token');
@@ -99,11 +114,14 @@
     const calendar = document.querySelector('#calendar');
     const weekLabel = document.querySelector('#week-label');
     const emptyNote = document.querySelector('#empty-note');
+    const appointmentModal = document.querySelector('#appointment-modal');
+    const appointmentForm = document.querySelector('#appointment-form');
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     const monthNames = ['jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'];
     const hours = Array.from({ length: 11 }, (_, index) => index + 8);
     let currentWeek = startOfWeek(new Date());
-    const appointments = [];
+    let appointments = [];
+    let clients = [];
 
     function startOfWeek(date) { const result = new Date(date); result.setHours(0, 0, 0, 0); result.setDate(result.getDate() - result.getDay()); return result; }
     function formatDate(date) { return `${date.getDate()} ${monthNames[date.getMonth()]}`; }
@@ -116,7 +134,7 @@
       const days = Array.from({ length: 7 }, (_, index) => { const day = new Date(currentWeek); day.setDate(day.getDate() + index); return day; });
       calendar.innerHTML = '<div class="calendar-header"></div>' + days.map((day) => `<div class="calendar-header ${sameDay(day, today) ? 'today' : ''}">${dayNames[day.getDay()]}<br><strong>${day.getDate()}</strong></div>`).join('');
       hours.forEach((hour) => {
-        calendar.insertAdjacentHTML('beforeend', `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>` + days.map((day) => { const item = appointments.find((appointment) => appointment.hour === hour && sameDay(new Date(appointment.date), day)); return `<div class="slot">${item ? `<div class="appointment"><strong>${item.time} · ${item.patient}</strong>${item.type}</div>` : ''}</div>`; }).join(''));
+        calendar.insertAdjacentHTML('beforeend', `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>` + days.map((day) => { const startsAt = new Date(day); startsAt.setHours(hour, 0, 0, 0); const item = appointments.find((appointment) => new Date(appointment.starts_at).getTime() === startsAt.getTime()); return `<div class="slot ${item ? '' : 'clickable'}" data-start="${startsAt.toISOString()}">${item ? `<div class="appointment"><strong>${new Date(item.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${item.patient}</strong>${item.type}</div>` : ''}</div>`; }).join(''));
       });
       const weekAppointments = appointments.filter((appointment) => days.some((day) => sameDay(new Date(appointment.date), day)));
       const todayAppointments = weekAppointments.filter((appointment) => sameDay(new Date(appointment.date), today));
@@ -126,6 +144,15 @@
       document.querySelector('#free-count').textContent = (days.length * hours.length) - weekAppointments.length;
       emptyNote.hidden = weekAppointments.length > 0;
     }
+    function setAppointmentModal(open) { appointmentModal.classList.toggle('open', open); if (open) appointmentForm.elements.client_id.focus(); }
+    function openAppointment(start) { appointmentForm.reset(); appointmentForm.elements.starts_at.value = new Date(start).toISOString().slice(0, 16); setAppointmentModal(true); }
+    calendar.addEventListener('click', (event) => { const slot = event.target.closest('.slot.clickable'); if (slot) openAppointment(slot.dataset.start); });
+    appointmentModal.addEventListener('click', (event) => { if (event.target === appointmentModal) setAppointmentModal(false); });
+    document.querySelector('#close-appointment').addEventListener('click', () => setAppointmentModal(false));
+    document.querySelector('#cancel-appointment').addEventListener('click', () => setAppointmentModal(false));
+    appointmentForm.addEventListener('submit', async (event) => { event.preventDefault(); const button = appointmentForm.querySelector('[type="submit"]'); button.disabled = true; try { const response = await fetch(`${apiBase}/api/appointments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(Object.fromEntries(new FormData(appointmentForm).entries())) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Não foi possível salvar o atendimento.'); appointments.push(result.appointment); setAppointmentModal(false); renderCalendar(); } catch (error) { const toast = document.querySelector('#toast'); toast.textContent = error.message; toast.classList.add('show'); } finally { button.disabled = false; } });
+    async function loadAppointments() { const response = await fetch(`${apiBase}/api/appointments`, { headers: { Authorization: `Bearer ${token}` } }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Não foi possível carregar a agenda.'); appointments = result.appointments || []; }
+    async function loadClients() { const response = await fetch(`${apiBase}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os clientes.'); clients = result.clients || []; document.querySelector('#appointment-client').insertAdjacentHTML('beforeend', clients.map((client) => `<option value="${client.id}">${client.name}</option>`).join('')); }
     document.querySelector('#previous-week').addEventListener('click', () => { currentWeek.setDate(currentWeek.getDate() - 7); renderCalendar(); });
     document.querySelector('#next-week').addEventListener('click', () => { currentWeek.setDate(currentWeek.getDate() + 7); renderCalendar(); });
     document.querySelector('#today-button').addEventListener('click', () => { currentWeek = startOfWeek(new Date()); renderCalendar(); });
@@ -142,7 +169,7 @@
       } catch (error) { const toast = document.querySelector('#toast'); toast.textContent = error.message; toast.classList.add('show'); }
     }
     renderCalendar();
-    loadProfile();
+    Promise.all([loadProfile(), loadClients(), loadAppointments()]).then(renderCalendar).catch((error) => { const toast = document.querySelector('#toast'); toast.textContent = error.message; toast.classList.add('show'); });
   </script>
 </body>
 </html>
