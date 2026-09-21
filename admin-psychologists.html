@@ -195,12 +195,12 @@
 
       <section class="page-heading" aria-labelledby="page-title"><div><p class="eyebrow">Gestão de usuários</p><h1 id="page-title">Psicólogos</h1><p class="page-description">Gerencie perfis, documentos e permissões dos profissionais da Cuidare.</p></div><button class="primary-button" id="new-psychologist" type="button"><span aria-hidden="true">+</span> Cadastrar psicólogo</button></section>
 
-      <section class="summary" aria-label="Resumo dos psicólogos"><article class="summary-card"><span>Total de psicólogos</span><strong>24</strong><small>↑ 8% este mês</small></article><article class="summary-card"><span>Perfis ativos</span><strong>19</strong><small>79% da rede</small></article><article class="summary-card pending"><span>Aguardando aprovação</span><strong>05</strong><small>Revisar documentos</small></article></section>
+      <section class="summary" aria-label="Resumo dos psicólogos"><article class="summary-card"><span>Total de psicólogos</span><strong id="total-count">0</strong><small id="total-caption">Dados do banco</small></article><article class="summary-card"><span>Perfis ativos</span><strong id="active-count">0</strong><small id="active-caption">Verificados</small></article><article class="summary-card pending"><span>Aguardando aprovação</span><strong id="pending-count">0</strong><small>Não verificados</small></article></section>
 
       <section class="panel" aria-labelledby="list-title">
         <div class="panel-header"><h2 id="list-title">Todos os psicólogos</h2></div>
         <div class="filter-bar"><label class="search-wrap" for="search"><span aria-hidden="true">⌕</span><input class="search-input" id="search" type="search" placeholder="Buscar por nome, e-mail ou CRP"></label><label for="status-filter"><select class="filter-select" id="status-filter" aria-label="Filtrar por status"><option value="all">Todos os status</option><option value="active">Ativos</option><option value="pending">Pendentes</option><option value="inactive">Inativos</option></select></label></div>
-        <div class="table-wrap"><table><thead><tr><th>Psicólogo</th><th>CRP</th><th>Cadastro</th><th>Status</th><th>Ações</th></tr></thead><tbody id="psychologists-list"><tr data-status="active"><td><div class="psychologist"><span class="psychologist-avatar">RC</span><div><strong>Rafael Costa</strong><span>rafael@cuidare.com</span></div></div></td><td>06/18234</td><td>12 jun 2024</td><td><span class="status active">Ativo</span></td><td><div class="action-group"><button class="table-button" type="button" data-message="Abrindo perfil de Rafael Costa...">Ver perfil</button><button class="table-button danger" type="button" data-message="Opções de Rafael Costa...">•••</button></div></td></tr><tr data-status="active"><td><div class="psychologist"><span class="psychologist-avatar">AS</span><div><strong>Ana Souza</strong><span>ana@cuidare.com</span></div></div></td><td>06/19402</td><td>10 jun 2024</td><td><span class="status active">Ativo</span></td><td><div class="action-group"><button class="table-button" type="button" data-message="Abrindo perfil de Ana Souza...">Ver perfil</button><button class="table-button danger" type="button" data-message="Opções de Ana Souza...">•••</button></div></td></tr><tr data-status="pending"><td><div class="psychologist"><span class="psychologist-avatar">CN</span><div><strong>Camila Nunes</strong><span>camila@email.com</span></div></div></td><td>06/24118</td><td>Hoje</td><td><span class="status pending">Pendente</span></td><td><div class="action-group"><button class="table-button" type="button" data-message="Abrindo documentos de Camila Nunes...">Revisar</button><button class="table-button danger" type="button" data-message="Opções de Camila Nunes...">•••</button></div></td></tr><tr data-status="inactive"><td><div class="psychologist"><span class="psychologist-avatar">FM</span><div><strong>Felipe Moura</strong><span>felipe@cuidare.com</span></div></div></td><td>06/15309</td><td>18 mar 2024</td><td><span class="status inactive">Inativo</span></td><td><div class="action-group"><button class="table-button" type="button" data-message="Abrindo perfil de Felipe Moura...">Ver perfil</button><button class="table-button danger" type="button" data-message="Opções de Felipe Moura...">•••</button></div></td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Psicólogo</th><th>CRP</th><th>Cadastro</th><th>Status</th><th>Ações</th></tr></thead><tbody id="psychologists-list"><tr><td colspan="5">Carregando psicólogos...</td></tr></tbody></table></div>
       </section>
     </main>
   </div>
@@ -214,6 +214,7 @@
     const menuButton = document.querySelector('#menu-button');
     const modal = document.querySelector('#modal');
     const toast = document.querySelector('#toast');
+    const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
 
     function setMenu(open) { sidebar.classList.toggle('open', open); overlay.classList.toggle('open', open); menuButton.setAttribute('aria-expanded', String(open)); }
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timeout); showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2600); }
@@ -232,7 +233,7 @@
       const form = event.target;
       const submitButton = form.querySelector('[type="submit"]');
       const token = sessionStorage.getItem('cuidare_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'http://127.0.0.1:5000'}/api/psychologists`;
+      const apiUrl = `${apiBase}/api/psychologists`;
       const formData = new FormData(form);
       const payload = Object.fromEntries(formData.entries());
       payload.verified = formData.has('verified');
@@ -248,6 +249,7 @@
         if (!response.ok) throw new Error(result.error || 'Não foi possível cadastrar o psicólogo.');
         setModal(false);
         form.reset();
+        await loadPsychologists();
         showToast('Psicólogo cadastrado com sucesso.');
       } catch (error) {
         showToast(error.message);
@@ -259,9 +261,53 @@
 
     const search = document.querySelector('#search');
     const statusFilter = document.querySelector('#status-filter');
+    const psychologistsList = document.querySelector('#psychologists-list');
+    let psychologists = [];
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+    }
+
+    function initials(name) {
+      return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+    }
+
+    function formatDate(value) {
+      if (!value) return 'Sem data';
+      return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value));
+    }
+
+    function renderPsychologists() {
+      const total = psychologists.length;
+      const active = psychologists.filter((item) => item.verified).length;
+      document.querySelector('#total-count').textContent = total;
+      document.querySelector('#active-count').textContent = active;
+      document.querySelector('#pending-count').textContent = total - active;
+      psychologistsList.innerHTML = psychologists.length ? psychologists.map((psychologist) => {
+        const status = psychologist.verified ? 'active' : 'pending';
+        const statusLabel = psychologist.verified ? 'Ativo' : 'Pendente';
+        return `<tr data-status="${status}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span></td><td><div class="action-group"><button class="table-button" type="button" data-message="Abrindo perfil de ${escapeHtml(psychologist.name)}...">Ver perfil</button><button class="table-button danger" type="button" data-message="Opções de ${escapeHtml(psychologist.name)}...">•••</button></div></td></tr>`;
+      }).join('') : '<tr><td colspan="5">Nenhum psicólogo cadastrado.</td></tr>';
+      document.querySelectorAll('[data-message]').forEach((button) => button.addEventListener('click', () => showToast(button.dataset.message)));
+      filterRows();
+    }
+
+    async function loadPsychologists() {
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('cuidare_access_token')}` } });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os psicólogos.');
+        psychologists = result.psychologists || [];
+        renderPsychologists();
+      } catch (error) {
+        psychologistsList.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+        showToast(error.message);
+      }
+    }
+
     function filterRows() {
       const query = search.value.toLowerCase();
-      document.querySelectorAll('#psychologists-list tr').forEach((row) => {
+      document.querySelectorAll('#psychologists-list tr[data-status]').forEach((row) => {
         const matchesText = row.textContent.toLowerCase().includes(query);
         const matchesStatus = statusFilter.value === 'all' || row.dataset.status === statusFilter.value;
         row.hidden = !(matchesText && matchesStatus);
@@ -269,6 +315,7 @@
     }
     search.addEventListener('input', filterRows);
     statusFilter.addEventListener('change', filterRows);
+    loadPsychologists();
   </script>
 </body>
 </html>
