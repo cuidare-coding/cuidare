@@ -72,6 +72,7 @@
     .slot.clickable:hover { background: #f1f8f3; }
     .slot:last-child, .calendar-header:last-child { border-right: 0; }
     .appointment { min-height: 3.55rem; border-left: 3px solid var(--accent); border-radius: 3px; padding: .45rem .5rem; color: var(--accent-dark); background: var(--mint); font-size: .68rem; }
+    .appointment { position: relative; z-index: 2; overflow: hidden; }
     .appointment strong { display: block; margin-bottom: .25rem; font-size: .72rem; }
     .empty-note { padding: 1.5rem; color: var(--muted); font-size: .78rem; }
     .modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(16,35,27,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
@@ -134,14 +135,14 @@
       const days = Array.from({ length: 7 }, (_, index) => { const day = new Date(currentWeek); day.setDate(day.getDate() + index); return day; });
       calendar.innerHTML = '<div class="calendar-header"></div>' + days.map((day) => `<div class="calendar-header ${sameDay(day, today) ? 'today' : ''}">${dayNames[day.getDay()]}<br><strong>${day.getDate()}</strong></div>`).join('');
       hours.forEach((hour) => {
-        calendar.insertAdjacentHTML('beforeend', `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>` + days.map((day) => { const startsAt = new Date(day); startsAt.setHours(hour, 0, 0, 0); const item = appointments.find((appointment) => new Date(appointment.starts_at).getTime() === startsAt.getTime()); return `<div class="slot ${item ? '' : 'clickable'}" data-start="${startsAt.toISOString()}">${item ? `<div class="appointment"><strong>${new Date(item.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${item.patient}</strong>${item.type}</div>` : ''}</div>`; }).join(''));
+        calendar.insertAdjacentHTML('beforeend', `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>` + days.map((day) => { const startsAt = new Date(day); startsAt.setHours(hour, 0, 0, 0); const slotEnd = new Date(startsAt); slotEnd.setHours(slotEnd.getHours() + 1); const item = appointments.find((appointment) => new Date(appointment.starts_at).getTime() === startsAt.getTime()); const occupied = appointments.some((appointment) => { const appointmentStart = new Date(appointment.starts_at); const appointmentEnd = new Date(appointmentStart.getTime() + appointment.duration_minutes * 60000); return appointmentStart < slotEnd && appointmentEnd > startsAt; }); const height = item ? ` style="height: calc(${item.duration_minutes} / 60 * 4.3rem - .7rem)"` : ''; return `<div class="slot ${occupied ? '' : 'clickable'}" data-start="${startsAt.toISOString()}">${item ? `<div class="appointment"${height}><strong>${new Date(item.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${item.patient}</strong>${item.type} · ${item.duration_minutes} min</div>` : ''}</div>`; }).join(''));
       });
-      const weekAppointments = appointments.filter((appointment) => days.some((day) => sameDay(new Date(appointment.date), day)));
-      const todayAppointments = weekAppointments.filter((appointment) => sameDay(new Date(appointment.date), today));
+      const weekAppointments = appointments.filter((appointment) => days.some((day) => sameDay(new Date(appointment.starts_at), day)));
+      const todayAppointments = weekAppointments.filter((appointment) => sameDay(new Date(appointment.starts_at), today));
       document.querySelector('#week-count').textContent = weekAppointments.length;
       document.querySelector('#today-count').textContent = todayAppointments.length;
       document.querySelector('#today-label').textContent = todayAppointments.length ? 'Sessões agendadas' : 'Nenhuma sessão';
-      document.querySelector('#free-count').textContent = (days.length * hours.length) - weekAppointments.length;
+      document.querySelector('#free-count').textContent = (days.length * hours.length) - weekAppointments.reduce((total, appointment) => total + (appointment.duration_minutes / 60), 0);
       emptyNote.hidden = weekAppointments.length > 0;
     }
     function setAppointmentModal(open) { appointmentModal.classList.toggle('open', open); if (open) appointmentForm.elements.client_id.focus(); }
