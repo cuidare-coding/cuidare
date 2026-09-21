@@ -346,54 +346,46 @@
 
       <section class="metrics" aria-label="Resumo da plataforma">
         <article class="metric">
-          <div class="metric-top"><span class="metric-label">Usuários ativos</span><span class="metric-icon" aria-hidden="true">○</span></div>
-          <strong>186</strong><span class="metric-change">↑ 12% este mês</span>
+          <div class="metric-top"><span class="metric-label">Psicólogos cadastrados</span><span class="metric-icon" aria-hidden="true">♧</span></div>
+          <strong id="psychologist-total">0</strong><span class="metric-change neutral">Dados do banco</span>
         </article>
         <article class="metric">
           <div class="metric-top"><span class="metric-label">Psicólogos ativos</span><span class="metric-icon" aria-hidden="true">♧</span></div>
-          <strong>24</strong><span class="metric-change">↑ 8% este mês</span>
+          <strong id="psychologist-active">0</strong><span class="metric-change">Verificados</span>
         </article>
         <article class="metric">
           <div class="metric-top"><span class="metric-label">Aprovações pendentes</span><span class="metric-icon" aria-hidden="true">!</span></div>
-          <strong>07</strong><span class="metric-change neutral">Revisar hoje</span>
+          <strong id="psychologist-pending">0</strong><span class="metric-change neutral">Aguardando revisão</span>
         </article>
         <article class="metric">
           <div class="metric-top"><span class="metric-label">Novos este mês</span><span class="metric-icon" aria-hidden="true">+</span></div>
-          <strong>18</strong><span class="metric-change">↑ 4 novos hoje</span>
+          <strong id="psychologist-new">0</strong><span class="metric-change">Cadastrados recentemente</span>
         </article>
       </section>
 
       <section class="content-grid" aria-label="Dados da plataforma">
         <article class="panel" id="usuarios">
-          <div class="panel-header"><h2>Usuários recentes</h2><a class="panel-link" href="#usuarios">Ver todos →</a></div>
+          <div class="panel-header"><h2>Psicólogos recentes</h2><a class="panel-link" href="admin-psychologists.html">Ver todos →</a></div>
           <div class="user-table-wrap">
             <table class="user-table">
               <thead><tr><th>Usuário</th><th>Tipo</th><th>Status</th><th>Ação</th></tr></thead>
-              <tbody>
-                <tr><td><div class="user"><span class="user-avatar">MA</span><div><strong>Marina Alves</strong><span>marina@email.com</span></div></div></td><td>Paciente</td><td><span class="account-status active">Ativo</span></td><td><button class="table-action" type="button" data-message="Abrindo perfil de Marina Alves...">Ver</button></td></tr>
-                <tr><td><div class="user"><span class="user-avatar">RC</span><div><strong>Rafael Costa</strong><span>rafael@cuidare.com</span></div></div></td><td>Psicólogo</td><td><span class="account-status active">Ativo</span></td><td><button class="table-action" type="button" data-message="Abrindo perfil de Rafael Costa...">Ver</button></td></tr>
-                <tr><td><div class="user"><span class="user-avatar">BL</span><div><strong>Beatriz Lima</strong><span>beatriz@email.com</span></div></div></td><td>Paciente</td><td><span class="account-status pending">Pendente</span></td><td><button class="table-action" type="button" data-message="Abrindo aprovação de Beatriz Lima...">Revisar</button></td></tr>
-              </tbody>
+              <tbody id="recent-psychologists"><tr><td colspan="4">Carregando psicólogos...</td></tr></tbody>
             </table>
           </div>
         </article>
 
         <article class="panel" id="psicologos">
-          <div class="panel-header"><h2>Aprovações pendentes</h2><a class="panel-link" href="#psicologos">Ver todas →</a></div>
-          <div class="pending-list">
-            <div class="pending-item"><div class="pending-info"><strong>Camila Nunes</strong><span>Psicóloga · há 18 min</span></div><button class="review-button" type="button" data-message="Abrindo documentos de Camila Nunes...">Revisar</button></div>
-            <div class="pending-item"><div class="pending-info"><strong>Bruno Oliveira</strong><span>Psicólogo · há 42 min</span></div><button class="review-button" type="button" data-message="Abrindo documentos de Bruno Oliveira...">Revisar</button></div>
-            <div class="pending-item"><div class="pending-info"><strong>Laura Reis</strong><span>Psicóloga · há 1 h</span></div><button class="review-button" type="button" data-message="Abrindo documentos de Laura Reis...">Revisar</button></div>
-          </div>
+          <div class="panel-header"><h2>Aprovações pendentes</h2><a class="panel-link" href="admin-psychologists.html">Ver todas →</a></div>
+          <div class="pending-list" id="pending-psychologists"><p class="pending-info">Carregando aprovações...</p></div>
         </article>
 
         <article class="panel" id="configuracoes">
           <div class="panel-header"><h2>Ações rápidas</h2></div>
           <div class="quick-actions">
-            <button class="quick-action" type="button" data-message="Abrindo cadastro de usuário..."><span aria-hidden="true">+</span>Novo usuário</button>
-            <button class="quick-action" type="button" data-message="Abrindo lista de usuários..."><span aria-hidden="true">○</span>Ver usuários</button>
-            <button class="quick-action" type="button" data-message="Abrindo aprovações pendentes..."><span aria-hidden="true">!</span>Revisar aprovações</button>
-            <button class="quick-action" type="button" data-message="Abrindo configurações..."><span aria-hidden="true">⚙</span>Configurações</button>
+            <button class="quick-action" type="button" data-action="new"><span aria-hidden="true">+</span>Novo psicólogo</button>
+            <button class="quick-action" type="button" data-action="list"><span aria-hidden="true">○</span>Ver psicólogos</button>
+            <button class="quick-action" type="button" data-action="pending"><span aria-hidden="true">!</span>Revisar aprovações</button>
+            <button class="quick-action" type="button" data-action="settings"><span aria-hidden="true">⚙</span>Configurações</button>
           </div>
         </article>
       </section>
@@ -407,6 +399,7 @@
     const overlay = document.querySelector('#overlay');
     const menuButton = document.querySelector('#menu-button');
     const toast = document.querySelector('#toast');
+    const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
 
     function setMenu(open) {
       sidebar.classList.toggle('open', open);
@@ -433,8 +426,16 @@
     }
 
     document.querySelector('#notification-button').addEventListener('click', () => showToast('Você tem 3 notificações novas.'));
-    document.querySelector('#new-user').addEventListener('click', () => showToast('Abrindo cadastro de usuário...'));
-    document.querySelectorAll('.quick-action, .table-action, .review-button').forEach((button) => button.addEventListener('click', () => showToast(button.dataset.message)));
+    document.querySelector('#new-user').addEventListener('click', () => window.location.href = 'admin-psychologists.html');
+    document.querySelectorAll('.quick-action').forEach((button) => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.action;
+        if (action === 'new') window.location.href = 'admin-psychologists.html';
+        if (action === 'list') window.location.href = 'admin-psychologists.html';
+        if (action === 'pending') window.location.href = 'admin-psychologists.html?status=pending';
+        if (action === 'settings') showToast('Configurações ainda não disponíveis.');
+      });
+    });
     document.querySelector('#logout-button').addEventListener('click', () => {
       sessionStorage.removeItem('cuidare_access_token');
       window.location.replace('admlogin.html');
@@ -442,6 +443,40 @@
 
     const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
     document.querySelector('#current-date').textContent = date.charAt(0).toUpperCase() + date.slice(1);
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+    }
+
+    function initials(name) {
+      return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+    }
+
+    function formatDate(value) {
+      if (!value) return 'Sem data';
+      return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value));
+    }
+
+    async function loadDashboardData() {
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('cuidare_access_token')}` } });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os dados.');
+        const psychologists = result.psychologists || [];
+        const active = psychologists.filter((item) => item.verified);
+        const pending = psychologists.filter((item) => !item.verified);
+        document.querySelector('#psychologist-total').textContent = psychologists.length;
+        document.querySelector('#psychologist-active').textContent = active.length;
+        document.querySelector('#psychologist-pending').textContent = pending.length;
+        document.querySelector('#psychologist-new').textContent = psychologists.filter((item) => item.created_at && new Date(item.created_at) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length;
+        document.querySelector('#recent-psychologists').innerHTML = psychologists.slice(0, 5).map((psychologist) => `<tr><td><div class="user"><span class="user-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>Psicólogo</td><td><span class="account-status ${psychologist.verified ? 'active' : 'pending'}">${psychologist.verified ? 'Ativo' : 'Pendente'}</span></td><td><a class="table-action" href="admin-psychologists.html">Ver</a></td></tr>`).join('') || '<tr><td colspan="4">Nenhum psicólogo cadastrado.</td></tr>';
+        document.querySelector('#pending-psychologists').innerHTML = pending.slice(0, 5).map((psychologist) => `<div class="pending-item"><div class="pending-info"><strong>${escapeHtml(psychologist.name)}</strong><span>CRP ${escapeHtml(psychologist.crp)} · ${escapeHtml(formatDate(psychologist.created_at))}</span></div><a class="review-button" href="admin-psychologists.html?status=pending">Revisar</a></div>`).join('') || '<p class="pending-info">Nenhuma aprovação pendente.</p>';
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    loadDashboardData();
   </script>
 </body>
 </html>

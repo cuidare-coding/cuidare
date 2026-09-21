@@ -401,6 +401,8 @@
     }
     search.addEventListener('input', filterRows);
     statusFilter.addEventListener('change', filterRows);
+    const requestedStatus = new URLSearchParams(window.location.search).get('status');
+    if (requestedStatus && ['active', 'pending', 'inactive'].includes(requestedStatus)) statusFilter.value = requestedStatus;
     loadPsychologists();
   </script>
 </body>
