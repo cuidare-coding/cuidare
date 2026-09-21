@@ -9,7 +9,7 @@
   <script>
     (async () => {
       const token = sessionStorage.getItem('cuidare_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'http://127.0.0.1:5000'}/api/auth/verify`;
+      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
       if (!token) { window.location.replace('login.html'); return; }
       try {
         const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: token }) });
@@ -90,7 +90,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script>
     const token = sessionStorage.getItem('cuidare_access_token');
-    const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
+    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
     const toast = document.querySelector('#toast');
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 2800); }
     function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
