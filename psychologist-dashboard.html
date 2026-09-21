@@ -95,6 +95,7 @@
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="appointment-recurrence.js"></script>
   <script>
     const token = sessionStorage.getItem('cuidare_access_token');
     const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
@@ -136,7 +137,11 @@
         const clientsResult = await clientsResponse.json();
         if (!appointmentsResponse.ok) throw new Error(appointmentsResult.error || 'Não foi possível carregar a agenda.');
         if (!clientsResponse.ok) throw new Error(clientsResult.error || 'Não foi possível carregar os clientes.');
-        const todayAppointments = (appointmentsResult.appointments || []).filter((appointment) => isToday(appointment.starts_at));
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(todayStart);
+        todayEnd.setHours(23, 59, 59, 999);
+        const todayAppointments = (appointmentsResult.appointments || []).flatMap((appointment) => CuidareRecurrence.expand(appointment, todayStart, todayEnd));
         const clients = clientsResult.clients || [];
         document.querySelector('#today-appointments').textContent = todayAppointments.length;
         document.querySelector('#client-count').textContent = clients.length;
