@@ -72,7 +72,7 @@
     .slot.clickable { cursor: pointer; }
     .slot.clickable:hover { background: #f1f8f3; }
     .slot:last-child, .calendar-header:last-child { border-right: 0; }
-    .appointment { min-height: 3.55rem; border-left: 3px solid var(--accent); border-radius: 3px; padding: .45rem .5rem; color: var(--accent-dark); background: var(--mint); font-size: .68rem; position: absolute; top: 0; left: 0; right: 0; z-index: 2; overflow: visible; }
+    .appointment { min-height: 3.55rem; border-left: 3px solid var(--accent); border-radius: 3px; padding: .45rem .5rem; color: var(--accent-dark); background: var(--mint); font-size: .68rem; position: absolute; top: 0; left: 0; right: 0; z-index: 2; overflow: visible; pointer-events: auto; }
     .appointment strong { display: block; margin-bottom: .25rem; font-size: .72rem; }
     .empty-note { padding: 1.5rem; color: var(--muted); font-size: .78rem; }
     .modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(16,35,27,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
@@ -150,7 +150,7 @@
     function openAppointment(start) { editingAppointmentId = null; appointmentForm.reset(); appointmentForm.elements.starts_at.value = localDateTimeValue(start); document.querySelector('#appointment-title').textContent = 'Cadastrar atendimento'; appointmentForm.querySelector('[type="submit"]').textContent = 'Salvar atendimento'; setAppointmentModal(true); }
 let editingAppointmentId = null;
 function openEditAppointment(id) { const appointment = appointments.find((a) => String(a.id) === String(id)); if (!appointment) return; editingAppointmentId = appointment.id; appointmentForm.elements.client_id.value = appointment.client_id; appointmentForm.elements.starts_at.value = localDateTimeValue(appointment.starts_at); appointmentForm.elements.duration_minutes.value = appointment.duration_minutes; appointmentForm.elements.type.value = appointment.type; appointmentForm.elements.notes.value = appointment.notes || ''; document.querySelector('#appointment-title').textContent = 'Editar atendimento'; appointmentForm.querySelector('[type="submit"]').textContent = 'Salvar alterações'; setAppointmentModal(true); }
-    calendar.addEventListener('click', (event) => { const appointmentEl = event.target.closest('.appointment'); if (appointmentEl) { openEditAppointment(appointmentEl.dataset.id); return; } const slot = event.target.closest('.slot.clickable'); if (slot) openAppointment(slot.dataset.start); });
+    calendar.addEventListener('click', (event) => { const appointmentEl = event.target.closest('.appointment'); if (appointmentEl) { event.stopPropagation(); openEditAppointment(appointmentEl.dataset.id); return; } const slot = event.target.closest('.slot.clickable'); if (slot) openAppointment(slot.dataset.start); });
     appointmentModal.addEventListener('click', (event) => { if (event.target === appointmentModal) setAppointmentModal(false); });
     document.querySelector('#close-appointment').addEventListener('click', () => setAppointmentModal(false));
     document.querySelector('#cancel-appointment').addEventListener('click', () => setAppointmentModal(false));
