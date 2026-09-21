@@ -157,6 +157,24 @@ function openEditAppointment(id) { const appointment = appointments.find((a) => 
     appointmentModal.addEventListener('click', (event) => { if (event.target === appointmentModal) setAppointmentModal(false); });
     document.querySelector('#close-appointment').addEventListener('click', () => setAppointmentModal(false));
     document.querySelector('#cancel-appointment').addEventListener('click', () => setAppointmentModal(false));
+    document.querySelector('#delete-appointment').addEventListener('click', async () => {
+      if (!window.confirm('Excluir este atendimento?')) return;
+      try {
+        const response = await fetch(`${apiBase}/api/appointments/${editingAppointmentId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível excluir o atendimento.');
+        appointments = appointments.filter((a) => a.id !== editingAppointmentId);
+        setAppointmentModal(false);
+        renderCalendar();
+      } catch (error) {
+        const toast = document.querySelector('#toast');
+        toast.textContent = error.message;
+        toast.classList.add('show');
+      }
+    });
     appointmentForm.addEventListener('submit', async (event) => { event.preventDefault(); const button = appointmentForm.querySelector('[type="submit"]'); button.disabled = true; try { const payload = Object.fromEntries(new FormData(appointmentForm).entries()); payload.starts_at = new Date(payload.starts_at).toISOString(); const method = editingAppointmentId ? 'PUT' : 'POST'; const url = editingAppointmentId ? `${apiBase}/api/appointments/${editingAppointmentId}` : `${apiBase}/api/appointments`; const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Não foi possível salvar o atendimento.'); if (editingAppointmentId) { appointments = appointments.map((a) => a.id === editingAppointmentId ? result.appointment : a); } else { appointments.push(result.appointment); } editingAppointmentId = null; setAppointmentModal(false); renderCalendar(); } catch (error) { const toast = document.querySelector('#toast'); toast.textContent = error.message; toast.classList.add('show'); } finally { button.disabled = false; } });
     async function loadAppointments() { const response = await fetch(`${apiBase}/api/appointments`, { headers: { Authorization: `Bearer ${token}` } }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Não foi possível carregar a agenda.'); appointments = result.appointments || []; }
     async function loadClients() { const response = await fetch(`${apiBase}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }); const result = await response.json(); if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os clientes.'); clients = result.clients || []; document.querySelector('#appointment-client').insertAdjacentHTML('beforeend', clients.map((client) => `<option value="${client.id}">${client.name}</option>`).join('')); }
