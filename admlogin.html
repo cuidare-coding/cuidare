@@ -325,7 +325,7 @@
 					throw new Error(result.error || 'Não foi possível entrar.');
 				}
 
-				(sessionStorage).setItem('cuidare_access_token', result.access_token);
+				(sessionStorage).setItem('cuidare_admin_access_token', result.access_token);
 				window.location.href = 'admin-dashboard.html';
 			} catch (error) {
 				status.textContent = error.message === 'Failed to fetch'

@@ -8,7 +8,7 @@
   <script>document.documentElement.classList.add('auth-checking');</script>
   <script>
     (async () => {
-      const token = sessionStorage.getItem('cuidare_access_token');
+      const token = sessionStorage.getItem('cuidare_admin_access_token');
       const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
 
       if (!token) {
@@ -28,7 +28,7 @@
         }
         document.documentElement.classList.remove('auth-checking');
       } catch (_error) {
-        sessionStorage.removeItem('cuidare_access_token');
+        sessionStorage.removeItem('cuidare_admin_access_token');
         window.location.replace('admlogin.html');
       }
     })();
@@ -437,7 +437,7 @@
       });
     });
     document.querySelector('#logout-button').addEventListener('click', () => {
-      sessionStorage.removeItem('cuidare_access_token');
+      sessionStorage.removeItem('cuidare_admin_access_token');
       window.location.replace('admlogin.html');
     });
 
@@ -459,7 +459,7 @@
 
     async function loadDashboardData() {
       try {
-        const response = await fetch(`${apiBase}/api/psychologists`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('cuidare_access_token')}` } });
+        const response = await fetch(`${apiBase}/api/psychologists`, { headers: { Authorization: `Bearer ${sessionStorage.getItem('cuidare_admin_access_token')}` } });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os dados.');
         const psychologists = result.psychologists || [];
