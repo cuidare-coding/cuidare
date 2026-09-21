@@ -62,6 +62,13 @@
     .panel-header { padding: 1.25rem 1.35rem 1rem; }
     .panel-header h2 { margin: 0; font-size: 1.25rem; }
     .empty-state { padding: 0 1.35rem 1.35rem; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+    .panel-link { float: right; color: var(--accent); font-size: .72rem; text-decoration: none; }
+    .panel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .schedule-list { display: grid; gap: 0; padding: 0 1.35rem 1.35rem; }
+    .schedule-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding: .85rem 0; }
+    .schedule-info strong { display: block; font: .82rem Georgia, 'Times New Roman', serif; }
+    .schedule-info span { display: block; margin-top: .25rem; color: var(--muted); font-size: .68rem; }
+    .schedule-time { color: var(--accent-dark); font-size: .75rem; font-weight: 700; white-space: nowrap; }
     .profile { display: grid; gap: .9rem; padding: 0 1.35rem 1.35rem; }
     .profile-row { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; font-size: .78rem; }
     .profile-row span { color: var(--muted); }
@@ -83,8 +90,8 @@
     <main class="main">
       <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
       <section class="hero"><div><p class="eyebrow">Área do psicólogo</p><h1 id="welcome-title">Bom dia.</h1><p class="page-description" id="welcome-description">Seu espaço de trabalho para acompanhar a prática clínica.</p></div></section>
-      <section class="metrics" aria-label="Resumo da agenda"><article class="metric"><span>Sessões hoje</span><strong>0</strong><small>Nenhuma sessão cadastrada</small></article><article class="metric"><span>Pacientes ativos</span><strong>0</strong><small>Nenhum paciente cadastrado</small></article><article class="metric"><span>Perfil</span><strong id="profile-status">--</strong><small id="profile-crp-metric">CRP carregando...</small></article></section>
-      <section class="content-grid"><article class="panel" id="agenda"><div class="panel-header"><h2>Agenda de hoje</h2></div><div class="empty-state">Nenhuma sessão agendada para hoje.</div></article><article class="panel" id="pacientes"><div class="panel-header"><h2>Meu perfil</h2></div><div class="profile"><div class="profile-row"><span>Nome</span><strong id="profile-name">Carregando...</strong></div><div class="profile-row"><span>E-mail</span><strong id="profile-email">Carregando...</strong></div><div class="profile-row"><span>CRP</span><strong id="profile-crp">Carregando...</strong></div><div class="profile-row"><span>Especialidade</span><strong id="profile-specialty">Carregando...</strong></div><div class="profile-row"><span>Biografia</span><strong id="profile-bio">Carregando...</strong></div></div></article></section>
+      <section class="metrics" aria-label="Resumo da agenda"><article class="metric"><span>Sessões hoje</span><strong id="today-appointments">0</strong><small id="today-caption">Nenhuma sessão cadastrada</small></article><article class="metric"><span>Pacientes ativos</span><strong id="client-count">0</strong><small>Na sua carteira</small></article><article class="metric"><span>Perfil</span><strong id="profile-status">--</strong><small id="profile-crp-metric">CRP carregando...</small></article></section>
+      <section class="content-grid"><article class="panel" id="agenda"><div class="panel-header"><h2>Agenda de hoje</h2><a class="panel-link" href="psychologist-agenda.html">Ver agenda</a></div><div class="schedule-list" id="today-schedule"><div class="empty-state">Carregando agenda...</div></div></article><article class="panel" id="pacientes"><div class="panel-header"><h2>Meu perfil</h2><a class="panel-link" href="psychologist-clients.html">Ver clientes</a></div><div class="profile"><div class="profile-row"><span>Nome</span><strong id="profile-name">Carregando...</strong></div><div class="profile-row"><span>E-mail</span><strong id="profile-email">Carregando...</strong></div><div class="profile-row"><span>CRP</span><strong id="profile-crp">Carregando...</strong></div><div class="profile-row"><span>Especialidade</span><strong id="profile-specialty">Carregando...</strong></div><div class="profile-row"><span>Biografia</span><strong id="profile-bio">Carregando...</strong></div></div></article></section>
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -94,6 +101,9 @@
     const toast = document.querySelector('#toast');
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 2800); }
     function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]); }
+    function isToday(value) { return new Date(value).toDateString() === new Date().toDateString(); }
+    function formatTime(value) { return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date(value)); }
     async function loadProfile() {
       try {
         const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } });
@@ -115,8 +125,30 @@
         document.querySelector('#topbar-avatar').textContent = initials(profile.name);
       } catch (error) { showToast(error.message); }
     }
+    async function loadDashboardData() {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [appointmentsResponse, clientsResponse] = await Promise.all([
+          fetch(`${apiBase}/api/appointments`, { headers }),
+          fetch(`${apiBase}/api/clients`, { headers })
+        ]);
+        const appointmentsResult = await appointmentsResponse.json();
+        const clientsResult = await clientsResponse.json();
+        if (!appointmentsResponse.ok) throw new Error(appointmentsResult.error || 'Não foi possível carregar a agenda.');
+        if (!clientsResponse.ok) throw new Error(clientsResult.error || 'Não foi possível carregar os clientes.');
+        const todayAppointments = (appointmentsResult.appointments || []).filter((appointment) => isToday(appointment.starts_at));
+        const clients = clientsResult.clients || [];
+        document.querySelector('#today-appointments').textContent = todayAppointments.length;
+        document.querySelector('#client-count').textContent = clients.length;
+        document.querySelector('#today-caption').textContent = todayAppointments.length === 1 ? '1 sessão agendada' : `${todayAppointments.length} sessões agendadas`;
+        document.querySelector('#today-schedule').innerHTML = todayAppointments.length
+          ? todayAppointments.map((appointment) => `<div class="schedule-item"><div class="schedule-info"><strong>${escapeHtml(appointment.patient)}</strong><span>${escapeHtml(appointment.type)} · ${appointment.duration_minutes} min</span></div><span class="schedule-time">${formatTime(appointment.starts_at)}</span></div>`).join('')
+          : '<div class="empty-state">Nenhuma sessão agendada para hoje.</div>';
+      } catch (error) { showToast(error.message); }
+    }
     document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); });
     loadProfile();
+    loadDashboardData();
   </script>
 </body>
 </html>
