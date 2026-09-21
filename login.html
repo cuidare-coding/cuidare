@@ -326,6 +326,7 @@
         sessionStorage.setItem('cuidare_access_token', result.access_token);
         status.textContent = 'Login realizado com sucesso.';
         status.style.color = 'var(--accent-dark)';
+        window.location.replace('psychologist-dashboard.html');
       } catch (error) {
         status.textContent = error.message === 'Failed to fetch'
           ? 'Não foi possível conectar ao servidor.'

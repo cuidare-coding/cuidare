@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Área de trabalho do psicólogo Cuidare">
+  <title>Meu espaço | Cuidare</title>
+  <script>document.documentElement.classList.add('auth-checking');</script>
+  <script>
+    (async () => {
+      const token = sessionStorage.getItem('cuidare_access_token');
+      const apiUrl = `${window.CUIDARE_API_URL || 'http://127.0.0.1:5000'}/api/auth/verify`;
+      if (!token) { window.location.replace('login.html'); return; }
+      try {
+        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: token }) });
+        const result = await response.json();
+        if (!response.ok || result.user?.account_type !== 'psychologist') throw new Error('Sessão inválida.');
+        document.documentElement.classList.remove('auth-checking');
+      } catch (_error) {
+        sessionStorage.removeItem('cuidare_access_token');
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+  <style>
+    html.auth-checking body { visibility: hidden; }
+    :root { --ink: #17211d; --muted: #68756e; --paper: #f3f6f1; --panel: #fff; --line: #dfe7df; --accent: #196a52; --accent-dark: #0f4d3b; --mint: #d9eee3; --gold: #a56c19; --shadow: 0 18px 40px rgba(28, 62, 47, .07); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: var(--paper); font-family: Arial, sans-serif; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .app-shell { display: grid; grid-template-columns: 17rem minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; height: 100vh; padding: 1.5rem 1rem; color: #eef7f1; background: var(--accent-dark); background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.11) 0 1px, transparent 1px), linear-gradient(160deg, #0f4d3b, #196a52 70%, #2b8062); background-size: 22px 22px, auto; }
+    .brand { display: inline-flex; align-items: center; gap: .7rem; margin: .25rem .65rem 2.5rem; color: inherit; font: bold 1.2rem Georgia, 'Times New Roman', serif; text-decoration: none; }
+    .brand-mark, .avatar { display: grid; place-items: center; border-radius: 50%; }
+    .brand-mark { width: 2.25rem; height: 2.25rem; border: 1px solid rgba(255,255,255,.55); font-size: .9rem; }
+    .nav-label { margin: 0 .8rem .7rem; color: #add7c3; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: .35rem; }
+    .nav-link { display: flex; align-items: center; gap: .75rem; min-height: 2.9rem; border: 1px solid transparent; border-radius: 5px; padding: .65rem .8rem; color: #cce6d8; font-size: .82rem; text-decoration: none; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.1); }
+    .nav-icon { display: grid; place-items: center; width: 1.35rem; color: #a9d9c2; font-size: 1rem; }
+    .sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,.15); padding: 1rem .65rem .25rem; }
+    .admin-mini { display: flex; align-items: center; gap: .65rem; margin-bottom: .9rem; }
+    .avatar { width: 2.25rem; height: 2.25rem; color: var(--accent-dark); background: #d8eee2; font-weight: 700; }
+    .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+    .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
+    .main { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
+    .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
+    .page-description { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
+    .hero { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.9rem; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .metric, .panel { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); }
+    .metric { padding: 1.2rem; }
+    .metric span { color: var(--muted); font-size: .73rem; }
+    .metric strong { display: block; margin-top: .7rem; font: 2rem Georgia, 'Times New Roman', serif; }
+    .metric small { display: block; margin-top: .3rem; color: var(--accent); font-size: .68rem; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(17rem, .8fr); gap: 1.25rem; }
+    .panel-header { padding: 1.25rem 1.35rem 1rem; }
+    .panel-header h2 { margin: 0; font-size: 1.25rem; }
+    .empty-state { padding: 0 1.35rem 1.35rem; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+    .profile { display: grid; gap: .9rem; padding: 0 1.35rem 1.35rem; }
+    .profile-row { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; font-size: .78rem; }
+    .profile-row span { color: var(--muted); }
+    .status { display: inline-flex; align-items: center; gap: .35rem; color: var(--accent); font-weight: 700; }
+    .status::before { width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; content: ''; }
+    .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } .hero { display: block; } .metrics, .content-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="psychologist-dashboard.html"><span class="brand-mark" aria-hidden="true">C</span>Cuidare</a>
+      <p class="nav-label">Meu espaço</p>
+      <nav class="nav-list"><a class="nav-link active" href="psychologist-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a><a class="nav-link" href="#agenda"><span class="nav-icon" aria-hidden="true">□</span>Agenda</a><a class="nav-link" href="#pacientes"><span class="nav-icon" aria-hidden="true">○</span>Pacientes</a></nav>
+      <div class="sidebar-footer"><div class="admin-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div></div><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
+      <section class="hero"><div><p class="eyebrow">Área do psicólogo</p><h1 id="welcome-title">Bom dia.</h1><p class="page-description">Seu espaço de trabalho para acompanhar a prática clínica.</p></div></section>
+      <section class="metrics" aria-label="Resumo da agenda"><article class="metric"><span>Sessões hoje</span><strong>0</strong><small>Agenda atualizada</small></article><article class="metric"><span>Pacientes ativos</span><strong>0</strong><small>Próxima etapa</small></article><article class="metric"><span>Perfil</span><strong id="profile-status">--</strong><small>Dados profissionais</small></article></section>
+      <section class="content-grid"><article class="panel" id="agenda"><div class="panel-header"><h2>Agenda de hoje</h2></div><div class="empty-state">Nenhuma sessão agendada para hoje.</div></article><article class="panel" id="pacientes"><div class="panel-header"><h2>Meu perfil</h2></div><div class="profile"><div class="profile-row"><span>Nome</span><strong id="profile-name">Carregando...</strong></div><div class="profile-row"><span>E-mail</span><strong id="profile-email">Carregando...</strong></div><div class="profile-row"><span>CRP</span><strong id="profile-crp">Carregando...</strong></div><div class="profile-row"><span>Especialidade</span><strong id="profile-specialty">Carregando...</strong></div></div></article></section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const token = sessionStorage.getItem('cuidare_access_token');
+    const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
+    const toast = document.querySelector('#toast');
+    function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 2800); }
+    function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
+    async function loadProfile() {
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível carregar seu perfil.');
+        const profile = result.psychologist;
+        const shortName = profile.name.split(/\s+/)[0];
+        document.querySelector('#welcome-title').textContent = `Bom dia, ${shortName}.`;
+        document.querySelector('#sidebar-name').textContent = profile.name;
+        document.querySelector('#profile-name').textContent = profile.name;
+        document.querySelector('#profile-email').textContent = profile.email;
+        document.querySelector('#profile-crp').textContent = profile.crp;
+        document.querySelector('#profile-specialty').textContent = profile.specialty || 'Não informada';
+        document.querySelector('#profile-status').textContent = profile.verified ? 'Verificado' : 'Pendente';
+        document.querySelector('#sidebar-avatar').textContent = initials(profile.name);
+        document.querySelector('#topbar-avatar').textContent = initials(profile.name);
+      } catch (error) { showToast(error.message); }
+    }
+    document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); });
+    loadProfile();
+  </script>
+</body>
+</html>
