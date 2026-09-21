@@ -67,8 +67,8 @@
     .calendar-header { border-bottom: 1px solid var(--line); padding: 1rem .6rem; color: var(--muted); font-size: .68rem; font-weight: 700; text-align: center; text-transform: uppercase; }
     .calendar-header.today { color: var(--accent); background: #f1f8f3; }
     .time-label { min-height: 4.3rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .55rem .45rem; color: var(--muted); font-size: .65rem; text-align: right; }
-    .slot { min-height: 4.3rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .35rem; }
-    .slot.has-appointment { position: relative; z-index: 4; }
+    .slot { min-height: 4.3rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .35rem; position: relative; }
+    .slot.has-appointment { z-index: 4; }
     .slot.clickable { cursor: pointer; }
     .slot.clickable:hover { background: #f1f8f3; }
     .slot:last-child, .calendar-header:last-child { border-right: 0; }
