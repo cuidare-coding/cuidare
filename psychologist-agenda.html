@@ -127,20 +127,34 @@
     function startOfWeek(date) { const result = new Date(date); result.setHours(0, 0, 0, 0); result.setDate(result.getDate() - result.getDay()); return result; }
     function formatDate(date) { return `${date.getDate()} ${monthNames[date.getMonth()]}`; }
     function sameDay(first, second) { return first.toDateString() === second.toDateString(); }
+    function appointmentsForWeek(days) {
+      const firstDay = days[0];
+      const lastDay = new Date(days[days.length - 1]); lastDay.setHours(23, 59, 59, 999);
+      return appointments.flatMap((appointment) => {
+        const start = new Date(appointment.starts_at);
+        if (appointment.currence !== 'weekly') return [appointment];
+        const occurrences = [];
+        for (let occurrence = new Date(start); occurrence <= lastDay; occurrence.setDate(occurrence.getDate() + 7)) {
+          if (occurrence >= firstDay && occurrence <= lastDay) occurrences.push({ ...appointment, starts_at: occurrence.toISOString() });
+        }
+        return occurrences;
+      });
+    }
     function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
     function renderCalendar() {
       const today = new Date();
       const endWeek = new Date(currentWeek); endWeek.setDate(endWeek.getDate() + 6);
       weekLabel.textContent = `${formatDate(currentWeek)} - ${formatDate(endWeek)} ${endWeek.getFullYear()}`;
       const days = Array.from({ length: 7 }, (_, index) => { const day = new Date(currentWeek); day.setDate(day.getDate() + index); return day; });
+      const visibleAppointments = appointmentsForWeek(days);
       calendar.innerHTML = '<div class="calendar-header"></div>' + days.map((day) => `<div class="calendar-header ${sameDay(day, today) ? 'today' : ''}">${dayNames[day.getDay()]}<br><strong>${day.getDate()}</strong></div>`).join('');
       hours.forEach((hour) => {
-        calendar.insertAdjacentHTML('beforeend', `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>` + days.map((day) => { const startsAt = new Date(day); startsAt.setHours(hour, 0, 0, 0); const slotEnd = new Date(startsAt); slotEnd.setHours(slotEnd.getHours() + 1); const item = appointments.find((appointment) => { const appointmentStart = new Date(appointment.starts_at); return appointmentStart >= startsAt && appointmentStart < slotEnd; }); const occupied = appointments.some((appointment) => { const appointmentStart = new Date(appointment.starts_at); const appointmentEnd = new Date(appointmentStart.getTime() + appointment.duration_minutes * 60000); return appointmentStart < slotEnd && appointmentEnd > startsAt; }); const height = item ? ` style="height: ${(item.duration_minutes / 60 * 4.3) - .7}rem"` : ''; return `<div class="slot ${item ? 'has-appointment' : ''} ${occupied ? '' : 'clickable'}" data-start="${startsAt.toISOString()}">${item ? `<div class="appointment"${height} data-id="${item.id}"><strong>${new Date(item.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${item.patient}</strong>${item.type} · ${item.duration_minutes} min</div>` : ''}</div>`; }).join(''));
+        calendar.insertAdjacentHTML('beforeend', `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>` + days.map((day) => { const startsAt = new Date(day); startsAt.setHours(hour, 0, 0, 0); const slotEnd = new Date(startsAt); slotEnd.setHours(slotEnd.getHours() + 1); const item = visibleAppointments.find((appointment) => { const appointmentStart = new Date(appointment.starts_at); return appointmentStart >= startsAt && appointmentStart < slotEnd; }); const occupied = visibleAppointments.some((appointment) => { const appointmentStart = new Date(appointment.starts_at); const appointmentEnd = new Date(appointmentStart.getTime() + appointment.duration_minutes * 60000); return appointmentStart < slotEnd && appointmentEnd > startsAt; }); const height = item ? ` style="height: ${(item.duration_minutes / 60 * 4.3) - .7}rem"` : ''; return `<div class="slot ${item ? 'has-appointment' : ''} ${occupied ? '' : 'clickable'}" data-start="${startsAt.toISOString()}">${item ? `<div class="appointment"${height} data-id="${item.id}"><strong>${new Date(item.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · ${item.patient}</strong>${item.type} · ${item.duration_minutes} min</div>` : ''}</div>`; }).join(''));
       });
       document.querySelectorAll('.appointment[data-id]').forEach((el) => {
         el.onclick = (event) => { event.stopPropagation(); openEditAppointment(el.dataset.id); };
       });
-      const weekAppointments = appointments.filter((appointment) => days.some((day) => sameDay(new Date(appointment.starts_at), day)));
+      const weekAppointments = visibleAppointments.filter((appointment) => days.some((day) => sameDay(new Date(appointment.starts_at), day)));
       const todayAppointments = weekAppointments.filter((appointment) => sameDay(new Date(appointment.starts_at), today));
       document.querySelector('#week-count').textContent = weekAppointments.length;
       document.querySelector('#today-count').textContent = todayAppointments.length;
@@ -152,7 +166,7 @@
     function localDateTimeValue(value) { const date = new Date(value); const pad = (part) => String(part).padStart(2, '0'); return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; }
     function openAppointment(start) { editingAppointmentId = null; appointmentForm.reset(); appointmentForm.elements.starts_at.value = localDateTimeValue(start); document.querySelector('#appointment-title').textContent = 'Cadastrar atendimento'; appointmentForm.querySelector('[type="submit"]').textContent = 'Salvar atendimento'; document.querySelector('#delete-appointment').style.display = 'none'; setAppointmentModal(true); }
 let editingAppointmentId = null;
-function openEditAppointment(id) { const appointment = appointments.find((a) => String(a.id) === String(id)); if (!appointment) return; editingAppointmentId = appointment.id; appointmentForm.elements.client_id.value = appointment.client_id; appointmentForm.elements.starts_at.value = localDateTimeValue(appointment.starts_at); appointmentForm.elements.duration_minutes.value = appointment.duration_minutes; appointmentForm.elements.type.value = appointment.type; appointmentForm.elements.notes.value = appointment.notes || ''; document.querySelector('#appointment-title').textContent = 'Editar atendimento'; appointmentForm.querySelector('[type="submit"]').textContent = 'Salvar alterações'; document.querySelector('#delete-appointment').style.display = 'inline-flex'; setAppointmentModal(true); }
+function openEditAppointment(id) { const appointment = appointments.find((a) => String(a.id) === String(id)); if (!appointment) return; editingAppointmentId = appointment.id; appointmentForm.elements.client_id.value = appointment.client_id; appointmentForm.elements.starts_at.value = localDateTimeValue(appointment.starts_at); appointmentForm.elements.duration_minutes.value = appointment.duration_minutes; appointmentForm.elements.type.value = appointment.type; appointmentForm.elements.currence.value = appointment.currence || ''; appointmentForm.elements.notes.value = appointment.notes || ''; document.querySelector('#appointment-title').textContent = 'Editar atendimento'; appointmentForm.querySelector('[type="submit"]').textContent = 'Salvar alterações'; document.querySelector('#delete-appointment').style.display = 'inline-flex'; setAppointmentModal(true); }
     calendar.addEventListener('click', (event) => { const slot = event.target.closest('.slot.clickable'); if (slot) openAppointment(slot.dataset.start); });
     appointmentModal.addEventListener('click', (event) => { if (event.target === appointmentModal) setAppointmentModal(false); });
     document.querySelector('#close-appointment').addEventListener('click', () => setAppointmentModal(false));
