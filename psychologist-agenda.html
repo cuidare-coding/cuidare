@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Agenda semanal do psicólogo Cuidare">
+  <title>Agenda | Cuidare</title>
+  <script>document.documentElement.classList.add('auth-checking');</script>
+  <script>
+    (async () => {
+      const token = sessionStorage.getItem('cuidare_access_token');
+      const apiUrl = `${window.CUIDARE_API_URL || 'http://127.0.0.1:5000'}/api/auth/verify`;
+      if (!token) { window.location.replace('login.html'); return; }
+      try {
+        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: token }) });
+        const result = await response.json();
+        if (!response.ok || result.user?.account_type !== 'psychologist') throw new Error('Sessão inválida.');
+        document.documentElement.classList.remove('auth-checking');
+      } catch (_error) { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); }
+    })();
+  </script>
+  <style>
+    html.auth-checking body { visibility: hidden; }
+    :root { --ink: #17211d; --muted: #68756e; --paper: #f3f6f1; --panel: #fff; --line: #dfe7df; --accent: #196a52; --accent-dark: #0f4d3b; --mint: #d9eee3; --gold: #a56c19; --coral: #b65b4d; --shadow: 0 18px 40px rgba(28, 62, 47, .07); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: var(--paper); font-family: Arial, sans-serif; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; }
+    .app-shell { display: grid; grid-template-columns: 17rem minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; height: 100vh; padding: 1.5rem 1rem; color: #eef7f1; background: var(--accent-dark); background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.11) 0 1px, transparent 1px), linear-gradient(160deg, #0f4d3b, #196a52 70%, #2b8062); background-size: 22px 22px, auto; }
+    .brand { display: inline-flex; align-items: center; gap: .7rem; margin: .25rem .65rem 2.5rem; color: inherit; font: bold 1.2rem Georgia, 'Times New Roman', serif; text-decoration: none; }
+    .brand-mark, .avatar { display: grid; place-items: center; border-radius: 50%; }
+    .brand-mark { width: 2.25rem; height: 2.25rem; border: 1px solid rgba(255,255,255,.55); font-size: .9rem; }
+    .nav-label { margin: 0 .8rem .7rem; color: #add7c3; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: .35rem; }
+    .nav-link { display: flex; align-items: center; gap: .75rem; min-height: 2.9rem; border: 1px solid transparent; border-radius: 5px; padding: .65rem .8rem; color: #cce6d8; font-size: .82rem; text-decoration: none; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.1); }
+    .nav-icon { display: grid; place-items: center; width: 1.35rem; color: #a9d9c2; font-size: 1rem; }
+    .sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,.15); padding: 1rem .65rem .25rem; }
+    .admin-mini { display: flex; align-items: center; gap: .65rem; margin-bottom: .9rem; }
+    .avatar { width: 2.25rem; height: 2.25rem; color: var(--accent-dark); background: #d8eee2; font-weight: 700; }
+    .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+    .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
+    .main { width: 100%; max-width: 1280px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
+    .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .page-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.6rem; }
+    .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
+    .page-description { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
+    .week-controls { display: flex; align-items: center; gap: .5rem; }
+    .control-button, .today-button { min-height: 2.5rem; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: var(--panel); cursor: pointer; font-size: .75rem; }
+    .control-button { width: 2.5rem; font-size: 1.1rem; }
+    .today-button { padding: .55rem .8rem; }
+    .control-button:hover, .today-button:hover { border-color: var(--accent); background: var(--mint); }
+    .week-label { min-width: 12rem; margin: 0 .5rem; font: 1rem Georgia, 'Times New Roman', serif; text-align: center; }
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .summary-card { border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem 1.2rem; background: var(--panel); box-shadow: var(--shadow); }
+    .summary-card span { color: var(--muted); font-size: .72rem; }
+    .summary-card strong { display: block; margin-top: .6rem; font: 1.8rem Georgia, 'Times New Roman', serif; }
+    .summary-card small { display: block; margin-top: .3rem; color: var(--accent); font-size: .67rem; }
+    .calendar-panel { overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); }
+    .calendar-scroll { overflow-x: auto; }
+    .calendar { display: grid; grid-template-columns: 4.4rem repeat(7, minmax(8.5rem, 1fr)); min-width: 65rem; }
+    .calendar-header { border-bottom: 1px solid var(--line); padding: 1rem .6rem; color: var(--muted); font-size: .68rem; font-weight: 700; text-align: center; text-transform: uppercase; }
+    .calendar-header.today { color: var(--accent); background: #f1f8f3; }
+    .time-label { min-height: 4.3rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .55rem .45rem; color: var(--muted); font-size: .65rem; text-align: right; }
+    .slot { min-height: 4.3rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .35rem; }
+    .slot:last-child, .calendar-header:last-child { border-right: 0; }
+    .appointment { min-height: 3.55rem; border-left: 3px solid var(--accent); border-radius: 3px; padding: .45rem .5rem; color: var(--accent-dark); background: var(--mint); font-size: .68rem; }
+    .appointment strong { display: block; margin-bottom: .25rem; font-size: .72rem; }
+    .empty-note { padding: 1.5rem; color: var(--muted); font-size: .78rem; }
+    .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } .page-heading { display: block; } .week-controls { margin-top: 1.2rem; } .summary { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="psychologist-dashboard.html"><span class="brand-mark" aria-hidden="true">C</span>Cuidare</a>
+      <p class="nav-label">Meu espaço</p>
+      <nav class="nav-list"><a class="nav-link" href="psychologist-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a><a class="nav-link active" href="psychologist-agenda.html"><span class="nav-icon" aria-hidden="true">□</span>Agenda</a><a class="nav-link" href="psychologist-dashboard.html#pacientes"><span class="nav-icon" aria-hidden="true">○</span>Pacientes</a></nav>
+      <div class="sidebar-footer"><div class="admin-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div></div><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
+      <section class="page-heading"><div><p class="eyebrow">Organização da prática</p><h1>Agenda</h1><p class="page-description">Visualize sua semana e mantenha o ritmo dos atendimentos.</p></div><div class="week-controls"><button class="today-button" id="today-button" type="button">Hoje</button><button class="control-button" id="previous-week" type="button" aria-label="Semana anterior">‹</button><p class="week-label" id="week-label"></p><button class="control-button" id="next-week" type="button" aria-label="Próxima semana">›</button></div></section>
+      <section class="summary" aria-label="Resumo da semana"><article class="summary-card"><span>Sessões na semana</span><strong id="week-count">0</strong><small>Agenda sincronizada</small></article><article class="summary-card"><span>Hoje</span><strong id="today-count">0</strong><small id="today-label">Nenhuma sessão</small></article><article class="summary-card"><span>Horários livres</span><strong id="free-count">0</strong><small>Entre 08h e 18h</small></article></section>
+      <section class="calendar-panel" aria-label="Agenda semanal"><div class="calendar-scroll"><div class="calendar" id="calendar"></div></div><p class="empty-note" id="empty-note">Sua agenda semanal ainda não possui sessões cadastradas.</p></section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const token = sessionStorage.getItem('cuidare_access_token');
+    const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
+    const calendar = document.querySelector('#calendar');
+    const weekLabel = document.querySelector('#week-label');
+    const emptyNote = document.querySelector('#empty-note');
+    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const monthNames = ['jan.', 'fev.', 'mar.', 'abr.', 'mai.', 'jun.', 'jul.', 'ago.', 'set.', 'out.', 'nov.', 'dez.'];
+    const hours = Array.from({ length: 11 }, (_, index) => index + 8);
+    let currentWeek = startOfWeek(new Date());
+    const appointments = [];
+
+    function startOfWeek(date) { const result = new Date(date); result.setHours(0, 0, 0, 0); result.setDate(result.getDate() - result.getDay()); return result; }
+    function formatDate(date) { return `${date.getDate()} ${monthNames[date.getMonth()]}`; }
+    function sameDay(first, second) { return first.toDateString() === second.toDateString(); }
+    function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
+    function renderCalendar() {
+      const today = new Date();
+      const endWeek = new Date(currentWeek); endWeek.setDate(endWeek.getDate() + 6);
+      weekLabel.textContent = `${formatDate(currentWeek)} - ${formatDate(endWeek)} ${endWeek.getFullYear()}`;
+      const days = Array.from({ length: 7 }, (_, index) => { const day = new Date(currentWeek); day.setDate(day.getDate() + index); return day; });
+      calendar.innerHTML = '<div class="calendar-header"></div>' + days.map((day) => `<div class="calendar-header ${sameDay(day, today) ? 'today' : ''}">${dayNames[day.getDay()]}<br><strong>${day.getDate()}</strong></div>`).join('');
+      hours.forEach((hour) => {
+        calendar.insertAdjacentHTML('beforeend', `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>` + days.map((day) => { const item = appointments.find((appointment) => appointment.hour === hour && sameDay(new Date(appointment.date), day)); return `<div class="slot">${item ? `<div class="appointment"><strong>${item.time} · ${item.patient}</strong>${item.type}</div>` : ''}</div>`; }).join(''));
+      });
+      const weekAppointments = appointments.filter((appointment) => days.some((day) => sameDay(new Date(appointment.date), day)));
+      const todayAppointments = weekAppointments.filter((appointment) => sameDay(new Date(appointment.date), today));
+      document.querySelector('#week-count').textContent = weekAppointments.length;
+      document.querySelector('#today-count').textContent = todayAppointments.length;
+      document.querySelector('#today-label').textContent = todayAppointments.length ? 'Sessões agendadas' : 'Nenhuma sessão';
+      document.querySelector('#free-count').textContent = (days.length * hours.length) - weekAppointments.length;
+      emptyNote.hidden = weekAppointments.length > 0;
+    }
+    document.querySelector('#previous-week').addEventListener('click', () => { currentWeek.setDate(currentWeek.getDate() - 7); renderCalendar(); });
+    document.querySelector('#next-week').addEventListener('click', () => { currentWeek.setDate(currentWeek.getDate() + 7); renderCalendar(); });
+    document.querySelector('#today-button').addEventListener('click', () => { currentWeek = startOfWeek(new Date()); renderCalendar(); });
+    document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); });
+    async function loadProfile() {
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível carregar seu perfil.');
+        const name = result.psychologist.name;
+        document.querySelector('#sidebar-name').textContent = name;
+        document.querySelector('#sidebar-avatar').textContent = initials(name);
+        document.querySelector('#topbar-avatar').textContent = initials(name);
+      } catch (error) { const toast = document.querySelector('#toast'); toast.textContent = error.message; toast.classList.add('show'); }
+    }
+    renderCalendar();
+    loadProfile();
+  </script>
+</body>
+</html>
