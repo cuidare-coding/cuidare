@@ -124,6 +124,12 @@
     .table-button { border: 1px solid var(--line); border-radius: 3px; padding: .42rem .55rem; color: var(--accent-dark); background: #fbfcfa; cursor: pointer; font-size: .65rem; white-space: nowrap; }
     .table-button:hover { border-color: var(--accent); background: var(--mint); }
     .table-button.danger:hover { border-color: var(--red); color: var(--red); background: #fff5f3; }
+    .action-menu { position: relative; }
+    .action-menu-list { position: absolute; right: 0; top: calc(100% + .35rem); display: none; min-width: 9rem; border: 1px solid var(--line); border-radius: 4px; padding: .3rem; background: #fff; box-shadow: var(--shadow); z-index: 5; }
+    .action-menu.open .action-menu-list { display: grid; }
+    .action-menu-list button { border: 0; padding: .55rem .65rem; color: var(--ink); background: transparent; cursor: pointer; font-size: .7rem; text-align: left; white-space: nowrap; }
+    .action-menu-list button:hover { background: var(--mint); }
+    .action-menu-list .delete-action { color: var(--red); }
 
     .overlay { display: none; }
     .modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgba(16,35,27,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
@@ -206,6 +212,7 @@
   </div>
 
   <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal"><div class="modal-header"><h2 id="modal-title">Cadastrar psicólogo</h2><button class="close-button" id="close-modal" type="button" aria-label="Fechar">×</button></div><form id="psychologist-form" class="form-grid"><label>Nome completo<input name="name" type="text" placeholder="Nome do psicólogo" required></label><label>E-mail profissional<input name="email" type="email" placeholder="nome@cuidare.com" required></label><label>CRP<input name="crp" type="text" placeholder="06/00000" required></label><label>Senha<input name="password" type="password" placeholder="Senha de acesso" minlength="8" required></label><label>Especialidade (opcional)<input name="specialty" type="text" placeholder="Ex.: Psicologia clínica"></label><label>Bio (opcional)<textarea name="bio" placeholder="Apresentação profissional"></textarea></label><label class="checkbox-label"><input name="verified" type="checkbox"> Psicólogo verificado</label><div class="modal-actions"><button class="secondary-button" id="cancel-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Cadastrar psicólogo</button></div></form></div></div>
+  <div class="modal-backdrop" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title"><div class="modal"><div class="modal-header"><h2 id="profile-title">Perfil do psicólogo</h2><button class="close-button" id="close-profile" type="button" aria-label="Fechar">×</button></div><div id="profile-content"></div></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -213,12 +220,15 @@
     const overlay = document.querySelector('#overlay');
     const menuButton = document.querySelector('#menu-button');
     const modal = document.querySelector('#modal');
+    const profileModal = document.querySelector('#profile-modal');
+    const profileContent = document.querySelector('#profile-content');
     const toast = document.querySelector('#toast');
     const apiBase = window.CUIDARE_API_URL || 'http://127.0.0.1:5000';
 
     function setMenu(open) { sidebar.classList.toggle('open', open); overlay.classList.toggle('open', open); menuButton.setAttribute('aria-expanded', String(open)); }
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timeout); showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2600); }
     function setModal(open) { modal.classList.toggle('open', open); if (open) modal.querySelector('input').focus(); }
+    function setProfileModal(open) { profileModal.classList.toggle('open', open); }
 
     menuButton.addEventListener('click', () => setMenu(!sidebar.classList.contains('open')));
     overlay.addEventListener('click', () => setMenu(false));
@@ -228,6 +238,8 @@
     document.querySelector('#close-modal').addEventListener('click', () => setModal(false));
     document.querySelector('#cancel-modal').addEventListener('click', () => setModal(false));
     modal.addEventListener('click', (event) => { if (event.target === modal) setModal(false); });
+    document.querySelector('#close-profile').addEventListener('click', () => setProfileModal(false));
+    profileModal.addEventListener('click', (event) => { if (event.target === profileModal) setProfileModal(false); });
     document.querySelector('#psychologist-form').addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = event.target;
@@ -257,8 +269,6 @@
         submitButton.disabled = false;
       }
     });
-    document.querySelectorAll('[data-message]').forEach((button) => button.addEventListener('click', () => showToast(button.dataset.message)));
-
     const search = document.querySelector('#search');
     const statusFilter = document.querySelector('#status-filter');
     const psychologistsList = document.querySelector('#psychologists-list');
@@ -286,11 +296,57 @@
       psychologistsList.innerHTML = psychologists.length ? psychologists.map((psychologist) => {
         const status = psychologist.verified ? 'active' : 'pending';
         const statusLabel = psychologist.verified ? 'Ativo' : 'Pendente';
-        return `<tr data-status="${status}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span></td><td><div class="action-group"><button class="table-button" type="button" data-message="Abrindo perfil de ${escapeHtml(psychologist.name)}...">Ver perfil</button><button class="table-button danger" type="button" data-message="Opções de ${escapeHtml(psychologist.name)}...">•••</button></div></td></tr>`;
+        return `<tr data-status="${status}" data-id="${psychologist.id}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span></td><td><div class="action-group"><button class="table-button profile-action" type="button">Ver perfil</button><div class="action-menu"><button class="table-button options-action" type="button" aria-label="Abrir opções">•••</button><div class="action-menu-list"><button type="button" data-action="profile">Ver perfil</button><button class="delete-action" type="button" data-action="delete">Excluir cadastro</button></div></div></div></td></tr>`;
       }).join('') : '<tr><td colspan="5">Nenhum psicólogo cadastrado.</td></tr>';
-      document.querySelectorAll('[data-message]').forEach((button) => button.addEventListener('click', () => showToast(button.dataset.message)));
       filterRows();
     }
+
+    function openProfile(psychologist) {
+      profileContent.innerHTML = `<div class="form-grid"><p><strong>Nome</strong><br>${escapeHtml(psychologist.name)}</p><p><strong>E-mail</strong><br>${escapeHtml(psychologist.email)}</p><p><strong>CRP</strong><br>${escapeHtml(psychologist.crp)}</p><p><strong>Especialidade</strong><br>${escapeHtml(psychologist.specialty || 'Não informada')}</p><p><strong>Bio</strong><br>${escapeHtml(psychologist.bio || 'Não informada')}</p><p><strong>Status</strong><br>${psychologist.verified ? 'Verificado' : 'Pendente'}</p></div>`;
+      setProfileModal(true);
+    }
+
+    async function deletePsychologist(psychologist) {
+      if (!window.confirm(`Excluir o cadastro de ${psychologist.name}?`)) return;
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists/${psychologist.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${sessionStorage.getItem('cuidare_access_token')}` }
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível excluir o cadastro.');
+        psychologists = psychologists.filter((item) => item.id !== psychologist.id);
+        renderPsychologists();
+        showToast('Cadastro excluído com sucesso.');
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    psychologistsList.addEventListener('click', (event) => {
+      const row = event.target.closest('tr[data-id]');
+      if (!row) return;
+      const psychologist = psychologists.find((item) => String(item.id) === row.dataset.id);
+      if (!psychologist) return;
+      if (event.target.closest('.options-action')) {
+        document.querySelectorAll('.action-menu.open').forEach((menu) => menu.classList.remove('open'));
+        event.target.closest('.action-menu').classList.toggle('open');
+        return;
+      }
+      const action = event.target.closest('[data-action]')?.dataset.action;
+      if (action === 'profile' || event.target.closest('.profile-action')) {
+        openProfile(psychologist);
+      } else if (action === 'delete') {
+        event.target.closest('.action-menu').classList.remove('open');
+        deletePsychologist(psychologist);
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.action-menu')) {
+        document.querySelectorAll('.action-menu.open').forEach((menu) => menu.classList.remove('open'));
+      }
+    });
 
     async function loadPsychologists() {
       try {
