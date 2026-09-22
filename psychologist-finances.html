@@ -67,6 +67,8 @@
     .status-paid { background: var(--mint); color: var(--success); }
     .status-pending { background: #fffbeb; color: var(--gold); }
     .status-overdue { background: #fee2e2; color: var(--danger); }
+    .btn-edit { border: 1px solid var(--line); background: #fff; color: var(--ink); padding: .3rem .6rem; border-radius: 4px; cursor: pointer; font-size: .7rem; }
+    .btn-edit:hover { background: var(--mint); border-color: var(--accent); }
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; z-index: 100; visibility: hidden; opacity: 0; transition: .2s; }
     .modal.show { visibility: visible; opacity: 1; }
     .modal-content { background: #fff; width: 100%; max-width: 400px; border-radius: 8px; padding: 1.5rem; box-shadow: var(--shadow); }
@@ -120,23 +122,23 @@
       <section class="content-grid">
         <article class="panel">
           <div class="panel-header">
-            <h2>Recebimentos</h2>
-            <button class="btn-primary" onclick="openModal('payment-modal')">+ Novo Pagamento</button>
+            <h2 id="pay-title">Recebimentos</h2>
+            <button class="btn-primary" id="btn-pay-new" onclick="openPaymentModal()">+ Novo Pagamento</button>
           </div>
           <table>
-            <thead><tr><th>Data</th><th>Cliente</th><th>Valor</th><th>Método</th><th>Status</th></tr></thead>
-            <tbody id="payments-table"><tr><td colspan="5" class="empty-state">Carregando pagamentos...</td></tr></tbody>
+            <thead><tr><th>Data</th><th>Cliente</th><th>Valor</th><th>Método</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="payments-table"><tr><td colspan="6" class="empty-state">Carregando pagamentos...</td></tr></tbody>
           </table>
         </article>
 
         <article class="panel">
           <div class="panel-header">
-            <h2>Despesas</h2>
-            <button class="btn-primary" onclick="openModal('expense-modal')">+ Nova Despesa</button>
+            <h2 id="exp-title">Despesas</h2>
+            <button class="btn-primary" id="btn-exp-new" onclick="openExpenseModal()">+ Nova Despesa</button>
           </div>
           <table>
-            <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th></tr></thead>
-            <tbody id="expenses-table"><tr><td colspan="4" class="empty-state">Carregando despesas...</td></tr></tbody>
+            <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Ações</th></tr></thead>
+            <tbody id="expenses-table"><tr><td colspan="5" class="empty-state">Carregando despesas...</td></tr></tbody>
           </table>
         </article>
       </section>
@@ -146,8 +148,9 @@
   <!-- Payment Modal -->
   <div class="modal" id="payment-modal">
     <div class="modal-content">
-      <h3>Registrar Pagamento</h3>
+      <h3 id="pay-modal-title">Registrar Pagamento</h3>
       <form id="payment-form">
+        <input type="hidden" id="pay-id">
         <div class="form-group">
           <label>Cliente</label>
           <select id="pay-client" required></select>
@@ -192,15 +195,16 @@
   <!-- Expense Modal -->
   <div class="modal" id="expense-modal">
     <div class="modal-content">
-      <h3>Registrar Despesa</h3>
+      <h3 id="exp-modal-title">Registrar Despesa</h3>
       <form id="expense-form">
+        <input type="hidden" id="exp-id">
         <div class="form-group">
           <label>Descrição</label>
           <input type="text" id="exp-desc" required placeholder="ex: Aluguel da sala">
         </div>
         <div class="form-group">
           <label>Valor (R$)</label>
-          <input type="number" step="0.01" id="exp-amount" required>
+          <input type="number" step="0.01" id,="exp-amount" required>
         </div>
         <div class="form-group">
           <label>Data</label>
@@ -231,7 +235,11 @@
 
     function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
     function openModal(id) { document.querySelector('#'+id).classList.add('show'); }
-    function closeModal(id) { document.querySelector('#'+id).classList.remove('show'); }
+    function closeModal(id) { 
+      document.querySelector('#'+id).classList.remove('show');
+      document.querySelector('#pay-id').value = '';
+      document.querySelector('#exp-id').value = '';
+    }
     function fmtCurrency(val) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val); }
     function fmtDate(val) { return new Date(val).toLocaleDateString('pt-BR'); }
 
@@ -268,13 +276,11 @@
         const pays = await payRes.json();
         const exps = await expRes.json();
 
-        // Summary
         document.querySelector('#m-income').textContent = fmtCurrency(sum.summary.total_income);
         document.querySelector('#m-expenses').textContent = fmtCurrency(sum.summary.total_expenses);
         document.querySelector('#m-profit').textContent = fmtCurrency(sum.summary.net_profit);
         document.querySelector('#m-pending').textContent = sum.summary.pending_payments;
 
-        // Payments Table
         document.querySelector('#payments-table').innerHTML = pays.payments.length ? pays.payments.map(p => `
           <tr>
             <td>${fmtDate(p.payment_date)}</td>
@@ -282,24 +288,63 @@
             <td>${fmtCurrency(p.amount)}</td>
             <td>${p.payment_method}</td>
             <td><span class="status-pill status-${p.status}">${p.status}</span></td>
+            <td><button class="btn-edit" onclick="editPayment(${p.id}, ${JSON.stringify(p).replace(/"/g, '&quot;')})">Editar</button></td>
           </tr>
-        `).join('') : '<tr><td colspan="5" class="empty-state">Nenhum pagamento registrado.</td></tr>';
+        `).join('') : '<tr><td colspan="6" class="empty-state">Nenhum pagamento registrado.</td></tr>';
 
-        // Expenses Table
         document.querySelector('#expenses-table').innerHTML = exps.expenses.length ? exps.expenses.map(e => `
           <tr>
             <td>${fmtDate(e.expense_date)}</td>
             <td>${e.description}</td>
             <td>${e.category || '-'}</td>
             <td>${fmtCurrency(e.amount)}</td>
+            <td><button class="btn-edit" onclick="editExpense(${e.id}, ${JSON.stringify(e).replace(/"/g, '&quot;')})">Editar</button></td>
           </tr>
-        `).join('') : '<tr><td colspan="4" class="empty-state">Nenhuma despesa registrada.</td></tr>';
+        `).join('') : '<tr><td colspan="5" class="empty-state">Nenhuma despesa registrada.</td></tr>';
 
       } catch (e) { showToast("Erro ao carregar dados financeiros"); }
     }
 
+    function openPaymentModal() {
+      document.querySelector('#pay-modal-title').textContent = 'Registrar Pagamento';
+      document.querySelector('#payment-form').reset();
+      document.querySelector('#pay-id').value = '';
+      openModal('payment-modal');
+    }
+
+    function openExpenseModal() {
+      document.querySelector('#exp-modal-title').textContent = 'Registrar Despesa';
+      document.querySelector('#expense-form').reset();
+      document.querySelector('#exp-id').value = '';
+      openModal('expense-modal');
+    }
+
+    function editPayment(id, data) {
+      document.querySelector('#pay-modal-title').textContent = 'Editar Pagamento';
+      document.querySelector('#pay-id').value = id;
+      document.querySelector('#pay-client').value = data.client_id;
+      document.querySelector('#pay-amount').value = data.amount;
+      document.querySelector('#pay-date').value = data.payment_date.split('T')[0];
+      document.querySelector('#pay-method').value = data.payment_method;
+      document.querySelector('#pay-status').value = data.status;
+      document.querySelector('#pay-notes').value = data.notes || '';
+      openModal('payment-modal');
+    }
+
+    function editExpense(id, data) {
+      document.querySelector('#exp-modal-title').textContent = 'Editar Despesa';
+      document.querySelector('#exp-id').value = id;
+      document.querySelector('#exp-desc').value = data.description;
+      document.querySelector('#exp-amount').value = data.amount;
+      document.querySelector('#exp-date').value = data.expense_date.split('T')[0];
+      document.querySelector('#exp-cat').value = data.category || '';
+      document.querySelector('#exp-notes').value = data.notes || '';
+      openModal('expense-modal');
+    }
+
     document.querySelector('#payment-form').onsubmit = async (e) => {
       e.preventDefault();
+      const id = document.querySelector('#pay-id').value;
       const data = {
         client_id: parseInt(document.querySelector('#pay-client').value),
         amount: parseFloat(document.querySelector('#pay-amount').value),
@@ -308,15 +353,20 @@
         status: document.querySelector('#pay-status').value,
         notes: document.querySelector('#pay-notes').value
       };
-      const res = await fetch(`${apiBase}/api/finance/payments`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      
+      const url = id ? `${apiBase}/api/finance/payments/${id}` : `${apiBase}/api/finance/payments`;
+      const method = id ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(data)
       });
-      if (res.ok) { showToast("Pagamento salvo!"); closeModal('payment-modal'); refreshFinance(); } else { showToast("Erro ao salvar"); }
+      if (res.ok) { showToast(id ? "Pagamento atualizado!" : "Pagamento salvo!"); closeModal('payment-modal'); refreshFinance(); } else { showToast("Erro ao salvar"); }
     };
 
     document.querySelector('#expense-form').onsubmit = async (e) => {
       e.preventDefault();
+      const id = document.querySelector('#exp-id').value;
       const data = {
         description: document.querySelector('#exp-desc').value,
         amount: parseFloat(document.querySelector('#exp-amount').value),
@@ -324,11 +374,15 @@
         category: document.querySelector('#exp-cat').value,
         notes: document.querySelector('#exp-notes').value
       };
-      const res = await fetch(`${apiBase}/api/finance/expenses`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      
+      const url = id ? `${apiBase}/api/finance/expenses/${id}` : `${apiBase}/api/finance/expenses`;
+      const method = id ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(data)
       });
-      if (res.ok) { showToast("Despesa salva!"); closeModal('expense-modal'); refreshFinance(); } else { showToast("Erro ao salvar"); }
+      if (res.ok) { showToast(id ? "Despesa atualizada!" : "Despesa salva!"); closeModal('expense-modal'); refreshFinance(); } else { showToast("Erro ao salvar"); }
     };
 
     document.querySelector('#logout-button').onclick = () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); };
