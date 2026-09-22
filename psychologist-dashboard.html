@@ -137,17 +137,21 @@
         const clientsResult = await clientsResponse.json();
         if (!appointmentsResponse.ok) throw new Error(appointmentsResult.error || 'Não foi possível carregar a agenda.');
         if (!clientsResponse.ok) throw new Error(clientsResult.error || 'Não foi possível carregar os clientes.');
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayEnd = new Date(todayStart);
-        todayEnd.setHours(23, 59, 59, 999);
-        const todayAppointments = (appointmentsResult.appointments || []).flatMap((appointment) => CuidareRecurrence.expand(appointment, todayStart, todayEnd));
+        // O backend já grava cada ocorrência de uma série como uma sessão
+        // própria, então basta filtrar as sessões de hoje (sem expandir as
+        // recorrências de novo, o que duplicaria os atendimentos).
+        const todayAppointments = (appointmentsResult.appointments || [])
+          .filter((appointment) => isToday(appointment.starts_at))
+          .sort((first, second) => new Date(first.starts_at) - new Date(second.starts_at));
         const clients = clientsResult.clients || [];
         document.querySelector('#today-appointments').textContent = todayAppointments.length;
         document.querySelector('#client-count').textContent = clients.length;
         document.querySelector('#today-caption').textContent = todayAppointments.length === 1 ? '1 sessão agendada' : `${todayAppointments.length} sessões agendadas`;
         document.querySelector('#today-schedule').innerHTML = todayAppointments.length
-          ? todayAppointments.map((appointment) => `<div class="schedule-item"><div class="schedule-info"><strong>${escapeHtml(appointment.patient)}</strong><span>${escapeHtml(appointment.type)} · ${appointment.duration_minutes} min</span></div><span class="schedule-time">${formatTime(appointment.starts_at)}</span></div>`).join('')
+          ? todayAppointments.map((appointment) => {
+            const repeat = CuidareRecurrence.isRecurring(appointment.recurrence) ? ` · ${CuidareRecurrence.recurrenceLabel(appointment.recurrence)}` : '';
+            return `<div class="schedule-item"><div class="schedule-info"><strong>${escapeHtml(appointment.patient)}</strong><span>${escapeHtml(appointment.type)} · ${appointment.duration_minutes} min${escapeHtml(repeat)}</span></div><span class="schedule-time">${formatTime(appointment.starts_at)}</span></div>`;
+          }).join('')
           : '<div class="empty-state">Nenhuma sessão agendada para hoje.</div>';
       } catch (error) { showToast(error.message); }
     }
