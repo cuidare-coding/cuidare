@@ -69,6 +69,8 @@
     .status-overdue { background: #fee2e2; color: var(--danger); }
     .btn-edit { border: 1px solid var(--line); background: #fff; color: var(--ink); padding: .3rem .6rem; border-radius: 4px; cursor: pointer; font-size: .7rem; }
     .btn-edit:hover { background: var(--mint); border-color: var(--accent); }
+    .btn-delete { border: 1px solid var(--line); background: #fff; color: var(--danger); padding: .3rem .6rem; border-radius: 4px; cursor: pointer; font-size: .7rem; margin-left: .4rem; }
+    .btn-delete:hover { background: #fee2e2; border-color: var(--danger); }
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; z-index: 100; visibility: hidden; opacity: 0; transition: .2s; }
     .modal.show { visibility: visible; opacity: 1; }
     .modal-content { background: #fff; width: 100%; max-width: 400px; border-radius: 8px; padding: 1.5rem; box-shadow: var(--shadow); }
@@ -204,7 +206,7 @@
         </div>
         <div class="form-group">
           <label>Valor (R$)</label>
-          <input type="number" step="0.01" id,="exp-amount" required>
+          <input type="number" step="0.01" id="exp-amount" required>
         </div>
         <div class="form-group">
           <label>Data</label>
@@ -288,7 +290,10 @@
             <td>${fmtCurrency(p.amount)}</td>
             <td>${p.payment_method}</td>
             <td><span class="status-pill status-${p.status}">${p.status}</span></td>
-            <td><button class="btn-edit" onclick="editPayment(${p.id}, ${JSON.stringify(p).replace(/"/g, '&quot;')})">Editar</button></td>
+            <td>
+              <button class="btn-edit" onclick="editPayment(${p.id}, ${JSON.stringify(p).replace(/"/g, '&quot;')})">Editar</button>
+              <button class="btn-delete" onclick="deletePayment(${p.id})">Excluir</button>
+            </td>
           </tr>
         `).join('') : '<tr><td colspan="6" class="empty-state">Nenhum pagamento registrado.</td></tr>';
 
@@ -298,7 +303,10 @@
             <td>${e.description}</td>
             <td>${e.category || '-'}</td>
             <td>${fmtCurrency(e.amount)}</td>
-            <td><button class="btn-edit" onclick="editExpense(${e.id}, ${JSON.stringify(e).replace(/"/g, '&quot;')})">Editar</button></td>
+            <td>
+              <button class="btn-edit" onclick="editExpense(${e.id}, ${JSON.stringify(e).replace(/"/g, '&quot;')})">Editar</button>
+              <button class="btn-delete" onclick="deleteExpense(${e.id})">Excluir</button>
+            </td>
           </tr>
         `).join('') : '<tr><td colspan="5" class="empty-state">Nenhuma despesa registrada.</td></tr>';
 
@@ -338,8 +346,24 @@
       document.querySelector('#exp-amount').value = data.amount;
       document.querySelector('#exp-date').value = data.expense_date.split('T')[0];
       document.querySelector('#exp-cat').value = data.category || '';
-      document.querySelector('#exp-notes').value = data.notes || '';
+      document,querySelector('#exp-notes').value = data.notes || '';
       openModal('expense-modal');
+    }
+
+    async function deletePayment(id) {
+      if (!confirm("Excluir este pagamento?")) return;
+      const res = await fetch(`${apiBase}/api/finance/payments/${id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) { showToast("Pagamento excluído!"); refreshFinance(); } else { showToast("Erro ao excluir"); }
+    }
+
+    async function deleteExpense(id) {
+      if (!confirm("Excluir esta despesa?")) return;
+      const res = await fetch(`${apiBase}/api/finance/expenses/${id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) { showToast("Despesa excluída!"); refreshFinance(); } else { showToast("Erro ao excluir"); }
     }
 
     document.querySelector('#payment-form').onsubmit = async (e) => {
