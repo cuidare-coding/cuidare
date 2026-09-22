@@ -175,18 +175,50 @@ function openEditAppointment(id) { const appointment = appointments.find((a) => 
     document.querySelector('#cancel-appointment').addEventListener('click', () => setAppointmentModal(false));
     document.querySelector('#delete-appointment').addEventListener('click', async () => {
       const appointment = appointments.find((item) => item.id === editingAppointmentId);
-      const confirmation = appointment?.currence
-        ? 'Excluir este atendimento e todas as ocorrências futuras da série?'
-        : 'Excluir este atendimento?';
-      if (!window.confirm(confirmation)) return;
+
+      let shouldDelete = false;
+      let deleteSeries = false;
+
+      if (appointment?.currence) {
+        const choice = window.confirm('Deseja excluir este atendimento e todas as ocorrências futuras?\n\nClique "OK" para excluir a SÉRIE completa ou "Cancelar" para escolher excluir APENAS ESTE.');
+        if (choice) {
+          shouldDelete = true;
+          deleteSeries = true;
+        } else {
+          if (window.confirm('Excluir apenas este atendimento?')) {
+            shouldDelete = true;
+            deleteSeries = false;
+          }
+        }
+      } else {
+        if (window.confirm('Excluir este atendimento?')) {
+          shouldDelete = true;
+          deleteSeries = false;
+        }
+      }
+
+      if (!shouldDelete) return;
+
       try {
-        const response = await fetch(`${apiBase}/api/appointments/${editingAppointmentId}`, {
+        const url = `${apiBase}/api/appointments/${editingAppointmentId}${deleteSeries ? '?series=true' : ''}`;
+        const response = await fetch(url, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Não foi possível excluir o atendimento.');
         appointments = appointments.filter((a) => a.id !== editingAppointmentId);
+        if (deleteSeries) {
+          // Filter out all subsequent appointments in the series if we deleted the series
+          const appointmentObj = appointments.find((a) => a.id === editingAppointmentId);
+          // Note: editingAppointmentId was already removed from appointments list above,
+          // but we need the series_id and date to filter the rest.
+          // Let's use the 'appointment' variable we found at the start.
+          if (appointment && appointment.series_id) {
+            const anchorDate = new Date(appointment.starts_at);
+            appointments = appointments.filter(a => !(a.series_id === appointment.series_id && new Date(a.starts_at) >= anchorDate));
+          }
+        }
         setAppointmentModal(false);
         renderCalendar();
       } catch (error) {
