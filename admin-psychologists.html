@@ -186,8 +186,8 @@
       <p class="nav-label">Menu principal</p>
       <nav class="nav-list">
         <a class="nav-link" href="admin-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a>
-        <a class="nav-link active" href="admin-psychologists.html"><span class="nav-icon" aria-hidden="true">♧</span>Psicólogos<span class="nav-count">24</span></a>
-        <a class="nav-link" href="admin-dashboard.html#usuarios"><span class="nav-icon" aria-hidden="true">○</span>Usuários<span class="nav-count">186</span></a>
+        <a class="nav-link active" href="admin-psychologists.html"><span class="nav-icon" aria-hidden="true">♧</span>Psicólogos<span class="nav-count" id="sidebar-psych-count">--</span></a>
+        <a class="nav-link" href="admin-finances.html"><span class="nav-icon" aria-hidden="true">＄</span>Financeiro</a>
         <a class="nav-link" href="admin-dashboard.html#relatorios"><span class="nav-icon" aria-hidden="true">↗</span>Relatórios</a>
       </nav>
       <p class="nav-label" style="margin-top: 2rem;">Sistema</p>
@@ -302,6 +302,8 @@
       const total = psychologists.length;
       const active = psychologists.filter((item) => item.verified).length;
       document.querySelector('#total-count').textContent = total;
+      const sidebarCount = document.querySelector('#sidebar-psych-count');
+      if (sidebarCount) sidebarCount.textContent = total;
       document.querySelector('#active-count').textContent = active;
       document.querySelector('#pending-count').textContent = total - active;
       psychologistsList.innerHTML = psychologists.length ? psychologists.map((psychologist) => {

@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gestão Financeira da Administração Cuidare">
+  <title>Financeiro | Painel Administrativo Cuidare</title>
+  <script>document.documentElement.classList.add('auth-checking');</script>
+  <script>
+    (async () => {
+      const token = sessionStorage.getItem('cuidare_admin_access_token');
+      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
+
+      if (!token) {
+        window.location.replace('admlogin.html');
+        return;
+      }
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: token })
+        });
+        const result = await response.json();
+        if (!response.ok || result.user?.account_type !== 'admin') {
+          throw new Error('Sessão administrativa inválida.');
+        }
+        document.documentElement.classList.remove('auth-checking');
+      } catch (_error) {
+        sessionStorage.removeItem('cuidare_admin_access_token');
+        window.location.replace('admlogin.html');
+      }
+    })();
+  </script>
+  <style>
+    html.auth-checking body { visibility: hidden; }
+    :root {
+      --ink: #17211d;
+      --muted: #6c7972;
+      --paper: #f3f6f1;
+      --panel: #ffffff;
+      --line: #dfe7df;
+      --accent: #196a52;
+      --accent-dark: #0f4d3b;
+      --mint: #d9eee3;
+      --gold: #c68b37;
+      --coral: #b65b4d;
+      --danger: #b91c1c;
+      --success: #15803d;
+      --shadow: 0 18px 40px rgba(28, 62, 47, .07);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Arial, sans-serif;
+    }
+
+    button, input, select, a { -webkit-tap-highlight-color: transparent; }
+    button, input, select { font: inherit; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 17rem minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 1.5rem 1rem;
+      color: #eef7f1;
+      background: var(--accent-dark);
+      background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.11) 0 1px, transparent 1px),
+        linear-gradient(160deg, #0f4d3b, #196a52 70%, #2b8062);
+      background-size: 22px 22px, auto;
+      z-index: 20;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .7rem;
+      margin: .25rem .65rem 2.5rem;
+      color: inherit;
+      font: bold 1.2rem Georgia, 'Times New Roman', serif;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 50%;
+      font-size: .9rem;
+    }
+
+    .nav-label {
+      margin: 0 .8rem .7rem;
+      color: #add7c3;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .nav-list { display: grid; gap: .35rem; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      min-height: 2.9rem;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      padding: .65rem .8rem;
+      color: #cce6d8;
+      font-size: .82rem;
+      text-decoration: none;
+      transition: background-color .2s, color .2s, border-color .2s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: #fff;
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.1);
+    }
+
+    .nav-icon {
+      display: grid;
+      place-items: center;
+      width: 1.35rem;
+      color: #a9d9c2;
+      font-size: 1rem;
+    }
+
+    .nav-count {
+      margin-left: auto;
+      min-width: 1.35rem;
+      border-radius: 10px;
+      padding: .15rem .35rem;
+      color: var(--accent-dark);
+      background: #d8eee2;
+      font-size: .68rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      border-top: 1px solid rgba(255,255,255,.15);
+      padding: 1rem .65rem .25rem;
+    }
+
+    .admin-mini { display: flex; align-items: center; gap: .65rem; margin-bottom: .9rem; }
+    .avatar { display: grid; place-items: center; flex: 0 0 auto; width: 2.25rem; height: 2.25rem; border-radius: 50%; color: var(--accent-dark); background: #d8eee2; font-weight: 700; }
+    .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+
+    .logout-button {
+      width: 100%;
+      border: 0;
+      padding: .55rem 0;
+      color: #cce6d8;
+      background: transparent;
+      cursor: pointer;
+      font-size: .75rem;
+      text-align: left;
+    }
+    .logout-button:hover { color: #fff; }
+
+    .main { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3rem; margin-bottom: 2.35rem; }
+    .mobile-menu, .icon-button { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--panel); cursor: pointer; }
+    .mobile-menu { display: none; font-size: 1.25rem; }
+    .topbar-actions { display: flex; align-items: center; gap: .7rem; margin-left: auto; }
+    .icon-button { position: relative; font-size: 1.1rem; }
+    .notification-dot { position: absolute; top: .48rem; right: .48rem; width: .38rem; height: .38rem; border: 2px solid var(--panel); border-radius: 50%; background: var(--coral); }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.9rem; }
+    .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    h1, h2, h3 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
+    .page-description { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
+
+    .primary-button { display: inline-flex; align-items: center; gap: .55rem; border: 0; border-radius: 4px; padding: .8rem 1rem; color: #fff; background: var(--accent); cursor: pointer; font-size: .78rem; font-weight: 700; transition: background-color .2s, transform .2s; }
+    .primary-button:hover { background: var(--accent-dark); }
+    .primary-button:active { transform: translateY(1px); }
+
+    .filter-bar-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.35rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+    }
+    .filter-group { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
+    .filter-group label { font-size: .75rem; color: var(--muted); font-weight: 700; }
+    .filter-input, .filter-select {
+      min-height: 2.5rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: .45rem .7rem;
+      color: var(--ink);
+      background: #fbfcfa;
+      font-size: .78rem;
+    }
+    .filter-input:focus, .filter-select:focus { outline: 3px solid var(--mint); border-color: var(--accent); }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .metric { min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 1.2rem; background: var(--panel); box-shadow: var(--shadow); }
+    .metric-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .metric-label { color: var(--muted); font-size: .73rem; }
+    .metric-icon { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 4px; color: var(--accent-dark); background: var(--mint); font-size: .95rem; }
+    .metric strong { display: block; margin-top: .8rem; font: 1.8rem Georgia, 'Times New Roman', serif; }
+    .metric-change { display: block; margin-top: .35rem; color: var(--accent); font-size: .68rem; }
+    .metric-change.alert { color: var(--danger); }
+    .metric-change.neutral { color: var(--muted); }
+
+    .tabs { display: flex; gap: .5rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--line); padding-bottom: .25rem; }
+    .tab-btn {
+      border: 0;
+      background: transparent;
+      padding: .65rem 1rem;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 4px 4px 0 0;
+      transition: color .2s, background-color .2s;
+    }
+    .tab-btn:hover { color: var(--accent); }
+    .tab-btn.active {
+      color: var(--accent);
+      background: #eef7f2;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); margin-bottom: 1.5rem; overflow: hidden; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.35rem 1rem; border-bottom: 1px solid var(--line); }
+    .panel-header h2 { margin: 0; font-size: 1.25rem; }
+
+    .table-wrap { overflow-x: auto; padding: 0 1.35rem 1rem; }
+    table { width: 100%; min-width: 42rem; border-collapse: collapse; font-size: .75rem; }
+    th { padding: .75rem .6rem; color: var(--muted); font-size: .66rem; font-weight: 700; text-align: left; text-transform: uppercase; border-bottom: 1px solid var(--line); }
+    td { border-top: 1px solid var(--line); padding: .85rem .6rem; vertical-align: middle; }
+    th:first-child, td:first-child { padding-left: 0; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      border-radius: 12px;
+      padding: .25rem .55rem;
+      font-size: .65rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .status-badge.paid { color: #166534; background: #dcfce7; }
+    .status-badge.pending { color: #854d0e; background: #fef9c3; }
+    .status-badge.canceled { color: #991b1b; background: #fee2e2; }
+
+    .method-tag {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: .15rem .45rem;
+      font-size: .68rem;
+      color: #475569;
+    }
+
+    .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; max-width: 20rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; z-index: 50; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .overlay { display: none; }
+
+    @media (max-width: 1050px) {
+      .app-shell { grid-template-columns: 14.5rem minmax(0, 1fr); }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell { display: block; }
+      .sidebar { position: fixed; left: 0; top: 0; width: min(18rem, 86vw); transform: translateX(-100%); transition: transform .25s ease; box-shadow: 12px 0 30px rgba(15, 77, 59, .2); }
+      .sidebar.open { transform: translateX(0); }
+      .overlay { position: fixed; inset: 0; display: block; background: rgba(16, 35, 27, .35); opacity: 0; pointer-events: none; transition: opacity .25s ease; z-index: 10; }
+      .overlay.open { opacity: 1; pointer-events: auto; }
+      .main { padding: 1rem 1rem 2rem; }
+      .topbar { margin-bottom: 2rem; }
+      .mobile-menu { display: grid; }
+      .page-heading { display: block; margin-bottom: 1.35rem; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+      .metric { padding: .95rem; }
+      .metric strong { font-size: 1.45rem; }
+      .filter-bar-card { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="admin-dashboard.html" aria-label="Página inicial da Cuidare">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        Cuidare
+      </a>
+
+      <p class="nav-label">Menu principal</p>
+      <nav class="nav-list">
+        <a class="nav-link" href="admin-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a>
+        <a class="nav-link" href="admin-psychologists.html"><span class="nav-icon" aria-hidden="true">♧</span>Psicólogos<span class="nav-count" id="sidebar-psych-count">--</span></a>
+        <a class="nav-link active" href="admin-finances.html"><span class="nav-icon" aria-hidden="true">＄</span>Financeiro</a>
+        <a class="nav-link" href="admin-dashboard.html#relatorios"><span class="nav-icon" aria-hidden="true">↗</span>Relatórios</a>
+      </nav>
+
+      <p class="nav-label" style="margin-top: 2rem;">Sistema</p>
+      <nav class="nav-list">
+        <a class="nav-link" href="admin-dashboard.html#configuracoes"><span class="nav-icon" aria-hidden="true">⚙</span>Configurações</a>
+        <a class="nav-link" href="admin-dashboard.html#suporte"><span class="nav-icon" aria-hidden="true">?</span>Ajuda e suporte</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-mini">
+          <span class="avatar" aria-hidden="true">AD</span>
+          <div><strong>Admin Cuidare</strong><span>Administrador</span></div>
+        </div>
+        <button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button>
+      </div>
+    </aside>
+
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+    <main class="main" id="inicio">
+      <header class="topbar">
+        <button class="mobile-menu" id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menu">☰</button>
+        <div class="topbar-actions">
+          <button class="icon-button" id="notification-button" type="button" aria-label="Ver notificações">♢<span class="notification-dot" aria-hidden="true"></span></button>
+          <span class="topbar-avatar" aria-hidden="true">AD</span>
+        </div>
+      </header>
+
+      <section class="page-heading" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Gestão Financeira Global</p>
+          <h1 id="page-title">Financeiro da Clínica</h1>
+          <p class="page-description">Acompanhe receitas, pagamentos de pacientes e despesas de todos os profissionais.</p>
+        </div>
+      </section>
+
+      <!-- Filter card -->
+      <section class="filter-bar-card">
+        <div class="filter-group">
+          <label for="filter-month">Mês de Referência:</label>
+          <input class="filter-input" type="month" id="filter-month" onchange="loadFinancialData()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-psychologist">Filtrar Psicólogo:</label>
+          <select class="filter-select" id="filter-psychologist" onchange="loadFinancialData()">
+            <option value="">Todos os psicólogos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-status">Status de Pagamento:</label>
+          <select class="filter-select" id="filter-status" onchange="loadFinancialData()">
+            <option value="all">Todos os status</option>
+            <option value="paid">Recebido / Pago</option>
+            <option value="pending">Pendente</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Metrics -->
+      <section class="metrics" aria-label="Indicadores Financeiros">
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Receita Total</span><span class="metric-icon" aria-hidden="true">＄</span></div>
+          <strong id="m-income">R$ 0,00</strong><span class="metric-change">Faturamento acumulado</span>
+        </article>
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Despesas Operacionais</span><span class="metric-icon" aria-hidden="true">↓</span></div>
+          <strong id="m-expenses">R$ 0,00</strong><span class="metric-change neutral">Custos registrados</span>
+        </article>
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Lucro Líquido</span><span class="metric-icon" aria-hidden="true">↗</span></div>
+          <strong id="m-profit">R$ 0,00</strong><span class="metric-change">Saldo da clínica</span>
+        </article>
+        <article class="metric">
+          <div class="metric-top"><span class="metric-label">Pagamentos Pendentes</span><span class="metric-icon" aria-hidden="true">!</span></div>
+          <strong id="m-pending">0</strong><span class="metric-change alert">Aguardando confirmação</span>
+        </article>
+      </section>
+
+      <!-- Navigation Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('payments')">Pagamentos / Recebimentos</button>
+        <button class="tab-btn" onclick="switchTab('psychologists')">Desempenho por Psicólogo</button>
+        <button class="tab-btn" onclick="switchTab('expenses')">Despesas</button>
+      </div>
+
+      <!-- Tab 1: Payments -->
+      <section id="tab-payments" class="tab-content active">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>Transações e Recebimentos</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Psicólogo</th>
+                  <th>Paciente / Cliente</th>
+                  <th>Método</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="payments-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--muted); padding: 2rem;">Carregando pagamentos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- Tab 2: Psychologists Breakdown -->
+      <section id="tab-psychologists" class="tab-content">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>Faturamento por Profissional</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Psicólogo</th>
+                  <th>CRP</th>
+                  <th>Status</th>
+                  <th>Receita Gerada</th>
+                  <th>Despesas</th>
+                  <th>Lucro Líquido</th>
+                  <th>Pendências</th>
+                </tr>
+              </thead>
+              <tbody id="psychologists-tbody">
+                <tr><td colspan="7" style="text-align: center; color: var(--muted); padding: 2rem;">Carregando resumo dos profissionais...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- Tab 3: Expenses -->
+      <section id="tab-expenses" class="tab-content">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>Despesas Operacionais</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Profissional / Setor</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody id="expenses-tbody">
+                <tr><td colspan="5" style="text-align: center; color: var(--muted); padding: 2rem;">Carregando despesas...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const sidebar = document.querySelector('#sidebar');
+    const overlay = document.querySelector('#overlay');
+    const menuButton = document.querySelector('#menu-button');
+    const toast = document.querySelector('#toast');
+    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+
+    function setMenu(open) {
+      sidebar.classList.toggle('open', open);
+      overlay.classList.toggle('open', open);
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+    }
+
+    menuButton.addEventListener('click', () => setMenu(!sidebar.classList.contains('open')));
+    overlay.addEventListener('click', () => setMenu(false));
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.clearTimeout(showToast.timeout);
+      showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    document.querySelector('#notification-button').addEventListener('click', () => showToast('Nenhuma notificação pendente no momento.'));
+    document.querySelector('#logout-button').addEventListener('click', () => {
+      sessionStorage.removeItem('cuidare_admin_access_token');
+      window.location.replace('admlogin.html');
+    });
+
+    function formatBRL(amount) {
+      return Number(amount || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return isNaN(d) ? dateStr : d.toLocaleDateString('pt-BR');
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+    }
+
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', (tabKey === 'payments' && idx === 0) || (tabKey === 'psychologists' && idx === 1) || (tabKey === 'expenses' && idx === 2));
+      });
+      document.getElementById('tab-payments').classList.toggle('active', tabKey === 'payments');
+      document.getElementById('tab-psychologists').classList.toggle('active', tabKey === 'psychologists');
+      document.getElementById('tab-expenses').classList.toggle('active', tabKey === 'expenses');
+    }
+
+    async function loadPsychologistsFilter() {
+      try {
+        const token = sessionStorage.getItem('cuidare_admin_access_token');
+        const res = await fetch(`${apiBase}/api/psychologists`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.ok && data.psychologists) {
+          const select = document.getElementById('filter-psychologist');
+          const countEl = document.getElementById('sidebar-psych-count');
+          if (countEl) countEl.textContent = data.psychologists.length;
+          data.psychologists.forEach((p) => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = `${p.name} (CRP ${p.crp})`;
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadFinancialData() {
+      const token = sessionStorage.getItem('cuidare_admin_access_token');
+      const month = document.getElementById('filter-month').value;
+      const psychologistId = document.getElementById('filter-psychologist').value;
+      const status = document.getElementById('filter-status').value;
+
+      let params = new URLSearchParams();
+      if (month) params.append('month', month);
+      if (psychologistId) params.append('psychologist_id', psychologistId);
+
+      // Load Summary
+      try {
+        const summaryRes = await fetch(`${apiBase}/api/finance/admin/summary?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const summaryData = await summaryRes.json();
+        if (summaryData.ok && summaryData.summary) {
+          const s = summaryData.summary;
+          document.getElementById('m-income').textContent = formatBRL(s.total_income);
+          document.getElementById('m-expenses').textContent = formatBRL(s.total_expenses);
+          document.getElementById('m-profit').textContent = formatBRL(s.net_profit);
+          document.getElementById('m-pending').textContent = s.pending_payments;
+
+          // Render Psychologists breakdown table
+          if (summaryData.psychologists) {
+            const psychTbody = document.getElementById('psychologists-tbody');
+            if (summaryData.psychologists.length === 0) {
+              psychTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--muted); padding: 1.5rem;">Nenhum psicólogo encontrado.</td></tr>';
+            } else {
+              psychTbody.innerHTML = summaryData.psychologists.map((p) => `
+                <tr>
+                  <td><strong>${escapeHtml(p.name)}</strong></td>
+                  <td>${escapeHtml(p.crp)}</td>
+                  <td><span class="status-badge ${p.verified ? 'paid' : 'pending'}">${p.verified ? 'Verificado' : 'Pendente'}</span></td>
+                  <td><strong style="color: var(--accent);">${formatBRL(p.total_income)}</strong></td>
+                  <td>${formatBRL(p.total_expenses)}</td>
+                  <td><strong>${formatBRL(p.net_profit)}</strong></td>
+                  <td><span class="status-badge ${p.pending_count > 0 ? 'pending' : 'paid'}">${p.pending_count} pendente(s)</span></td>
+                </tr>
+              `).join('');
+            }
+          }
+        }
+      } catch (err) {
+        showToast('Erro ao carregar resumo financeiro.');
+      }
+
+      // Load Payments
+      try {
+        let payParams = new URLSearchParams(params);
+        if (status && status !== 'all') payParams.append('status', status);
+
+        const payRes = await fetch(`${apiBase}/api/finance/admin/payments?${payParams.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const payData = await payRes.json();
+        const payTbody = document.getElementById('payments-tbody');
+
+        if (payData.ok && payData.payments) {
+          if (payData.payments.length === 0) {
+            payTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--muted); padding: 1.5rem;">Nenhum pagamento registrado no período.</td></tr>';
+          } else {
+            payTbody.innerHTML = payData.payments.map((pay) => `
+              <tr>
+                <td>${formatDate(pay.payment_date)}</td>
+                <td><strong>${escapeHtml(pay.psychologist_name)}</strong><br><small style="color: var(--muted);">CRP ${escapeHtml(pay.psychologist_crp)}</small></td>
+                <td>${escapeHtml(pay.client_name)}</td>
+                <td><span class="method-tag">${escapeHtml(pay.payment_method)}</span></td>
+                <td><strong>${formatBRL(pay.amount)}</strong></td>
+                <td><span class="status-badge ${pay.status === 'paid' ? 'paid' : 'pending'}">${pay.status === 'paid' ? 'Recebido' : 'Pendente'}</span></td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        showToast('Erro ao carregar lista de pagamentos.');
+      }
+
+      // Load Expenses
+      try {
+        const expRes = await fetch(`${apiBase}/api/finance/admin/expenses?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const expData = await expRes.json();
+        const expTbody = document.getElementById('expenses-tbody');
+
+        if (expData.ok && expData.expenses) {
+          if (expData.expenses.length === 0) {
+            expTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--muted); padding: 1.5rem;">Nenhuma despesa registrada no período.</td></tr>';
+          } else {
+            expTbody.innerHTML = expData.expenses.map((exp) => `
+              <tr>
+                <td>${formatDate(exp.expense_date)}</td>
+                <td><strong>${escapeHtml(exp.psychologist_name)}</strong></td>
+                <td>${escapeHtml(exp.description)}</td>
+                <td><span class="method-tag">${escapeHtml(exp.category || 'Geral')}</span></td>
+                <td><strong style="color: var(--danger);">${formatBRL(exp.amount)}</strong></td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        showToast('Erro ao carregar despesas.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadPsychologistsFilter();
+      await loadFinancialData();
+    });
+  </script>
+</body>
+</html>
