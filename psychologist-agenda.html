@@ -135,7 +135,10 @@
       firstDay.setHours(0, 0, 0, 0);
       const lastDay = new Date(days[days.length - 1]);
       lastDay.setHours(23, 59, 59, 999);
-      return appointments.flatMap((appointment) => CuidareRecurrence.expand(appointment, firstDay, lastDay));
+      return appointments.filter((appointment) => {
+        const start = new Date(appointment.starts_at);
+        return start >= firstDay && start <= lastDay;
+      });
     }
     function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
     function renderCalendar() {
