@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gestão Financeira - Cuidare">
+  <title>Financeiro | Cuidare</title>
+  <script>document.documentElement.classList.add('auth-checking');</script>
+  <script>
+    (async () => {
+      const token = sessionStorage.getItem('cuidare_access_token');
+      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
+      if (!token) { window.location.replace('login.html'); return; }
+      try {
+        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: token }) });
+        const result = await response.json();
+        if (!response.ok || result.user?.account_type !== 'psychologist') throw new Error('Sessão inválida.');
+        document.documentElement.classList.remove('auth-checking');
+      } catch (_error) {
+        sessionStorage.removeItem('cuidare_access_token');
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+  <style>
+    html.auth-checking body { visibility: hidden; }
+    :root { --ink: #17211d; --muted: #68756e; --paper: #f3f6f1; --panel: #fff; --line: #dfe7df; --accent: #196a52; --accent-dark: #0f4d3b; --mint: #d9eee3; --gold: #a56c19; --shadow: 0 18px 40px rgba(28, 62, 47, .07); --danger: #b91c1c; --success: #15803d; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: var(--paper); font-family: Arial, sans-serif; }
+    .app-shell { display: grid; grid-template-columns: 17rem minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; height: 100vh; padding: 1.5rem 1rem; color: #eef7f1; background: var(--accent-dark); background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.11) 0 1px, transparent 1px), linear-gradient(160deg, #0f4d3b, #196a52 70%, #2b8062); background-size: 22px 22px, auto; }
+    .brand { display: inline-flex; align-items: center; gap: .7rem; margin: .25rem .65rem 2.5rem; color: inherit; font: bold 1.2rem Georgia, 'Times New Roman', serif; text-decoration: none; }
+    .brand-mark { display: grid; place-items: center; border-radius: 50%; width: 2.25rem; height: 2.25rem; border: 1px solid rgba(255,255,255,.55); font-size: .9rem; }
+    .nav-label { margin: 0 .8rem .7rem; color: #add7c3; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: .35rem; }
+    .nav-link { display: flex; align-items: center; gap: .75rem; min-height: 2.9rem; border: 1px solid transparent; border-radius: 5px; padding: .65rem .8rem; color: #cce6d8; font-size: .82rem; text-decoration: none; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.1); }
+    .nav-icon { display: grid; place-items: center; width: 1.35rem; color: #a9d9c2; font-size: 1rem; }
+    .sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,.15); padding: 1rem .65rem .25rem; }
+    .admin-mini { display: flex; align-items: center; gap: .65rem; margin-bottom: .9rem; }
+    .avatar { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; color: var(--accent-dark); background: #d8eee2; font-weight: 700; border-radius: 50%; }
+    .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+    .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
+    .main { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
+    .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
+    .page-description { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0; }
+    .metric { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 1.2rem; box-shadow: var(--shadow); }
+    .metric span { color: var(--muted); font-size: .73rem; }
+    .metric strong { display: block; margin-top: .7rem; font: 2rem Georgia, 'Times New Roman', serif; }
+    .metric small { display: block; margin-top: .3rem; color: var(--accent); font-size: .68rem; }
+    .metric.alert strong { color: var(--danger); }
+    .content-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    .panel { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); overflow: hidden; }
+    .panel-header { padding: 1.25rem 1.35rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
+    .panel-header h2 { margin: 0; font-size: 1.25rem; font-family: Georgia, 'Times New Roman', serif; }
+    .btn-primary { background: var(--accent); color: #fff; border: 0; padding: .5rem .8rem; border-radius: 4px; cursor: pointer; font-size: .75rem; font-weight: 600; }
+    .btn-primary:hover { background: var(--accent-dark); }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th { text-align: left; padding: .85rem 1.35rem; background: #fafbfc; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
+    td { padding: .85rem 1.35rem; border-bottom: 1px solid var(--line); }
+    .status-pill { padding: .2rem .4rem; border-radius: 3px; font-size: .65rem; font-weight: 700; text-transform: uppercase; }
+    .status-paid { background: var(--mint); color: var(--success); }
+    .status-pending { background: #fffbeb; color: var(--gold); }
+    .status-overdue { background: #fee2e2; color: var(--danger); }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; z-index: 100; visibility: hidden; opacity: 0; transition: .2s; }
+    .modal.show { visibility: visible; opacity: 1; }
+    .modal-content { background: #fff; width: 100%; max-width: 400px; border-radius: 8px; padding: 1.5rem; box-shadow: var(--shadow); }
+    .modal-content h3 { margin-top: 0; font-family: Georgia, 'Times New Roman', serif; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: .75rem; color: var(--muted); margin-bottom: .3rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: .5rem; border: 1px solid var(--line); border-radius: 4px; font-size: .85rem; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.5rem; }
+    .btn-ghost { background: transparent; border: 1px solid var(--line); padding: .5rem .8rem; border-radius: 4px; cursor: pointer; font-size: .75rem; }
+    .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; } .metrics { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="psychologist-dashboard.html"><span class="brand-mark">C</span>Cuidare</a>
+      <p class="nav-label">Meu espaço</p>
+      <nav class="nav-list">
+        <a class="nav-link" href="psychologist-dashboard.html"><span class="nav-icon">⌂</span>Visão geral</a>
+        <a class="nav-link" href="psychologist-agenda.html"><span class="nav-icon">□</span>Agenda</a>
+        <a class="nav-link" href="psychologist-clients.html"><span class="nav-icon">○</span>Clientes</a>
+        <a class="nav-link active" href="psychologist-finances.html"><span class="nav-icon">＄</span>Financeiro</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="admin-mini">
+          <span class="avatar" id="sidebar-avatar">--</span>
+          <div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div>
+        </div>
+        <button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Gestão Financeira</p>
+          <h1>Meu Financeiro</h1>
+          <p class="page-description">Controle seus recebimentos e despesas da clínica.</p>
+        </div>
+      </section>
+      
+      <section class="metrics">
+        <article class="metric"><span>Receita Total</span><strong id="m-income">R$ 0,00</strong><small>Total acumulado</small></article>
+        <article class="metric"><span>Despesas Total</span><strong id="m-expenses">R$ 0,00</strong><small>Custos operacionais</small></article>
+        <article class="metric"><span>Lucro Líquido</span><strong id="m-profit">R$ 0,00</strong><small>Saldo final</small></article>
+        <article class="metric alert"><span>Pendentes</span><strong id="m-pending">0</strong><small>Pagamentos a cobrar</small></article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>Recebimentos</h2>
+            <button class="btn-primary" onclick="openModal('payment-modal')">+ Novo Pagamento</button>
+          </div>
+          <table>
+            <thead><tr><th>Data</th><th>Cliente</th><th>Valor</th><th>Método</th><th>Status</th></tr></thead>
+            <tbody id="payments-table"><tr><td colspan="5" class="empty-state">Carregando pagamentos...</td></tr></tbody>
+          </table>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>Despesas</h2>
+            <button class="btn-primary" onclick="openModal('expense-modal')">+ Nova Despesa</button>
+          </div>
+          <table>
+            <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th></tr></thead>
+            <tbody id="expenses-table"><tr><td colspan="4" class="empty-state">Carregando despesas...</td></tr></tbody>
+          </table>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal" id="payment-modal">
+    <div class="modal-content">
+      <h3>Registrar Pagamento</h3>
+      <form id="payment-form">
+        <div class="form-group">
+          <label>Cliente</label>
+          <select id="pay-client" required></select>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" step="0.01" id="pay-amount" required>
+        </div>
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="pay-date" required>
+        </div>
+        <div class="form-group">
+          <label>Método</label>
+          <select id="pay-method">
+            <option value="PIX">PIX</option>
+            <option value="Cartão">Cartão</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Transferência">Transferência</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="pay-status">
+            <option value="paid">Pago</option>
+            <option value="pending">Pendente</option>
+            <option value="overdue">Atrasado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea id="pay-notes"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" onclick="closeModal('payment-modal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Pagamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal" id="expense-modal">
+    <div class="modal-content">
+      <h3>Registrar Despesa</h3>
+      <form id="expense-form">
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="exp-desc" required placeholder="ex: Aluguel da sala">
+        </div>
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" step="0.01" id="exp-amount" required>
+        </div>
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="exp-date" required>
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <input type="text" id="exp-cat" placeholder="ex: Infraestrutura">
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea id="exp-notes"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" onclick="closeModal('expense-modal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Despesa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const token = sessionStorage.getItem('cuidare_access_token');
+    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const toast = document.querySelector('#toast');
+
+    function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
+    function openModal(id) { document.querySelector('#'+id).classList.add('show'); }
+    function closeModal(id) { document.querySelector('#'+id).classList.remove('show'); }
+    function fmtCurrency(val) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val); }
+    function fmtDate(val) { return new Date(val).toLocaleDateString('pt-BR'); }
+
+    async function loadProfile() {
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const result = await response.json();
+        const profile = result.psychologist;
+        document.querySelector('#sidebar-name').textContent = profile.name;
+        document.querySelector('#sidebar-avatar').textContent = profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+        document.querySelector('#topbar-avatar').textContent = document.querySelector('#sidebar-avatar').textContent;
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadClients() {
+      try {
+        const response = await fetch(`${apiBase}/api/clients`, { headers: { Authorization: `Bearer ${token}` } });
+        const result = await response.json();
+        const select = document.querySelector('#pay-client');
+        select.innerHTML = result.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      } catch (e) { showToast("Erro ao carregar clientes"); }
+    }
+
+    async function refreshFinance() {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [sumRes, payRes, expRes] = await Promise.all([
+          fetch(`${apiBase}/api/finance/summary`, { headers }),
+          fetch(`${apiBase}/api/finance/payments`, { headers }),
+          fetch(`${apiBase}/api/finance/expenses`, { headers })
+        ]);
+
+        const sum = await sumRes.json();
+        const pays = await payRes.json();
+        const exps = await expRes.json();
+
+        // Summary
+        document.querySelector('#m-income').textContent = fmtCurrency(sum.summary.total_income);
+        document.querySelector('#m-expenses').textContent = fmtCurrency(sum.summary.total_expenses);
+        document.querySelector('#m-profit').textContent = fmtCurrency(sum.summary.net_profit);
+        document.querySelector('#m-pending').textContent = sum.summary.pending_payments;
+
+        // Payments Table
+        document.querySelector('#payments-table').innerHTML = pays.payments.length ? pays.payments.map(p => `
+          <tr>
+            <td>${fmtDate(p.payment_date)}</td>
+            <td>ID: ${p.client_id}</td>
+            <td>${fmtCurrency(p.amount)}</td>
+            <td>${p.payment_method}</td>
+            <td><span class="status-pill status-${p.status}">${p.status}</span></td>
+          </tr>
+        `).join('') : '<tr><td colspan="5" class="empty-state">Nenhum pagamento registrado.</td></tr>';
+
+        // Expenses Table
+        document.querySelector('#expenses-table').innerHTML = exps.expenses.length ? exps.expenses.map(e => `
+          <tr>
+            <td>${fmtDate(e.expense_date)}</td>
+            <td>${e.description}</td>
+            <td>${e.category || '-'}</td>
+            <td>${fmtCurrency(e.amount)}</td>
+          </tr>
+        `).join('') : '<tr><td colspan="4" class="empty-state">Nenhuma despesa registrada.</td></tr>';
+
+      } catch (e) { showToast("Erro ao carregar dados financeiros"); }
+    }
+
+    document.querySelector('#payment-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = {
+        client_id: parseInt(document.querySelector('#pay-client').value),
+        amount: parseFloat(document.querySelector('#pay-amount').value),
+        payment_date: document.querySelector('#pay-date').value,
+        payment_method: document.querySelector('#pay-method').value,
+        status: document.querySelector('#pay-status').value,
+        notes: document.querySelector('#pay-notes').value
+      };
+      const res = await fetch(`${apiBase}/api/finance/payments`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) { showToast("Pagamento salvo!"); closeModal('payment-modal'); refreshFinance(); } else { showToast("Erro ao salvar"); }
+    };
+
+    document.querySelector('#expense-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = {
+        description: document.querySelector('#exp-desc').value,
+        amount: parseFloat(document.querySelector('#exp-amount').value),
+        expense_date: document.querySelector('#exp-date').value,
+        category: document.querySelector('#exp-cat').value,
+        notes: document.querySelector('#exp-notes').value
+      };
+      const res = await fetch(`${apiBase}/api/finance/expenses`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) { showToast("Despesa salva!"); closeModal('expense-modal'); refreshFinance(); } else { showToast("Erro ao salvar"); }
+    };
+
+    document.querySelector('#logout-button').onclick = () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); };
+
+    loadProfile();
+    loadClients();
+    refreshFinance();
+  </script>
+</body>
+</html>
