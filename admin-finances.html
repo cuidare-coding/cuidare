@@ -535,7 +535,14 @@
         <article class="panel">
           <div class="panel-header">
             <h2>Planos Disponíveis</h2>
-            <button class="action-btn pay-btn" onclick="openPlanModal()">+ Criar Plano</button>
+            <div style="display: flex; gap: .6rem; align-items: center;">
+              <select class="filter-select" id="filter-plan-active" onchange="renderPlansGrid()" style="min-height: 2.2rem; padding: .3rem .6rem; font-size: .75rem;">
+                <option value="all">Todos os Planos</option>
+                <option value="active" selected>Apenas Ativos</option>
+                <option value="inactive">Apenas Desativados</option>
+              </select>
+              <button class="action-btn pay-btn" onclick="openPlanModal()">+ Criar Plano</button>
+            </div>
           </div>
           <div class="plans-grid" id="plans-grid">
             <p style="color: var(--muted); padding: 1.5rem;">Carregando planos...</p>
@@ -595,6 +602,10 @@
         </label>
         <label>Descrição e Recursos (opcional)
           <textarea name="description" placeholder="Ex: Até 50 pacientes, agenda ilimitada..."></textarea>
+        </label>
+        <label style="display: flex; flex-direction: row; align-items: center; gap: .55rem; font-weight: 400; cursor: pointer;">
+          <input name="is_active" type="checkbox" id="plan-is-active" checked style="min-height: auto; width: 1.15rem; height: 1.15rem; accent-color: var(--accent);">
+          <span>Plano ativo para novas assinaturas</span>
         </label>
         <div class="modal-actions">
           <button class="secondary-btn" type="button" onclick="closePlanModal()">Cancelar</button>
@@ -754,6 +765,9 @@
         form.elements.price.value = plan.price || '';
         form.elements.billing_cycle.value = plan.billing_cycle || 'monthly';
         form.elements.description.value = plan.description || '';
+        document.getElementById('plan-is-active').checked = plan.is_active !== false;
+      } else {
+        document.getElementById('plan-is-active').checked = true;
       }
       document.getElementById('plan-modal').classList.add('open');
     }
@@ -833,36 +847,52 @@
             }
           });
 
-          // Render Plans Grid
-          const grid = document.getElementById('plans-grid');
-          if (allPlans.length === 0) {
-            grid.innerHTML = '<p style="color: var(--muted); grid-column: 1/-1;">Nenhum plano cadastrado. Clique em "+ Novo Plano" para começar.</p>';
-          } else {
-            grid.innerHTML = allPlans.map(p => `
-              <div class="plan-card" style="${p.is_active ? '' : 'opacity: 0.6;'}">
-                <div>
-                  <div class="plan-card-header">
-                    <h3 class="plan-card-title">${escapeHtml(p.name)}</h3>
-                    <span class="status-badge ${p.is_active ? 'paid' : 'none'}">${p.is_active ? 'Ativo' : 'Inativo'}</span>
-                  </div>
-                  <div class="plan-card-price">${formatBRL(p.price)}</div>
-                  <div class="plan-card-cycle">Cobrança ${p.billing_cycle === 'monthly' ? 'Mensal' : p.billing_cycle === 'yearly' ? 'Anual' : 'Trimestral'}</div>
-                  <p class="plan-card-desc">${escapeHtml(p.description || 'Sem descrição cadastrada.')}</p>
-                </div>
-                <div class="plan-card-footer">
-                  <span><strong>${p.subscribers_count}</strong> psicólogo(s)</span>
-                  <div style="display: flex; gap: .4rem;">
-                    <button class="action-btn" onclick="openPlanModal(${escapeHtml(JSON.stringify(p))})">Editar</button>
-                    ${p.is_active ? `<button class="action-btn delete-btn" onclick="deletePlan(${p.id})">Desativar</button>` : ''}
-                  </div>
-                </div>
-              </div>
-            `).join('');
-          }
+          renderPlansGrid();
         }
       } catch (err) {
         showToast('Erro ao carregar planos.');
       }
+    }
+
+    function renderPlansGrid() {
+      const grid = document.getElementById('plans-grid');
+      const activeFilter = document.getElementById('filter-plan-active')?.value || 'active';
+
+      let filteredPlans = allPlans;
+      if (activeFilter === 'active') {
+        filteredPlans = allPlans.filter(p => p.is_active);
+      } else if (activeFilter === 'inactive') {
+        filteredPlans = allPlans.filter(p => !p.is_active);
+      }
+
+      if (filteredPlans.length === 0) {
+        grid.innerHTML = '<p style="color: var(--muted); grid-column: 1/-1; padding: 1rem 0;">Nenhum plano encontrado neste filtro. Clique em "+ Criar Plano" para adicionar.</p>';
+        return;
+      }
+
+      grid.innerHTML = filteredPlans.map(p => `
+        <div class="plan-card" style="${p.is_active ? '' : 'opacity: 0.75; border-style: dashed;'}">
+          <div>
+            <div class="plan-card-header">
+              <h3 class="plan-card-title">${escapeHtml(p.name)}</h3>
+              <span class="status-badge ${p.is_active ? 'paid' : 'none'}">${p.is_active ? 'Ativo' : 'Desativado'}</span>
+            </div>
+            <div class="plan-card-price">${formatBRL(p.price)}</div>
+            <div class="plan-card-cycle">Cobrança ${p.billing_cycle === 'monthly' ? 'Mensal' : p.billing_cycle === 'yearly' ? 'Anual' : 'Trimestral'}</div>
+            <p class="plan-card-desc">${escapeHtml(p.description || 'Sem descrição cadastrada.')}</p>
+          </div>
+          <div class="plan-card-footer">
+            <span><strong>${p.subscribers_count}</strong> psicólogo(s)</span>
+            <div style="display: flex; gap: .4rem;">
+              <button class="action-btn" onclick="openPlanModal(${escapeHtml(JSON.stringify(p))})">Editar</button>
+              ${p.is_active 
+                ? `<button class="action-btn delete-btn" onclick="deletePlan(${p.id})">Desativar</button>` 
+                : `<button class="action-btn pay-btn" onclick="reactivatePlan(${p.id})">Reativar</button>`
+              }
+            </div>
+          </div>
+        </div>
+      `).join('');
     }
 
     async function loadSubscriptions() {
@@ -972,6 +1002,7 @@
       const token = sessionStorage.getItem('cuidare_admin_access_token');
       const formData = new FormData(e.target);
       const payload = Object.fromEntries(formData.entries());
+      payload.is_active = formData.has('is_active');
 
       try {
         const url = editingPlanId ? `${apiBase}/api/finance/admin/plans/${editingPlanId}` : `${apiBase}/api/finance/admin/plans`;
@@ -995,7 +1026,7 @@
     });
 
     async function deletePlan(id) {
-      if (!confirm('Deseja realmente desativar este plano?')) return;
+      if (!confirm('Deseja realmente desativar este plano? Ele deixará de aparecer para novas contratações.')) return;
       const token = sessionStorage.getItem('cuidare_admin_access_token');
       try {
         const res = await fetch(`${apiBase}/api/finance/admin/plans/${id}`, {
@@ -1005,6 +1036,23 @@
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || 'Erro ao desativar plano.');
         showToast('Plano desativado.');
+        await loadPlans();
+        await loadSummary();
+      } catch (err) {
+        showToast(err.message);
+      }
+    }
+
+    async function reactivatePlan(id) {
+      const token = sessionStorage.getItem('cuidare_admin_access_token');
+      try {
+        const res = await fetch(`${apiBase}/api/finance/admin/plans/${id}/reactivate`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erro ao reativar plano.');
+        showToast('Plano reativado com sucesso!');
         await loadPlans();
         await loadSummary();
       } catch (err) {
