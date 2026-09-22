@@ -275,7 +275,8 @@
 
     async function refreshFinance() {
       try {
-        const month = document.querySelector('#filter-month').value;
+        const monthInput = document.querySelector('#filter-month');
+        const month = monthInput.value;
         const headers = { Authorization: `Bearer ${token}` };
         const urlParams = month ? `?month=${month}` : '';
         
@@ -284,6 +285,7 @@
           fetch(`${apiBase}/api/finance/payments${urlParams}`, { headers }),
           fetch(`${apiBase}/api/finance/expenses${urlParams}`, { headers })
         ]);
+
 
         const sum = await sumRes.json();
         const pays = await payRes.json();
@@ -424,6 +426,12 @@
 
     loadProfile();
     loadClients();
+    
+    // Set default month to current month
+    const now = new Date();
+    const currentMonth = now.toISOString().substring(0, 7); // "YYYY-MM"
+    document.querySelector('#filter-month').value = currentMonth;
+    
     refreshFinance();
   </script>
 </body>
