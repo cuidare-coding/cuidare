@@ -21,7 +21,7 @@
   </script>
   <style>
     html.auth-checking body { visibility: hidden; }
-    :root { --ink: #17211d; --muted: #68756e; --paper: #f3f6f1; --panel: #fff; --line: #dfe7df; --accent: #196a52; --accent-dark: #0f4d3b; --mint: #d9eee3; --gold: #a56c19; --coral: #b65b4d; --shadow: 0 18px 40px rgba(28, 62, 47, .07); }
+    :root { --ink: #17211d; --muted: #68756e; --paper: #f3f6f1; --panel: #fff; --line: #dfe7df; --accent: #196a52; --accent-dark: #0f4d3b; --mint: #d9eee3; --gold: #a56c19; --coral: #b65b4d; --red: #a13b34; --shadow: 0 18px 40px rgba(28, 62, 47, .07); }
     * { box-sizing: border-box; }
     body { margin: 0; min-width: 320px; color: var(--ink); background: var(--paper); font-family: Arial, sans-serif; }
     button, a { -webkit-tap-highlight-color: transparent; }
@@ -89,6 +89,26 @@
     .appointment-repeat { display: block; margin-top: .25rem; color: var(--accent); font-size: .64rem; }
     .modal-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.4rem; }
     .secondary-button { border: 1px solid var(--line); border-radius: 4px; padding: .75rem 1rem; color: var(--muted); background: #fff; cursor: pointer; font-size: .75rem; }
+    .secondary-button:hover { border-color: var(--accent); color: var(--accent-dark); background: var(--mint); }
+    .primary-button { border: 0; border-radius: 4px; padding: .8rem 1rem; color: #fff; background: var(--accent); cursor: pointer; font-size: .78rem; font-weight: 700; }
+    .primary-button:hover { background: var(--accent-dark); }
+    .primary-button:disabled { opacity: .65; cursor: progress; }
+    .primary-button[hidden] { display: none; }
+    .primary-button.danger-button { background: var(--red); }
+    .primary-button.danger-button:hover { background: #82312b; }
+    .delete-button { color: var(--red); border-color: #eccbc7; }
+    .delete-button:hover { color: var(--red); border-color: var(--red); background: #fdeceb; }
+    #confirm-modal { z-index: 30; }
+    .modal.modal-narrow { width: min(100%, 27rem); }
+    .confirm-message { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.55; }
+    .confirm-message[hidden], .confirm-choices[hidden] { display: none; }
+    .confirm-choices { display: grid; gap: .55rem; margin-top: 1.1rem; }
+    .confirm-option { display: grid; gap: .18rem; width: 100%; border: 1px solid var(--line); border-radius: 5px; padding: .75rem .85rem; color: var(--ink); background: #fbfcfa; cursor: pointer; font: inherit; font-size: .78rem; text-align: left; }
+    .confirm-option strong { font-size: .78rem; }
+    .confirm-option small { color: var(--muted); font-size: .68rem; }
+    .confirm-option:hover, .confirm-option:focus-visible { border-color: var(--accent); background: var(--mint); }
+    .confirm-option[data-tone="danger"] strong { color: var(--red); }
+    .confirm-option[data-tone="danger"]:hover, .confirm-option[data-tone="danger"]:focus-visible { border-color: var(--red); background: #fdeceb; }
     .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
     .toast.show { opacity: 1; transform: translateY(0); }
     @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } .page-heading { display: block; } .week-controls { margin-top: 1.2rem; } .summary { grid-template-columns: 1fr; } }
@@ -109,7 +129,21 @@
       <section class="calendar-panel" aria-label="Agenda semanal"><div class="calendar-scroll"><div class="calendar" id="calendar"></div></div><p class="empty-note" id="empty-note">Sua agenda semanal ainda não possui sessões cadastradas.</p></section>
     </main>
   </div>
-  <div class="modal-backdrop" id="appointment-modal" role="dialog" aria-modal="true" aria-labelledby="appointment-title"><div class="modal"><div class="modal-header"><h2 id="appointment-title">Cadastrar atendimento</h2><button class="close-button" id="close-appointment" type="button" aria-label="Fechar">×</button></div><form id="appointment-form" class="form-grid"><label>Cliente<select name="client_id" id="appointment-client" required><option value="">Selecione um cliente</option></select></label><label>Data e horário<input name="starts_at" id="appointment-starts-at" type="datetime-local" required></label><label>Duração<select name="duration_minutes"><option value="50">50 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="90">1h30</option></select></label><label>Tipo de atendimento<input name="type" value="Sessão" required></label><label for="appointment-recurrence">Repetição<select name="recurrence" id="appointment-recurrence" aria-describedby="appointment-recurrence-help"><option value="">Não repete</option><option value="daily">Todos os dias</option><option value="weekly">Toda semana</option><option value="biweekly">A cada 2 semanas</option><option value="monthly">Todo mês</option></select><small class="form-help" id="appointment-recurrence-help">A série continua até ser editada ou excluída.</small></label><label>Observações (opcional)<textarea name="notes" placeholder="Observações do atendimento"></textarea></label><div style="display:grid; gap:.8rem; padding:1rem; background:var(--mint); border-radius:4px; margin-bottom:1rem;"><p style="margin:0; font-size:.7rem; font-weight:700; color:var(--accent-dark);">Financeiro</p><div style="display:flex; align-items:center; gap:.8rem;"><label style="margin:0; display:flex; align-items:center; gap:.4rem;"><input type="checkbox" name="create_payment" value="true"> Registrar pagamento</label><input type="number" name="payment_amount" placeholder="Valor (R$)" style="width:100px; min-height:2.2rem; padding:0 .5rem;"><select name="payment_status" style="min-height:2.2rem; padding:0 .4rem; border:1px solid var(--line); border-radius:4px; font-size:.75rem;"><option value="paid">Pago</option><option value="pending">Pendente</option></select></div></div><div class="modal-actions"><button class="secondary-button" id="cancel-appointment" type="button">Cancelar</button><button class="secondary-button delete-button" id="delete-appointment" type="button" style="display:none;color:var(--red);border-color:var(--red);">Excluir</button><button class="primary-button" type="submit">Salvar atendimento</button></div></form></div></div>
+  <div class="modal-backdrop" id="appointment-modal" role="dialog" aria-modal="true" aria-labelledby="appointment-title"><div class="modal"><div class="modal-header"><h2 id="appointment-title">Cadastrar atendimento</h2><button class="close-button" id="close-appointment" type="button" aria-label="Fechar">×</button></div><form id="appointment-form" class="form-grid"><label>Cliente<select name="client_id" id="appointment-client" required><option value="">Selecione um cliente</option></select></label><label>Data e horário<input name="starts_at" id="appointment-starts-at" type="datetime-local" required></label><label>Duração<select name="duration_minutes"><option value="50">50 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="90">1h30</option></select></label><label>Tipo de atendimento<input name="type" value="Sessão" required></label><label for="appointment-recurrence">Repetição<select name="recurrence" id="appointment-recurrence" aria-describedby="appointment-recurrence-help"><option value="">Não repete</option><option value="daily">Todos os dias</option><option value="weekly">Toda semana</option><option value="biweekly">A cada 2 semanas</option><option value="monthly">Todo mês</option></select><small class="form-help" id="appointment-recurrence-help">A série continua até ser editada ou excluída.</small></label><label>Observações (opcional)<textarea name="notes" placeholder="Observações do atendimento"></textarea></label><div style="display:grid; gap:.8rem; padding:1rem; background:var(--mint); border-radius:4px; margin-bottom:1rem;"><p style="margin:0; font-size:.7rem; font-weight:700; color:var(--accent-dark);">Financeiro</p><div style="display:flex; align-items:center; gap:.8rem;"><label style="margin:0; display:flex; align-items:center; gap:.4rem;"><input type="checkbox" name="create_payment" value="true"> Registrar pagamento</label><input type="number" name="payment_amount" placeholder="Valor (R$)" style="width:100px; min-height:2.2rem; padding:0 .5rem;"><select name="payment_status" style="min-height:2.2rem; padding:0 .4rem; border:1px solid var(--line); border-radius:4px; font-size:.75rem;"><option value="paid">Pago</option><option value="pending">Pendente</option></select></div></div><div class="modal-actions"><button class="secondary-button" id="cancel-appointment" type="button">Cancelar</button><button class="secondary-button delete-button" id="delete-appointment" type="button" style="display:none">Excluir</button><button class="primary-button" type="submit">Salvar atendimento</button></div></form></div></div>
+  <div class="modal-backdrop" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+    <div class="modal modal-narrow">
+      <div class="modal-header">
+        <h2 id="confirm-title">Confirmar</h2>
+        <button class="close-button" id="confirm-close" type="button" aria-label="Fechar">×</button>
+      </div>
+      <p class="confirm-message" id="confirm-message"></p>
+      <div class="confirm-choices" id="confirm-choices" hidden></div>
+      <div class="modal-actions">
+        <button class="secondary-button" id="confirm-cancel" type="button">Cancelar</button>
+        <button class="primary-button" id="confirm-accept" type="button">Confirmar</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="appointment-recurrence.js"></script>
   <script>
@@ -169,6 +203,40 @@
     }
     function setAppointmentModal(open) { appointmentModal.classList.toggle('open', open); if (open) appointmentForm.elements.client_id.focus(); }
     function localDateTimeValue(value) { const date = new Date(value); const pad = (part) => String(part).padStart(2, '0'); return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; }
+    function formatSession(value) { const date = new Date(value); return `${date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`; }
+    function pluralize(count, singular, plural) { return `${count} ${count === 1 ? singular : plural}`; }
+    const confirmModal = document.querySelector('#confirm-modal');
+    const confirmChoices = document.querySelector('#confirm-choices');
+    let resolveConfirmation = null;
+    function setConfirmModal(open) { confirmModal.classList.toggle('open', open); }
+    function closeConfirmation(value) {
+      const resolve = resolveConfirmation;
+      resolveConfirmation = null;
+      setConfirmModal(false);
+      if (resolve) resolve(value);
+    }
+    function confirmAction({ title, message, acceptLabel = 'Confirmar', danger = false, choices = [] }) {
+      document.querySelector('#confirm-title').textContent = title;
+      const messageBox = document.querySelector('#confirm-message');
+      messageBox.textContent = message || '';
+      messageBox.hidden = !message;
+      confirmChoices.innerHTML = choices.map((choice) => `<button class="confirm-option" type="button" data-choice="${choice.value}"${choice.tone ? ` data-tone="${choice.tone}"` : ''}><strong>${choice.label}</strong>${choice.hint ? `<small>${choice.hint}</small>` : ''}</button>`).join('');
+      confirmChoices.hidden = choices.length === 0;
+      const acceptButton = document.querySelector('#confirm-accept');
+      acceptButton.hidden = choices.length > 0;
+      acceptButton.textContent = acceptLabel;
+      acceptButton.classList.toggle('danger-button', danger);
+      setConfirmModal(true);
+      const focusTarget = choices.length ? confirmChoices.querySelector('button') : acceptButton;
+      if (focusTarget) focusTarget.focus();
+      return new Promise((resolve) => { resolveConfirmation = resolve; });
+    }
+    document.querySelector('#confirm-cancel').addEventListener('click', () => closeConfirmation(null));
+    document.querySelector('#confirm-close').addEventListener('click', () => closeConfirmation(null));
+    document.querySelector('#confirm-accept').addEventListener('click', () => closeConfirmation('accept'));
+    confirmChoices.addEventListener('click', (event) => { const button = event.target.closest('button[data-choice]'); if (button) closeConfirmation(button.dataset.choice); });
+    confirmModal.addEventListener('click', (event) => { if (event.target === confirmModal) closeConfirmation(null); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && confirmModal.classList.contains('open')) closeConfirmation(null); });
     function recurrenceHelp(anchorValue, recurrence) {
       const help = document.querySelector('#appointment-recurrence-help');
       if (!CuidareRecurrence.isRecurring(recurrence) || !anchorValue) {
@@ -219,22 +287,28 @@
       const appointment = appointments.find((item) => item.id === editingAppointmentId);
       if (!appointment) return;
 
-      let shouldDelete = false;
       let deleteSeries = false;
 
       if (appointment.series_id) {
-        const choice = window.confirm('Excluir esta sessão e TODAS as futuras da mesma série?\n\nClique "OK" para excluir a SÉRIE completa ou "Cancelar" para escolher excluir APENAS ESTA sessão.');
-        if (choice) {
-          shouldDelete = true;
-          deleteSeries = true;
-        } else if (window.confirm('Excluir apenas esta sessão?')) {
-          shouldDelete = true;
-        }
-      } else if (window.confirm('Excluir este atendimento?')) {
-        shouldDelete = true;
+        const seriesSessions = appointments.filter((item) => item.series_id === appointment.series_id && new Date(item.starts_at) >= new Date(appointment.starts_at));
+        const choice = await confirmAction({
+          title: 'Excluir sessão da série',
+          message: 'Este atendimento faz parte de uma série que se repete. Escolha o que deve ser excluído:',
+          choices: [
+            { value: 'single', label: 'Apenas esta sessão', hint: formatSession(appointment.starts_at) },
+            { value: 'series', label: 'Esta e todas as futuras', tone: 'danger', hint: `${pluralize(seriesSessions.length, 'sessão será excluída', 'sessões serão excluídas')}, a partir de ${formatSession(appointment.starts_at)}` },
+          ],
+        });
+        if (choice === 'series') deleteSeries = true;
+        else if (choice !== 'single') return;
+      } else if (await confirmAction({
+        title: 'Excluir atendimento',
+        message: `Excluir o atendimento de ${appointment.patient} em ${formatSession(appointment.starts_at)}?`,
+        acceptLabel: 'Excluir',
+        danger: true,
+      }) !== 'accept') {
+        return;
       }
-
-      if (!shouldDelete) return;
 
       try {
         const url = `${apiBase}/api/appointments/${appointment.id}${deleteSeries ? '?series=true' : ''}`;
@@ -268,7 +342,20 @@
         const payload = Object.fromEntries(formData.entries());
         payload.starts_at = new Date(payload.starts_at).toISOString();
         const editing = appointments.find((item) => item.id === editingAppointmentId);
-        const applyToSeries = Boolean(editing && editing.series_id) && window.confirm('Aplicar as alterações a esta sessão e a TODAS as futuras da mesma série?\n\nClique "OK" para alterar a SÉRIE ou "Cancelar" para alterar APENAS ESTA sessão.');
+        let applyToSeries = false;
+        if (editing && editing.series_id) {
+          const seriesSessions = appointments.filter((item) => item.series_id === editing.series_id && new Date(item.starts_at) >= new Date(editing.starts_at));
+          const scope = await confirmAction({
+            title: 'Salvar alterações',
+            message: 'Este atendimento faz parte de uma série que se repete. Onde aplicar as alterações?',
+            choices: [
+              { value: 'single', label: 'Apenas esta sessão', hint: formatSession(editing.starts_at) },
+              { value: 'series', label: 'Esta e as futuras', hint: pluralize(seriesSessions.length, 'sessão será atualizada', 'sessões serão atualizadas') },
+            ],
+          });
+          if (!scope) return;
+          applyToSeries = scope === 'series';
+        }
         const url = editingAppointmentId
           ? `${apiBase}/api/appointments/${editingAppointmentId}${applyToSeries ? '?series=true' : ''}`
           : `${apiBase}/api/appointments`;
