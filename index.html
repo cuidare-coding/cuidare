@@ -1114,22 +1114,14 @@
         <p class="section-desc">Pacientes têm acesso gratuito para buscar e agendar consultas. Psicólogos contam com planos transparentes para gestão completa.</p>
       </div>
 
-      <div class="pricing-toggle">
-        <span id="label-monthly" style="color: var(--accent-dark);">Mensal</span>
-        <div class="toggle-switch" id="cycle-toggle" role="button" aria-label="Alternar ciclo de cobrança">
-          <div class="toggle-knob"></div>
-        </div>
-        <span id="label-yearly">Anual <span class="discount-pill">2 meses grátis</span></span>
-      </div>
-
-      <div class="pricing-grid" id="pricing-container">
+      <div class="pricing-grid" id="pricing-container" style="margin-top: 2rem;">
         <!-- Plan 1 -->
         <article class="pricing-card">
           <div>
             <h3>Iniciante</h3>
             <p class="pricing-desc">Para psicólogos iniciando atendimentos e construindo sua base de pacientes.</p>
             <div class="price-value-wrap">
-              <span class="price-amount" data-monthly="49" data-yearly="39">R$ 49</span>
+              <span class="price-amount">R$ 49</span>
               <span class="price-period">/mês</span>
             </div>
             <ul class="price-features">
@@ -1137,6 +1129,7 @@
               <li><span>✓</span> Agenda clínica completa</li>
               <li><span>✓</span> Agendamentos recorrentes</li>
               <li><span>✓</span> Controle financeiro básico</li>
+              <li><span>✓</span> Sem fidelidade: pague mês a mês</li>
             </ul>
           </div>
           <a class="btn btn-secondary" href="login.html" style="width: 100%;">Começar Agora</a>
@@ -1149,7 +1142,7 @@
             <h3>Profissional</h3>
             <p class="pricing-desc">Para profissionais com consultório ativo buscando organização completa.</p>
             <div class="price-value-wrap">
-              <span class="price-amount" data-monthly="89" data-yearly="69">R$ 89</span>
+              <span class="price-amount">R$ 89</span>
               <span class="price-period">/mês</span>
             </div>
             <ul class="price-features">
@@ -1159,6 +1152,7 @@
               <li><span>✓</span> Prontuários e fichas seguras</li>
               <li><span>✓</span> Gestão financeira & relatórios</li>
               <li><span>✓</span> Suporte prioritário via WhatsApp</li>
+              <li><span>✓</span> Sem fidelidade: pague mês a mês</li>
             </ul>
           </div>
           <a class="btn btn-primary" href="login.html" style="width: 100%;">Assinar Profissional</a>
@@ -1346,24 +1340,7 @@
       });
     });
 
-    // Pricing Billing Toggle (Monthly / Yearly)
-    const toggle = document.getElementById('cycle-toggle');
-    let isYearly = false;
 
-    if (toggle) {
-      toggle.addEventListener('click', () => {
-        isYearly = !isYearly;
-        toggle.classList.toggle('active', isYearly);
-        document.getElementById('label-monthly').style.color = isYearly ? 'var(--muted)' : 'var(--accent-dark)';
-        document.getElementById('label-yearly').style.color = isYearly ? 'var(--accent-dark)' : 'var(--muted)';
-
-        document.querySelectorAll('.price-amount').forEach((el) => {
-          const m = el.getAttribute('data-monthly');
-          const y = el.getAttribute('data-yearly');
-          el.textContent = `R$ ${isYearly ? y : m}`;
-        });
-      });
-    }
 
     // Smooth Scroll for Internal Anchors
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
