@@ -1,0 +1,1401 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cuidare - Conectando pacientes a psicólogos qualificados e oferecendo gestão clínica inteligente para profissionais da saúde mental.">
+  <title>Cuidare | Cuidado Psicológico & Gestão Clínica</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #5e6d65;
+      --paper: #f6f8f4;
+      --panel: #ffffff;
+      --line: #dce6dc;
+      --accent: #196a52;
+      --accent-dark: #0f4d3b;
+      --accent-light: #258567;
+      --mint: #d9eee3;
+      --mint-light: #eef7f2;
+      --gold: #c68b37;
+      --gold-light: #fef8ee;
+      --coral: #b65b4d;
+      --shadow-sm: 0 4px 12px rgba(15, 77, 59, .04);
+      --shadow: 0 20px 45px rgba(15, 77, 59, .08);
+      --shadow-lg: 0 30px 70px rgba(15, 77, 59, .12);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Arial, system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.15;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+
+    /* Container */
+    .container {
+      width: min(100% - 2.5rem, 1180px);
+      margin-inline: auto;
+    }
+
+    /* Header / Navbar */
+    .header {
+      position: sticky;
+      top: 0;
+      background: rgba(246, 248, 244, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      z-index: 100;
+      transition: background-color .2s;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 4.5rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .75rem;
+      font: bold 1.35rem Georgia, 'Times New Roman', serif;
+      color: var(--accent-dark);
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      background: var(--mint);
+      color: var(--accent-dark);
+      font-size: .95rem;
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-link {
+      font-size: .88rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color .2s;
+    }
+    .nav-link:hover { color: var(--accent-dark); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      border-radius: 4px;
+      padding: .65rem 1.25rem;
+      font-size: .86rem;
+      font-weight: 700;
+      transition: all .2s ease;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      color: var(--accent-dark);
+      background: transparent;
+    }
+    .btn-ghost:hover { color: var(--accent); background: var(--mint-light); }
+
+    .btn-primary {
+      color: #fff;
+      background: var(--accent);
+      box-shadow: 0 4px 14px rgba(25, 106, 82, .25);
+    }
+    .btn-primary:hover {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(25, 106, 82, .3);
+    }
+
+    .btn-secondary {
+      color: var(--accent-dark);
+      background: #fff;
+      border-color: var(--line);
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: var(--mint-light);
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: transparent;
+      border: 0;
+      font-size: 1.5rem;
+      color: var(--accent-dark);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: clamp(3rem, 7vw, 5.5rem) 0 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+      gap: 3.5rem;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: .35rem .85rem;
+      background: #fff;
+      color: var(--accent-dark);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .badge-dot {
+      width: .5rem;
+      height: .5rem;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 4.8vw, 3.9rem);
+      margin: 0 0 1.25rem;
+      color: var(--accent-dark);
+      letter-spacing: -.02em;
+    }
+
+    .hero-desc {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--muted);
+      margin: 0 0 2rem;
+      max-width: 36rem;
+      line-height: 1.7;
+    }
+
+    /* Dual Audience Switcher in Hero */
+    .hero-audience-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+    }
+    .audience-tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.2rem;
+      background: var(--paper);
+      padding: .3rem;
+      border-radius: 6px;
+    }
+    .audience-tab {
+      flex: 1;
+      text-align: center;
+      padding: .55rem .8rem;
+      border: 0;
+      background: transparent;
+      border-radius: 4px;
+      font-size: .84rem;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all .2s ease;
+    }
+    .audience-tab.active {
+      background: #fff;
+      color: var(--accent-dark);
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .search-box-wrap {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .search-box-input {
+      flex: 1;
+      min-width: 14rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: .75rem 1rem;
+      font-size: .88rem;
+      background: #fafcfb;
+    }
+    .search-box-input:focus { outline: 3px solid var(--mint); border-color: var(--accent); }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    /* Hero Mockup Widget */
+    .mockup-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    .mockup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .mockup-user {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .mockup-avatar {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      background: var(--mint);
+      color: var(--accent-dark);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: .8rem;
+    }
+    .mockup-user strong { display: block; font-size: .85rem; font-family: Georgia, serif; }
+    .mockup-user span { font-size: .7rem; color: var(--muted); }
+
+    .mockup-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .8rem;
+      margin-bottom: 1.25rem;
+    }
+    .mock-metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .85rem;
+      background: var(--paper);
+    }
+    .mock-metric span { font-size: .68rem; color: var(--muted); display: block; }
+    .mock-metric strong { font-size: 1.25rem; font-family: Georgia, serif; color: var(--accent-dark); display: block; margin-top: .2rem; }
+
+    .mockup-agenda-title {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .8rem;
+    }
+    .mock-session-list {
+      display: grid;
+      gap: .6rem;
+    }
+    .mock-session {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .65rem .8rem;
+      background: #fafcfb;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: .78rem;
+    }
+    .mock-session-time {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: .75rem;
+      min-width: 4rem;
+    }
+    .mock-tag {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: .15rem .45rem;
+      border-radius: 10px;
+      background: var(--mint);
+      color: var(--accent-dark);
+    }
+
+    /* Trust / Features Bar */
+    .trust-bar {
+      border-block: 1px solid var(--line);
+      background: #fff;
+      padding: 2.2rem 0;
+    }
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      text-align: center;
+    }
+    .trust-item strong {
+      display: block;
+      font-size: 1.05rem;
+      color: var(--accent-dark);
+      font-family: Georgia, serif;
+      margin-bottom: .25rem;
+    }
+    .trust-item span {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    /* Section Styles */
+    .section {
+      padding: clamp(4rem, 8vw, 7rem) 0;
+    }
+    .section-header {
+      text-align: center;
+      max-width: 44rem;
+      margin: 0 auto clamp(2.5rem, 5vw, 4rem);
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: .6rem;
+      display: block;
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 2.9rem);
+      margin: 0 0 1rem;
+      color: var(--accent-dark);
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: .98rem;
+      margin: 0;
+    }
+
+    /* Interactive Ecosystem Showcase (Patients vs Psychologists) */
+    .ecosystem-tabs {
+      display: flex;
+      justify-content: center;
+      gap: .75rem;
+      margin-bottom: 2.5rem;
+    }
+    .eco-tab-btn {
+      padding: .75rem 1.75rem;
+      border-radius: 30px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-weight: 700;
+      font-size: .92rem;
+      color: var(--muted);
+      transition: all .2s ease;
+    }
+    .eco-tab-btn.active {
+      background: var(--accent-dark);
+      color: #fff;
+      border-color: var(--accent-dark);
+      box-shadow: 0 4px 15px rgba(15, 77, 59, .2);
+    }
+
+    .eco-view { display: none; }
+    .eco-view.active { display: block; }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+    }
+    .feature-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform .25s ease, box-shadow .25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .feature-icon {
+      width: 3.2rem;
+      height: 3.2rem;
+      border-radius: 8px;
+      background: var(--mint);
+      color: var(--accent-dark);
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.4rem;
+    }
+    .feature-card h3 {
+      font-size: 1.35rem;
+      margin: 0 0 .75rem;
+    }
+    .feature-card p {
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Steps Section */
+    .steps-section {
+      background: var(--accent-dark);
+      color: #eef7f1;
+      background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,.08) 0 1px, transparent 1px),
+        linear-gradient(160deg, #0f4d3b, #196a52 75%, #237c60);
+      background-size: 24px 24px, auto;
+    }
+    .steps-section .section-title, .steps-section h3 {
+      color: #fff;
+    }
+    .steps-section .section-desc {
+      color: #c9e6d8;
+    }
+    .steps-section .eyebrow {
+      color: #a8e3c6;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    .step-card {
+      border: 1px solid rgba(255, 255, 255, .15);
+      background: rgba(255, 255, 255, .05);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      padding: 2.2rem 1.75rem;
+    }
+    .step-num {
+      display: inline-block;
+      font-size: 2rem;
+      font-family: Georgia, serif;
+      color: #a8e3c6;
+      margin-bottom: .8rem;
+      font-weight: bold;
+    }
+    .step-card h3 {
+      font-size: 1.3rem;
+      margin: 0 0 .75rem;
+    }
+    .step-card p {
+      color: #c9e6d8;
+      font-size: .88rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Pricing Section */
+    .pricing-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      font-size: .88rem;
+      font-weight: 600;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 3.4rem;
+      height: 1.85rem;
+      background: var(--line);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .toggle-switch.active { background: var(--accent); }
+    .toggle-knob {
+      position: absolute;
+      top: .2rem;
+      left: .25rem;
+      width: 1.45rem;
+      height: 1.45rem;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,.15);
+      transition: transform .2s ease;
+    }
+    .toggle-switch.active .toggle-knob {
+      transform: translateX(1.5rem);
+    }
+    .discount-pill {
+      background: var(--mint);
+      color: var(--accent-dark);
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .2rem .5rem;
+      border-radius: 12px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+      align-items: stretch;
+    }
+    .pricing-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 2.25rem 2rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .pricing-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .pricing-card.featured {
+      border: 2px solid var(--accent);
+      box-shadow: var(--shadow);
+    }
+    .featured-ribbon {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .3rem .9rem;
+      border-radius: 20px;
+    }
+    .pricing-card h3 {
+      font-size: 1.45rem;
+      margin: 0 0 .5rem;
+    }
+    .pricing-desc {
+      color: var(--muted);
+      font-size: .82rem;
+      min-height: 2.5rem;
+      margin: 0 0 1.5rem;
+    }
+    .price-value-wrap {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .price-amount {
+      font-size: 2.75rem;
+      font-family: Georgia, serif;
+      font-weight: 400;
+      color: var(--accent-dark);
+    }
+    .price-period {
+      font-size: .82rem;
+      color: var(--muted);
+    }
+    .price-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 2rem;
+      display: grid;
+      gap: .75rem;
+      font-size: .85rem;
+      color: var(--ink);
+    }
+    .price-features li {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .price-features li span {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* FAQ Section */
+    .faq-grid {
+      max-width: 48rem;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+    .faq-item {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .faq-question {
+      width: 100%;
+      padding: 1.25rem 1.5rem;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      font-family: Georgia, serif;
+      font-size: 1.05rem;
+      color: var(--ink);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+    }
+    .faq-icon {
+      font-size: 1.3rem;
+      color: var(--accent);
+      transition: transform .25s ease;
+    }
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease, padding .3s ease;
+      padding: 0 1.5rem;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.7;
+    }
+    .faq-item.open .faq-answer {
+      max-height: 15rem;
+      padding: 0 1.5rem 1.4rem;
+    }
+
+    /* CTA Strip */
+    .cta-strip {
+      background: var(--mint-light);
+      border-block: 1px solid var(--line);
+      padding: clamp(3.5rem, 6vw, 5rem) 0;
+      text-align: center;
+    }
+    .cta-box {
+      max-width: 38rem;
+      margin: 0 auto;
+    }
+    .cta-box h2 {
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      margin: 0 0 1rem;
+      color: var(--accent-dark);
+    }
+    .cta-box p {
+      color: var(--muted);
+      font-size: 1rem;
+      margin: 0 0 2rem;
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--accent-dark);
+      color: #d4e8de;
+      padding: 4.5rem 0 2.5rem;
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(3, 1fr);
+      gap: 3rem;
+      margin-bottom: 3.5rem;
+    }
+    .footer-brand {
+      color: #fff;
+      font: bold 1.35rem Georgia, serif;
+      margin-bottom: .9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+    }
+    .footer-desc {
+      font-size: .84rem;
+      color: #aed5c2;
+      line-height: 1.6;
+      max-width: 20rem;
+    }
+    .footer-col h4 {
+      color: #fff;
+      font-size: .92rem;
+      margin: 0 0 1.25rem;
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: .75rem;
+      font-size: .84rem;
+    }
+    .footer-links a {
+      color: #c0ded0;
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: #fff; }
+    .footer-bottom {
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .78rem;
+      color: #9ac7b2;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 28rem; margin: 0 auto; }
+      .trust-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .mobile-toggle { display: block; }
+      .nav.open .nav-links {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--line);
+        box-shadow: var(--shadow);
+      }
+      .features-grid { grid-template-columns: 1fr; }
+      .trust-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="header">
+    <div class="container">
+      <nav class="nav" id="navbar">
+        <a class="brand" href="index.html" aria-label="Cuidare Página Inicial">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          Cuidare
+        </a>
+
+        <ul class="nav-links">
+          <li><a class="nav-link" href="#pacientes">Para Pacientes</a></li>
+          <li><a class="nav-link" href="#psicologos">Para Psicólogos</a></li>
+          <li><a class="nav-link" href="#como-funciona">Como Funciona</a></li>
+          <li><a class="nav-link" href="#planos">Planos</a></li>
+          <li><a class="nav-link" href="#faq">Dúvidas</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a class="btn btn-ghost" href="login.html">Entrar</a>
+          <a class="btn btn-primary" href="#pacientes">Agendar Consulta</a>
+          <button class="mobile-toggle" id="menu-btn" aria-label="Menu de Navegação">☰</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Saúde Mental & Gestão Clínica
+          </div>
+          <h1>Cuidado para quem busca. Inteligência para quem acolhe.</h1>
+          <p class="hero-desc">
+            A Cuidare une pessoas a psicólogos qualificados para atendimentos acolhedores, oferecendo aos profissionais uma gestão clínica e financeira sem complicação.
+          </p>
+
+          <!-- Dual Target Interactive Box -->
+          <div class="hero-audience-card">
+            <div class="audience-tabs">
+              <button class="audience-tab active" id="tab-hero-patient" type="button">🔍 Sou Paciente</button>
+              <button class="audience-tab" id="tab-hero-psych" type="button">🩺 Sou Psicólogo</button>
+            </div>
+
+            <!-- View for Patients -->
+            <div id="hero-view-patient">
+              <p style="font-size: .84rem; color: var(--muted); margin: 0 0 .8rem;">Encontre profissionais verificados pelo CRP para atendimento online ou presencial:</p>
+              <div class="search-box-wrap">
+                <input class="search-box-input" type="search" placeholder="Qual apoio busca? (ex: Ansiedade, TCC, Casal, Infantil...)">
+                <a class="btn btn-primary" href="login.html">Buscar Psicólogo</a>
+              </div>
+            </div>
+
+            <!-- View for Psychologists -->
+            <div id="hero-view-psych" style="display: none;">
+              <p style="font-size: .84rem; color: var(--muted); margin: 0 0 .8rem;">Organize seu consultório com agenda recorrente, prontuários e finanças:</p>
+              <div class="hero-actions">
+                <a class="btn btn-primary" href="login.html">Criar Conta Profissional</a>
+                <a class="btn btn-secondary" href="#planos">Ver Planos e Valores</a>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 1.5rem; font-size: .8rem; color: var(--muted); flex-wrap: wrap;">
+            <div><strong style="color: var(--accent);">✓</strong> Sigilo ético garantido</div>
+            <div><strong style="color: var(--accent);">✓</strong> Atendimento online & presencial</div>
+            <div><strong style="color: var(--accent);">✓</strong> Profissionais verificados</div>
+          </div>
+        </div>
+
+        <!-- Visual Mockup Widget -->
+        <div class="mockup-card">
+          <div class="mockup-header">
+            <div class="mockup-user">
+              <span class="mockup-avatar">DR</span>
+              <div>
+                <strong>Dra. Renata Silveira</strong>
+                <span>Psicóloga Clínica · CRP 06/123456</span>
+              </div>
+            </div>
+            <span class="mock-tag">Profissional Verificado</span>
+          </div>
+
+          <div class="mockup-metrics">
+            <div class="mock-metric">
+              <span>Avaliação Média</span>
+              <strong>5.0 ★★★★★</strong>
+            </div>
+            <div class="mock-metric">
+              <span>Modalidades</span>
+              <strong>Online & Presencial</strong>
+            </div>
+          </div>
+
+          <div class="mockup-agenda-title">Próximos Horários Disponíveis</div>
+          <div class="mock-session-list">
+            <div class="mock-session">
+              <span class="mock-session-time">Hoje · 14:00</span>
+              <span>Sessão Online (50 min)</span>
+              <a class="btn btn-primary" href="login.html" style="padding: .35rem .75rem; font-size: .72rem;">Agendar</a>
+            </div>
+            <div class="mock-session">
+              <span class="mock-session-time">Amanhã · 10:00</span>
+              <span>Terapia de Casal</span>
+              <a class="btn btn-primary" href="login.html" style="padding: .35rem .75rem; font-size: .72rem;">Agendar</a>
+            </div>
+            <div class="mock-session">
+              <span class="mock-session-time">Quinta · 16:30</span>
+              <span>Presencial · Consultório</span>
+              <a class="btn btn-primary" href="login.html" style="padding: .35rem .75rem; font-size: .72rem;">Agendar</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Bar -->
+  <section class="trust-bar">
+    <div class="container">
+      <div class="trust-grid">
+        <div class="trust-item">
+          <strong>Sigilo Absoluto</strong>
+          <span>Conformidade com CFP e normas LGPD</span>
+        </div>
+        <div class="trust-item">
+          <strong>Agendamento Inteligente</strong>
+          <span>Sessões flexíveis e lembretes automáticos</span>
+        </div>
+        <div class="trust-item">
+          <strong>Pagamento Seguro</strong>
+          <span>PIX e cartão com recibo para reembolso</span>
+        </div>
+        <div class="trust-item">
+          <strong>Conexão Humana</strong>
+          <span>Ambiente acolhedor e focado no bem-estar</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Ecosystem Section -->
+  <section class="section" id="recursos">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Feito para Todos</span>
+        <h2 class="section-title">Um ecossistema completo para a saúde mental</h2>
+        <p class="section-desc">Descubra como a Cuidare transforma a experiência de quem busca terapia e de quem atende.</p>
+      </div>
+
+      <div class="ecosystem-tabs">
+        <button class="eco-tab-btn active" onclick="switchEcosystem('patients')" id="btn-eco-patients">🌿 Para Pacientes</button>
+        <button class="eco-tab-btn" onclick="switchEcosystem('psychologists')" id="btn-eco-psychologists">🩺 Para Psicólogos</button>
+      </div>
+
+      <!-- View 1: Patients Features -->
+      <div class="eco-view active" id="view-eco-patients">
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>Encontre o Psicólogo Ideal</h3>
+            <p>Filtre por abordagem terapêutica (TCC, Psicanálise, Humanista), queixa principal (ansiedade, luto, estresse) ou valor.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🗓️</div>
+            <h3>Agendamento Descomplicado</h3>
+            <p>Consulte os horários disponíveis em tempo real e agende sua consulta instantaneamente sem trocas infinitas de mensagens.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Espaço Seguro & Sigiloso</h3>
+            <p>Realize suas sessões em um ambiente protegido, com garantia de total sigilo profissional e ética clínica.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">💳</div>
+            <h3>Facilidade de Pagamento</h3>
+            <p>Pague com PIX ou cartão de forma simples e receba os comprovantes necessários para solicitar reembolso no seu plano de saúde.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🔔</div>
+            <h3>Lembretes de Sessão</h3>
+            <p>Receba notificações e lembretes com o link direto da consulta para nunca perder o horário do seu atendimento.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">💻</div>
+            <h3>Atendimento Onde Estiver</h3>
+            <p>Faça suas consultas online com comodidade do seu lar ou escolha atendimento presencial no consultório do profissional.</p>
+          </article>
+        </div>
+      </div>
+
+      <!-- View 2: Psychologists Features -->
+      <div class="eco-view" id="view-eco-psychologists">
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">📅</div>
+            <h3>Agenda com Recorrência</h3>
+            <p>Crie sessões semanais e quinzenais automáticas para pacientes contínuos, sem precisar remarcar manualmente toda semana.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">👥</div>
+            <h3>Gestão de Pacientes</h3>
+            <p>Fichas cadastrais completas, contatos de emergência e notas clínicas mantidas sob máxima segurança.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">💵</div>
+            <h3>Financeiro da Clínica</h3>
+            <p>Acompanhe pagamentos de sessões, receitas por paciente, calcule faturamento e controle despesas da clínica.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🌐</div>
+            <h3>Perfil Profissional Verificado</h3>
+            <p>Ganhe visibilidade para atrair novos pacientes que buscam sua especialidade com selo de verificação do CRP.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">🛡️</div>
+            <h3>Privacidade Blindada</h3>
+            <p>Seus prontuários e anotações são confidenciais e isolados, cumprindo todos os requisitos éticos e de sigilo da profissão.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">📱</div>
+            <h3>Acesso em Qualquer Dispositivo</h3>
+            <p>Interface moderna e responsiva para gerenciar seu consultório do computador ou direto pelo celular entre as sessões.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="section steps-section" id="como-funciona">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Simples e Prático</span>
+        <h2 class="section-title">Como a Cuidare funciona para você</h2>
+        <p class="section-desc">Cuidado descomplicado em cada etapa da jornada.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-num">01</span>
+          <h3>Escolha ou Cadastre-se</h3>
+          <p>Pacientes escolhem o profissional por especialidade; psicólogos criam seu perfil profissional e configuram horários.</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-num">02</span>
+          <h3>Agendamento Imediato</h3>
+          <p>Defina o horário da sessão (avulsa ou recorrente) e confirme a consulta no formato online ou presencial.</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-num">03</span>
+          <h3>Atendimento & Continuidade</h3>
+          <p>Realize a sessão com acolhimento e segurança, acompanhando pagamentos e evolução terapêutica sem estresse.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Plans Section -->
+  <section class="section" id="planos">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Planos para Profissionais</span>
+        <h2 class="section-title">Investimento acessível para sua prática clínica</h2>
+        <p class="section-desc">Pacientes têm acesso gratuito para buscar e agendar consultas. Psicólogos contam com planos transparentes para gestão completa.</p>
+      </div>
+
+      <div class="pricing-toggle">
+        <span id="label-monthly" style="color: var(--accent-dark);">Mensal</span>
+        <div class="toggle-switch" id="cycle-toggle" role="button" aria-label="Alternar ciclo de cobrança">
+          <div class="toggle-knob"></div>
+        </div>
+        <span id="label-yearly">Anual <span class="discount-pill">2 meses grátis</span></span>
+      </div>
+
+      <div class="pricing-grid" id="pricing-container">
+        <!-- Plan 1 -->
+        <article class="pricing-card">
+          <div>
+            <h3>Iniciante</h3>
+            <p class="pricing-desc">Para psicólogos iniciando atendimentos e construindo sua base de pacientes.</p>
+            <div class="price-value-wrap">
+              <span class="price-amount" data-monthly="49" data-yearly="39">R$ 49</span>
+              <span class="price-period">/mês</span>
+            </div>
+            <ul class="price-features">
+              <li><span>✓</span> Até 15 pacientes ativos</li>
+              <li><span>✓</span> Agenda clínica completa</li>
+              <li><span>✓</span> Agendamentos recorrentes</li>
+              <li><span>✓</span> Controle financeiro básico</li>
+            </ul>
+          </div>
+          <a class="btn btn-secondary" href="login.html" style="width: 100%;">Começar Agora</a>
+        </article>
+
+        <!-- Plan 2 (Featured) -->
+        <article class="pricing-card featured">
+          <span class="featured-ribbon">Mais Escolhido</span>
+          <div>
+            <h3>Profissional</h3>
+            <p class="pricing-desc">Para profissionais com consultório ativo buscando organização completa.</p>
+            <div class="price-value-wrap">
+              <span class="price-amount" data-monthly="89" data-yearly="69">R$ 89</span>
+              <span class="price-period">/mês</span>
+            </div>
+            <ul class="price-features">
+              <li><span>✓</span> Pacientes ilimitados</li>
+              <li><span>✓</span> Perfil com selo Verificado CRP</li>
+              <li><span>✓</span> Agenda inteligente com recorrência</li>
+              <li><span>✓</span> Prontuários e fichas seguras</li>
+              <li><span>✓</span> Gestão financeira & relatórios</li>
+              <li><span>✓</span> Suporte prioritário via WhatsApp</li>
+            </ul>
+          </div>
+          <a class="btn btn-primary" href="login.html" style="width: 100%;">Assinar Profissional</a>
+        </article>
+
+        <!-- Plan 3 -->
+        <article class="pricing-card">
+          <div>
+            <h3>Clínica & Espaço</h3>
+            <p class="pricing-desc">Para clínicas compartilhadas, parcerias e equipes multidisciplinares.</p>
+            <div class="price-value-wrap">
+              <span class="price-amount" data-monthly="159" data-yearly="129">R$ 159</span>
+              <span class="price-period">/mês</span>
+            </div>
+            <ul class="price-features">
+              <li><span>✓</span> Tudo do plano Profissional</li>
+              <li><span>✓</span> Múltiplos profissionais</li>
+              <li><span>✓</span> Gestão financeira unificada</li>
+              <li><span>✓</span> Atendimento VIP e suporte dedicado</li>
+            </ul>
+          </div>
+          <a class="btn btn-secondary" href="login.html" style="width: 100%;">Falar com Consultor</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="section" id="faq" style="background: #fff; border-top: 1px solid var(--line);">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Tire Suas Dúvidas</span>
+        <h2 class="section-title">Perguntas Frequentes</h2>
+        <p class="section-desc">Respostas claras para pacientes e psicólogos.</p>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <button class="faq-question" type="button">
+            <span>Sou paciente: quanto pago para agendar consultas?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            Para o paciente, a busca e o agendamento pela Cuidare são 100% gratuitos. Você paga apenas o valor da sessão definido pelo seu psicólogo, com pagamento direto, seguro e recibo para reembolso no convênio.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" type="button">
+            <span>Como é garantida a segurança e o sigilo das sessões?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            A Cuidare foi desenvolvida em rigorosa conformidade com o código de ética do Conselho Federal de Psicologia (CFP) e com a LGPD. Todos os dados, prontuários e históricos são criptografados e de acesso exclusivo do psicólogo responsável e seu paciente.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" type="button">
+            <span>Como funciona a recorrência de sessões para psicólogos?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            O psicólogo pode definir atendimentos recorrentes (semanais ou quinzenais). O sistema agenda automaticamente os próximos encontros, evitando conflitos de horários e mantendo o ritmo do processo terapêutico.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" type="button">
+            <span>O psicólogo tem fidelidade contratual nos planos?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            Não há carência ou multas rescisórias. Você pode alterar ou cancelar seu plano a qualquer momento diretamente pelo seu painel administrativo.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" type="button">
+            <span>Posso realizar atendimentos online e presenciais?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            Sim! A plataforma suporta tanto atendimentos online por videochamada quanto atendimentos presenciais com registro do endereço do consultório.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA Strip -->
+  <section class="cta-strip">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Comece hoje a cuidar da sua saúde mental ou do seu consultório.</h2>
+        <p>Junte-se a uma comunidade que valoriza a escuta, a empatia e a tecnologia a serviço do bem-estar.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <a class="btn btn-primary" href="login.html" style="padding: .9rem 2rem; font-size: 1rem;">Encontrar Psicólogo</a>
+          <a class="btn btn-secondary" href="login.html" style="padding: .9rem 2rem; font-size: 1rem;">Sou Psicólogo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a class="footer-brand" href="index.html">
+            <span class="brand-mark" style="background: rgba(255,255,255,.15); color: #fff; border-color: rgba(255,255,255,.4);">C</span>
+            Cuidare
+          </a>
+          <p class="footer-desc">
+            Tecnologia com sensibilidade para a saúde mental. Conectando pacientes a profissionais qualificados e empoderando psicólogos clínicos.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Para Pacientes</h4>
+          <ul class="footer-links">
+            <li><a href="#recursos">Buscar Psicólogos</a></li>
+            <li><a href="#recursos">Especialidades</a></li>
+            <li><a href="#recursos">Atendimento Online</a></li>
+            <li><a href="#faq">Como Funciona</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Para Psicólogos</h4>
+          <ul class="footer-links">
+            <li><a href="login.html">Login Profissional</a></li>
+            <li><a href="#planos">Planos & Preços</a></li>
+            <li><a href="admlogin.html">Painel Administrativo</a></li>
+            <li><a href="login.html">Cadastrar Consultório</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Ética & Segurança</h4>
+          <ul class="footer-links">
+            <li><a href="#">Código de Ética CFP</a></li>
+            <li><a href="#">Privacidade & LGPD</a></li>
+            <li><a href="#">Termos de Serviço</a></li>
+            <li><a href="#">Canal de Suporte</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 Cuidare. Todos os direitos reservados.</span>
+        <span>Acolhimento humano e tecnologia para a psicologia.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile Menu Toggle
+    const menuBtn = document.getElementById('menu-btn');
+    const navbar = document.getElementById('navbar');
+    if (menuBtn && navbar) {
+      menuBtn.addEventListener('click', () => {
+        navbar.classList.toggle('open');
+      });
+    }
+
+    // Hero Audience Switcher
+    const tabHeroPatient = document.getElementById('tab-hero-patient');
+    const tabHeroPsych = document.getElementById('tab-hero-psych');
+    const heroViewPatient = document.getElementById('hero-view-patient');
+    const heroViewPsych = document.getElementById('hero-view-psych');
+
+    if (tabHeroPatient && tabHeroPsych) {
+      tabHeroPatient.addEventListener('click', () => {
+        tabHeroPatient.classList.add('active');
+        tabHeroPsych.classList.remove('active');
+        heroViewPatient.style.display = 'block';
+        heroViewPsych.style.display = 'none';
+      });
+
+      tabHeroPsych.addEventListener('click', () => {
+        tabHeroPsych.classList.add('active');
+        tabHeroPatient.classList.remove('active');
+        heroViewPatient.style.display = 'none';
+        heroViewPsych.style.display = 'block';
+      });
+    }
+
+    // Ecosystem Feature Tabs (Patients vs Psychologists)
+    function switchEcosystem(audience) {
+      document.getElementById('btn-eco-patients').classList.toggle('active', audience === 'patients');
+      document.getElementById('btn-eco-psychologists').classList.toggle('active', audience === 'psychologists');
+      document.getElementById('view-eco-patients').classList.toggle('active', audience === 'patients');
+      document.getElementById('view-eco-psychologists').classList.toggle('active', audience === 'psychologists');
+    }
+
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach((button) => {
+      button.addEventListener('click', () => {
+        const item = button.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+
+    // Pricing Billing Toggle (Monthly / Yearly)
+    const toggle = document.getElementById('cycle-toggle');
+    let isYearly = false;
+
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        isYearly = !isYearly;
+        toggle.classList.toggle('active', isYearly);
+        document.getElementById('label-monthly').style.color = isYearly ? 'var(--muted)' : 'var(--accent-dark)';
+        document.getElementById('label-yearly').style.color = isYearly ? 'var(--accent-dark)' : 'var(--muted)';
+
+        document.querySelectorAll('.price-amount').forEach((el) => {
+          const m = el.getAttribute('data-monthly');
+          const y = el.getAttribute('data-yearly');
+          el.textContent = `R$ ${isYearly ? y : m}`;
+        });
+      });
+    }
+
+    // Smooth Scroll for Internal Anchors
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', function (e) {
+        const targetId = this.getAttribute('href');
+        if (targetId === '#' || targetId === '') return;
+        const targetEl = document.querySelector(targetId);
+        if (targetEl) {
+          e.preventDefault();
+          if (navbar) navbar.classList.remove('open');
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
