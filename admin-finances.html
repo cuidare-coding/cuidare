@@ -278,6 +278,25 @@
     .status-badge.overdue { color: #991b1b; background: #fee2e2; }
     .status-badge.none { color: #64748b; background: #f1f5f9; }
 
+    .status-badge-select {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 12px;
+      padding: .28rem .55rem;
+      font-size: .68rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background-color .2s;
+    }
+    .status-badge-select.paid { color: #166534; background: #dcfce7; border-color: #bbf7d0; }
+    .status-badge-select.pending { color: #854d0e; background: #fef9c3; border-color: #fde047; }
+    .status-badge-select.overdue { color: #991b1b; background: #fee2e2; border-color: #fca5a5; }
+    .status-badge-select:hover, .status-badge-select:focus {
+      box-shadow: 0 0 0 2px var(--mint);
+    }
+
     .plan-tag {
       display: inline-block;
       background: #eef7f2;
@@ -921,13 +940,7 @@
       }
 
       tbody.innerHTML = list.map(sub => {
-        let payBadgeClass = 'none';
-        let payBadgeText = 'Sem Plano';
-        if (sub.plan_id) {
-          if (sub.payment_status === 'paid') { payBadgeClass = 'paid'; payBadgeText = 'Adimplente (Pago)'; }
-          else if (sub.payment_status === 'overdue') { payBadgeClass = 'overdue'; payBadgeText = 'Atrasado'; }
-          else { payBadgeClass = 'pending'; payBadgeText = 'Pendente'; }
-        }
+        const payStatus = sub.payment_status || 'pending';
 
         return `
           <tr>
@@ -939,7 +952,15 @@
             <td><strong>${sub.plan_id ? formatBRL(sub.plan_price) : '-'}</strong></td>
             <td>${sub.plan_id ? `Todo dia ${sub.due_day}` : '-'}</td>
             <td>${formatDate(sub.last_payment_date)}</td>
-            <td><span class="status-badge ${payBadgeClass}">${payBadgeText}</span></td>
+            <td>
+              ${sub.plan_id ? `
+                <select class="status-badge-select ${payStatus}" onchange="quickUpdatePaymentStatus(${sub.psychologist_id}, this.value, this)" title="Clique para alterar status diretamente">
+                  <option value="paid" ${payStatus === 'paid' ? 'selected' : ''}>✓ Pago</option>
+                  <option value="pending" ${payStatus === 'pending' ? 'selected' : ''}>⏳ Pendente</option>
+                  <option value="overdue" ${payStatus === 'overdue' ? 'selected' : ''}>⚠ Atrasado</option>
+                </select>
+              ` : `<span class="status-badge none">Sem Plano</span>`}
+            </td>
             <td>
               <div style="display: flex; gap: .35rem;">
                 <button class="action-btn" onclick="openAssignModal(${escapeHtml(JSON.stringify(sub))})">Alterar Plano</button>
@@ -949,6 +970,33 @@
           </tr>
         `;
       }).join('');
+    }
+
+    async function quickUpdatePaymentStatus(psychologistId, newStatus, selectEl) {
+      const token = sessionStorage.getItem('cuidare_admin_access_token');
+      try {
+        const res = await fetch(`${apiBase}/api/finance/admin/subscriptions/${psychologistId}/payment-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ payment_status: newStatus })
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erro ao alterar status.');
+        
+        const sub = allSubscriptions.find(s => s.psychologist_id === psychologistId);
+        if (sub) sub.payment_status = newStatus;
+
+        if (selectEl) {
+          selectEl.className = `status-badge-select ${newStatus}`;
+        }
+
+        const statusLabel = newStatus === 'paid' ? 'Pago' : newStatus === 'pending' ? 'Pendente' : 'Atrasado';
+        showToast(`Status atualizado para: ${statusLabel}`);
+        await loadSummary();
+      } catch (err) {
+        showToast(err.message);
+        await loadSubscriptions();
+      }
     }
 
     function filterSubscriptions() {
@@ -1118,6 +1166,7 @@
         if (!res.ok) throw new Error(result.error || 'Erro ao remover registro.');
         showToast('Registro removido.');
         await loadHistory();
+        await loadSubscriptions();
         await loadSummary();
       } catch (err) {
         showToast(err.message);
