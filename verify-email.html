@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Confirme seu e-mail para ativar sua conta na Cuidare">
+  <title>Verificar e-mail | Cuidare</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #68756e;
+      --paper: #f5f7f2;
+      --panel: #ffffff;
+      --line: #dce4dc;
+      --accent: #196a52;
+      --accent-dark: #0f4d3b;
+      --focus: #a8d8c4;
+      --error: #a13b34;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem 1rem;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .card {
+      width: min(100%, 28rem);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+      text-align: center;
+    }
+
+    /* Brand */
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: bold;
+      letter-spacing: .02em;
+      margin-bottom: 2.5rem;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      font-family: Arial, sans-serif;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--accent-dark);
+    }
+
+    /* Status icon */
+    .icon {
+      display: inline-grid;
+      place-items: center;
+      width: 5rem;
+      height: 5rem;
+      border-radius: 50%;
+      font-size: 2.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .icon.loading { background: #e8f4ee; color: var(--accent-dark); animation: spin 1.2s linear infinite; }
+    .icon.success { background: #d9eee3; color: var(--accent-dark); }
+    .icon.error   { background: #f5e2e1; color: var(--error); }
+    .icon.already { background: #d9eee3; color: var(--accent-dark); }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    h1 {
+      margin: 0 0 .75rem;
+      font-size: 1.75rem;
+      font-weight: 400;
+      line-height: 1.15;
+    }
+
+    p {
+      margin: 0 0 1.75rem;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: .9rem;
+      line-height: 1.65;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: .85rem 2rem;
+      border-radius: 4px;
+      font: 700 .82rem Arial, sans-serif;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+    }
+
+    .btn-primary:hover { background: var(--accent-dark); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent-dark);
+      border: 1px solid var(--line);
+      margin-top: .75rem;
+    }
+
+    .btn-ghost:hover { background: var(--paper); }
+
+    /* Resend section */
+    .resend-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .resend-section p {
+      margin-bottom: .75rem;
+      font-size: .8rem;
+    }
+
+    #resend-email-input {
+      width: 100%;
+      min-height: 3rem;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: .7rem .95rem;
+      color: var(--ink);
+      background: #fbfcfa;
+      font: 1rem Arial, sans-serif;
+      margin-bottom: .75rem;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    #resend-email-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--focus);
+    }
+
+    .resend-status {
+      margin: .5rem 0 0;
+      font-family: Arial, sans-serif;
+      font-size: .78rem;
+      color: var(--muted);
+      min-height: 1rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="card">
+
+    <a class="brand" href="index.html" aria-label="Cuidare — página inicial">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      Cuidare
+    </a>
+
+    <!-- Estado: carregando -->
+    <div id="view-loading">
+      <div class="icon loading" aria-label="Verificando...">⟳</div>
+      <h1>Verificando seu link…</h1>
+      <p>Aguarde um momento enquanto confirmamos seu e-mail.</p>
+    </div>
+
+    <!-- Estado: sucesso -->
+    <div id="view-success" style="display:none;">
+      <div class="icon success" aria-hidden="true">✓</div>
+      <h1>E-mail confirmado!</h1>
+      <p>Sua conta está ativa. Você já pode fazer login e acessar seu painel.</p>
+      <a class="btn btn-primary" href="login.html">Acessar minha conta</a>
+    </div>
+
+    <!-- Estado: já verificado -->
+    <div id="view-already" style="display:none;">
+      <div class="icon already" aria-hidden="true">✓</div>
+      <h1>Conta já ativa</h1>
+      <p>Este e-mail já foi verificado anteriormente. Faça login normalmente.</p>
+      <a class="btn btn-primary" href="login.html">Fazer login</a>
+    </div>
+
+    <!-- Estado: link expirado -->
+    <div id="view-expired" style="display:none;">
+      <div class="icon error" aria-hidden="true">⏱</div>
+      <h1>Link expirado</h1>
+      <p>Este link de verificação expirou (validade de 24 horas). Solicite um novo link abaixo.</p>
+
+      <div class="resend-section">
+        <p>Digite seu e-mail de cadastro para receber um novo link:</p>
+        <input id="resend-email-input" type="email" placeholder="seu@email.com" autocomplete="email">
+        <button class="btn btn-primary" id="resend-btn" type="button" style="width:100%;">Reenviar link</button>
+        <p class="resend-status" id="resend-status" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <!-- Estado: erro genérico / token inválido -->
+    <div id="view-error" style="display:none;">
+      <div class="icon error" aria-hidden="true">✕</div>
+      <h1>Link inválido</h1>
+      <p id="error-message">Este link de verificação não é válido. Verifique o e-mail recebido ou solicite um novo.</p>
+
+      <div class="resend-section">
+        <p>Digite seu e-mail de cadastro para receber um novo link:</p>
+        <input id="resend-email-input-err" type="email" placeholder="seu@email.com" autocomplete="email">
+        <button class="btn btn-primary" id="resend-btn-err" type="button" style="width:100%;">Solicitar novo link</button>
+        <p class="resend-status" id="resend-status-err" aria-live="polite"></p>
+      </div>
+
+      <a class="btn btn-ghost" href="login.html" style="display:block;margin-top:.5rem;">Voltar ao login</a>
+    </div>
+
+    <!-- Estado: sem token na URL -->
+    <div id="view-notoken" style="display:none;">
+      <div class="icon error" aria-hidden="true">?</div>
+      <h1>Nenhum link fornecido</h1>
+      <p>Acesse este endereço pelo link enviado ao seu e-mail de cadastro.</p>
+      <a class="btn btn-primary" href="login.html">Ir para o login</a>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+
+    function showView(id) {
+      ['view-loading','view-success','view-already','view-expired','view-error','view-notoken']
+        .forEach(v => document.getElementById(v).style.display = v === id ? 'block' : 'none');
+    }
+
+    async function verifyToken(token) {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/verify-email/${encodeURIComponent(token)}`);
+        const data = await res.json();
+
+        if (res.ok) {
+          showView(data.already ? 'view-already' : 'view-success');
+        } else if (res.status === 410) {
+          showView('view-expired');
+        } else {
+          document.getElementById('error-message').textContent =
+            data.error || 'Link inválido ou já utilizado.';
+          showView('view-error');
+        }
+      } catch {
+        document.getElementById('error-message').textContent =
+          'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
+        showView('view-error');
+      }
+    }
+
+    // ---- Reenvio ----
+    async function sendResend(emailInput, statusEl, btn) {
+      const email = emailInput.value.trim();
+      if (!email) { statusEl.textContent = 'Informe seu e-mail.'; return; }
+
+      btn.disabled = true;
+      statusEl.textContent = 'Enviando…';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/resend-verification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        statusEl.textContent = data.message || 'Link enviado!';
+      } catch {
+        statusEl.textContent = 'Erro ao enviar. Tente novamente.';
+      } finally {
+        setTimeout(() => { btn.disabled = false; }, 30000);
+      }
+    }
+
+    document.getElementById('resend-btn').addEventListener('click', () => {
+      sendResend(
+        document.getElementById('resend-email-input'),
+        document.getElementById('resend-status'),
+        document.getElementById('resend-btn'),
+      );
+    });
+
+    document.getElementById('resend-btn-err').addEventListener('click', () => {
+      sendResend(
+        document.getElementById('resend-email-input-err'),
+        document.getElementById('resend-status-err'),
+        document.getElementById('resend-btn-err'),
+      );
+    });
+
+    // ---- Init: ler token da URL ----
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
+      showView('view-notoken');
+    } else {
+      verifyToken(token);
+    }
+  </script>
+</body>
+</html>

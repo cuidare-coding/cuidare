@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Crie sua conta de psicólogo na Cuidare">
+  <title>Criar conta | Cuidare</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #68756e;
+      --paper: #f5f7f2;
+      --panel: #ffffff;
+      --line: #dce4dc;
+      --accent: #196a52;
+      --accent-dark: #0f4d3b;
+      --focus: #a8d8c4;
+      --error: #a13b34;
+      --success: #196a52;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.8fr) minmax(420px, 1.2fr);
+      min-height: 100vh;
+    }
+
+    /* ---- Left panel ---- */
+    .intro {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: clamp(2rem, 6vw, 5.5rem);
+      color: #edf6f0;
+      background: var(--accent-dark);
+      background-image: radial-gradient(circle at 15% 15%, rgba(255,255,255,.12) 0 1px, transparent 1px),
+        linear-gradient(145deg, #0f4d3b 0%, #196a52 58%, #2d8163 100%);
+      background-size: 24px 24px, auto;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .75rem;
+      width: fit-content;
+      color: inherit;
+      font-size: 1.25rem;
+      font-weight: bold;
+      letter-spacing: .02em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 50%;
+      font-family: Arial, sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .intro-copy { max-width: 27rem; margin-block: auto; padding-block: 4rem; }
+
+    .eyebrow {
+      margin: 0 0 1.25rem;
+      color: #b9e3d0;
+      font-family: Arial, sans-serif;
+      font-size: .73rem;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 14ch;
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      font-weight: 400;
+      line-height: 1.05;
+    }
+
+    .intro-copy p:last-child {
+      max-width: 24rem;
+      margin: 1.5rem 0 0;
+      color: #d4e9dd;
+      font-family: Arial, sans-serif;
+      font-size: .96rem;
+      line-height: 1.65;
+    }
+
+    .privacy {
+      margin: 0;
+      color: #b9e3d0;
+      font-family: Arial, sans-serif;
+      font-size: .72rem;
+      letter-spacing: .04em;
+    }
+
+    /* ---- Right panel / Form ---- */
+    .form-area {
+      display: grid;
+      place-items: center;
+      padding: clamp(2rem, 7vw, 5rem);
+      background: var(--panel);
+    }
+
+    .register-form { width: min(100%, 28rem); }
+    .form-heading { margin-bottom: 2rem; }
+
+    .form-heading h2 {
+      margin: 0 0 .6rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      font-weight: 400;
+    }
+
+    .form-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: .88rem;
+    }
+
+    .form-heading p a { color: var(--accent-dark); text-underline-offset: 3px; }
+
+    .field { margin-bottom: 1.1rem; }
+
+    label {
+      display: block;
+      margin-bottom: .5rem;
+      font-family: Arial, sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    input {
+      width: 100%;
+      min-height: 3.1rem;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: .75rem .95rem;
+      color: var(--ink);
+      background: #fbfcfa;
+      font: 1rem Arial, sans-serif;
+      transition: border-color .2s, box-shadow .2s, background-color .2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px var(--focus);
+    }
+
+    input.error-input { border-color: var(--error); }
+
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 5rem; }
+
+    .password-toggle {
+      position: absolute;
+      top: 50%;
+      right: .7rem;
+      border: 0;
+      padding: .4rem;
+      color: var(--accent-dark);
+      background: transparent;
+      cursor: pointer;
+      font: 700 .72rem Arial, sans-serif;
+      transform: translateY(-50%);
+    }
+
+    .password-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .hint {
+      margin: .4rem 0 0;
+      color: var(--muted);
+      font: .74rem Arial, sans-serif;
+    }
+
+    .submit-button {
+      width: 100%;
+      min-height: 3.25rem;
+      margin-top: .5rem;
+      border: 0;
+      border-radius: 3px;
+      color: #fff;
+      background: var(--accent);
+      cursor: pointer;
+      font: 700 .82rem Arial, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: background-color .2s, transform .2s;
+    }
+
+    .submit-button:hover { background: var(--accent-dark); }
+    .submit-button:active { transform: translateY(1px); }
+    .submit-button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    .submit-button:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .status {
+      min-height: 1.4rem;
+      margin: 1rem 0 0;
+      font: .82rem Arial, sans-serif;
+    }
+
+    .status.error { color: var(--error); }
+    .status.success { color: var(--success); }
+
+    /* Painel de sucesso (pós-cadastro) */
+    .success-panel {
+      display: none;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .success-panel .check-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 4.5rem;
+      height: 4.5rem;
+      border-radius: 50%;
+      background: #d9eee3;
+      color: var(--accent-dark);
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .success-panel h3 {
+      margin: 0 0 .75rem;
+      font-size: 1.5rem;
+      font-weight: 400;
+    }
+
+    .success-panel p {
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .success-panel .resend-btn {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: .6rem 1.2rem;
+      color: var(--accent-dark);
+      font: .8rem Arial, sans-serif;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .success-panel .resend-btn:hover { background: var(--paper); }
+    .resend-status { margin-top: .75rem; font: .78rem Arial, sans-serif; color: var(--muted); min-height: 1rem; }
+
+    @media (max-width: 760px) {
+      .page { grid-template-columns: 1fr; }
+      .intro { min-height: 20rem; padding: 1.75rem; }
+      .intro-copy { padding-block: 2.5rem 1.5rem; }
+      h1 { font-size: clamp(2.2rem, 12vw, 3.5rem); }
+      .form-area { padding: 3rem 1.75rem 4rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <!-- Left: Intro -->
+    <section class="intro" aria-labelledby="register-intro-heading">
+      <a class="brand" href="index.html" aria-label="Página inicial da Cuidare">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        Cuidare
+      </a>
+
+      <div class="intro-copy">
+        <p class="eyebrow">Para psicólogos</p>
+        <h1 id="register-intro-heading">Organize sua prática. Cuide melhor.</h1>
+        <p>Agenda inteligente, prontuário digital, gestão financeira e teleconsulta — tudo em um só lugar, feito para a clínica psicológica.</p>
+      </div>
+
+      <p class="privacy">Seus dados protegidos por criptografia e em conformidade com a LGPD</p>
+    </section>
+
+    <!-- Right: Form -->
+    <section class="form-area" aria-labelledby="register-heading">
+
+      <!-- Formulário de cadastro -->
+      <form class="register-form" id="register-form" novalidate>
+        <div class="form-heading">
+          <h2 id="register-heading">Criar conta</h2>
+          <p>Já tem conta? <a href="login.html">Faça login</a></p>
+        </div>
+
+        <div class="field">
+          <label for="name">Nome completo</label>
+          <input id="name" name="name" type="text" autocomplete="name"
+                 placeholder="Dr(a). Seu Nome" required>
+        </div>
+
+        <div class="field">
+          <label for="email">E-mail profissional</label>
+          <input id="email" name="email" type="email" autocomplete="email"
+                 placeholder="seu@email.com" required>
+        </div>
+
+        <div class="field">
+          <label for="crp">Número do CRP</label>
+          <input id="crp" name="crp" type="text" autocomplete="off"
+                 placeholder="06/123456" required>
+          <p class="hint">Ex.: 06/123456 — exatamente como registrado no CFP</p>
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <div class="password-wrap">
+            <input id="password" name="password" type="password"
+                   autocomplete="new-password" placeholder="Mínimo 8 caracteres"
+                   required minlength="8">
+            <button class="password-toggle" id="pw-toggle" type="button"
+                    aria-controls="password" aria-label="Mostrar senha">Mostrar</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password2">Confirmar senha</label>
+          <div class="password-wrap">
+            <input id="password2" name="password2" type="password"
+                   autocomplete="new-password" placeholder="Repita a senha"
+                   required minlength="8">
+            <button class="password-toggle" id="pw2-toggle" type="button"
+                    aria-controls="password2" aria-label="Mostrar confirmação de senha">Mostrar</button>
+          </div>
+        </div>
+
+        <button class="submit-button" type="submit" id="submit-btn">Criar conta</button>
+        <p class="status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+
+      <!-- Painel pós-cadastro -->
+      <div class="success-panel register-form" id="success-panel" aria-live="polite">
+        <span class="check-icon" aria-hidden="true">✉</span>
+        <h3>Verifique seu e-mail!</h3>
+        <p>
+          Enviamos um link de ativação para <strong id="sent-email"></strong>.<br>
+          Clique no link para ativar sua conta. O link expira em 24 horas.
+        </p>
+        <p style="color:var(--muted);font-family:Arial,sans-serif;font-size:.83rem;">
+          Não recebeu? Verifique a pasta de spam ou solicite um novo link abaixo.
+        </p>
+        <button class="resend-btn" id="resend-btn" type="button">Reenviar e-mail de verificação</button>
+        <p class="resend-status" id="resend-status"></p>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+
+    // ---- Toggle de senha ----
+    function makeToggle(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      btn.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.textContent = show ? 'Ocultar' : 'Mostrar';
+        btn.setAttribute('aria-label', `${show ? 'Ocultar' : 'Mostrar'} senha`);
+      });
+    }
+    makeToggle('password', 'pw-toggle');
+    makeToggle('password2', 'pw2-toggle');
+
+    // ---- Formulário de cadastro ----
+    const form = document.getElementById('register-form');
+    const statusEl = document.getElementById('form-status');
+    const submitBtn = document.getElementById('submit-btn');
+    const successPanel = document.getElementById('success-panel');
+    const sentEmailEl = document.getElementById('sent-email');
+    let registeredEmail = '';
+
+    function setStatus(msg, type = 'error') {
+      statusEl.textContent = msg;
+      statusEl.className = `status ${type}`;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setStatus('');
+
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const crp = form.crp.value.trim();
+      const password = form.password.value;
+      const password2 = form.password2.value;
+
+      if (password !== password2) {
+        setStatus('As senhas não coincidem.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Criando conta...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, crp, password }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStatus(data.error || 'Não foi possível criar a conta.');
+          return;
+        }
+
+        // Sucesso — mostrar painel de verificação
+        registeredEmail = email;
+        sentEmailEl.textContent = email;
+        form.style.display = 'none';
+        successPanel.style.display = 'block';
+
+      } catch {
+        setStatus('Não foi possível conectar ao servidor.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Criar conta';
+      }
+    });
+
+    // ---- Reenvio de verificação ----
+    const resendBtn = document.getElementById('resend-btn');
+    const resendStatus = document.getElementById('resend-status');
+
+    resendBtn.addEventListener('click', async () => {
+      resendBtn.disabled = true;
+      resendStatus.textContent = 'Enviando...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/resend-verification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: registeredEmail }),
+        });
+        const data = await res.json();
+        resendStatus.textContent = data.message || 'Novo link enviado!';
+      } catch {
+        resendStatus.textContent = 'Não foi possível reenviar. Tente mais tarde.';
+      } finally {
+        // Bloquear reenvio por 30s para evitar spam
+        setTimeout(() => { resendBtn.disabled = false; }, 30000);
+      }
+    });
+  </script>
+</body>
+</html>

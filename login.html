@@ -252,6 +252,7 @@
         <div class="form-heading">
           <h2 id="login-heading">Olá, psicólogo(a)</h2>
           <p>Entre para acessar o seu espaço de trabalho.</p>
+          <p style="margin-top:.5rem;">Não tem conta? <a href="register.html" style="color:var(--accent-dark);text-underline-offset:3px;">Cadastre-se</a></p>
         </div>
 
         <div class="field">
@@ -287,7 +288,7 @@
     const toggle = document.querySelector('#password-toggle');
     const status = document.querySelector('#form-status');
     const submitButton = form.querySelector('.submit-button');
-    const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/user/login`;
+    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
 
     toggle.addEventListener('click', () => {
       const isPassword = password.type === 'password';
@@ -309,7 +310,7 @@
       submitButton.textContent = 'Entrando...';
 
       try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch(`${apiBase}/api/auth/user/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -320,6 +321,43 @@
         const result = await response.json();
 
         if (!response.ok) {
+          // Tratamento especial para email não verificado (HTTP 403)
+          if (response.status === 403) {
+            const identifier = form.identifier.value.trim();
+            // Tenta reenviar o link automaticamente se o identificador for um email
+            const isEmail = identifier.includes('@');
+            status.innerHTML = `
+              ${result.error || 'E-mail não verificado.'}<br>
+              <button id="resend-link" type="button"
+                style="margin-top:.5rem;background:none;border:0;padding:0;
+                       color:var(--accent-dark);font:700 .8rem Arial,sans-serif;
+                       cursor:pointer;text-decoration:underline;text-underline-offset:3px;">
+                ${isEmail ? 'Reenviar link de verificação' : 'Solicitar novo link de verificação'}
+              </button>
+            `;
+            document.getElementById('resend-link').addEventListener('click', async (e) => {
+              e.target.disabled = true;
+              e.target.textContent = 'Enviando...';
+              try {
+                // Se for CRP, não temos email — levar para register
+                if (!isEmail) {
+                  window.location.href = 'register.html';
+                  return;
+                }
+                const r = await fetch(`${apiBase}/api/auth/resend-verification`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email: identifier }),
+                });
+                const d = await r.json();
+                e.target.textContent = d.message || 'Link enviado!';
+              } catch {
+                e.target.textContent = 'Erro ao reenviar. Tente mais tarde.';
+              }
+            });
+            return;
+          }
+
           throw new Error(result.error || 'Não foi possível entrar.');
         }
 
@@ -328,7 +366,7 @@
         status.style.color = 'var(--accent-dark)';
         window.location.replace('psychologist-dashboard.html');
       } catch (error) {
-        status.textContent = error.message === 'Failed to fetch'
+        status.innerHTML = error.message === 'Failed to fetch'
           ? 'Não foi possível conectar ao servidor.'
           : error.message;
       } finally {
