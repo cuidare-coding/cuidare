@@ -581,8 +581,9 @@
 
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.75rem;
+      grid-template-columns: repeat(2, minmax(0, 24rem));
+      justify-content: center;
+      gap: 2rem;
       align-items: stretch;
     }
     .pricing-card {
@@ -1161,25 +1162,6 @@
             </ul>
           </div>
           <a class="btn btn-primary" href="login.html" style="width: 100%;">Assinar Profissional</a>
-        </article>
-
-        <!-- Plan 3 -->
-        <article class="pricing-card">
-          <div>
-            <h3>Clínica & Espaço</h3>
-            <p class="pricing-desc">Para clínicas compartilhadas, parcerias e equipes multidisciplinares.</p>
-            <div class="price-value-wrap">
-              <span class="price-amount" data-monthly="159" data-yearly="129">R$ 159</span>
-              <span class="price-period">/mês</span>
-            </div>
-            <ul class="price-features">
-              <li><span>✓</span> Tudo do plano Profissional</li>
-              <li><span>✓</span> Múltiplos profissionais</li>
-              <li><span>✓</span> Gestão financeira unificada</li>
-              <li><span>✓</span> Atendimento VIP e suporte dedicado</li>
-            </ul>
-          </div>
-          <a class="btn btn-secondary" href="login.html" style="width: 100%;">Falar com Consultor</a>
         </article>
       </div>
     </div>
