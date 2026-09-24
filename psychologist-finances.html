@@ -85,7 +85,26 @@
     .btn-ghost { background: transparent; border: 1px solid var(--line); padding: .5rem .8rem; border-radius: 4px; cursor: pointer; font-size: .75rem; }
     .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
     .toast.show { opacity: 1; transform: translateY(0); }
-    @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; } .metrics { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 850px) {
+      .app-shell { display: block; }
+      .sidebar { position: static; height: auto; min-height: auto; }
+      .sidebar-footer { margin-top: 2rem; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+      .filter-bar { flex-wrap: wrap; }
+      .filter-bar input { width: 100%; }
+      .panel-header { flex-direction: column; align-items: flex-start; gap: .75rem; }
+      .panel-header .btn-primary { width: 100%; text-align: center; }
+      table { font-size: .75rem; }
+      th, td { padding: .65rem .75rem; }
+      .modal-content { max-width: 95vw; margin: 0 .75rem; }
+    }
+    @media (max-width: 500px) {
+      .metrics { grid-template-columns: 1fr; }
+      th { display: none; }
+      td { display: block; border-bottom: 0; padding: .3rem .75rem; }
+      td:first-child { padding-top: .85rem; font-weight: 700; }
+      td:last-child { padding-bottom: .85rem; border-bottom: 1px solid var(--line); }
+    }
   </style>
 </head>
 <body>
