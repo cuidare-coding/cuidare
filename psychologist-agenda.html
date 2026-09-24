@@ -42,9 +42,10 @@
     .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
     .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
     .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
-    .main { width: 100%; max-width: 1280px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
-    .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
-    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .edit-profile-btn { display: flex; align-items: center; gap: .45rem; width: 100%; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; padding: .48rem .75rem; color: #cce6d8; background: rgba(255,255,255,.07); cursor: pointer; font-size: .73rem; margin-bottom: .55rem; transition: background .15s; }
+    .edit-profile-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; cursor: pointer; transition: opacity .15s; border: 0; }
+    .topbar-avatar:hover { opacity: .82; }
     .page-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.6rem; }
     .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
     h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
@@ -120,10 +121,10 @@
       <a class="brand" href="psychologist-dashboard.html"><span class="brand-mark" aria-hidden="true">C</span>Cuidare</a>
       <p class="nav-label">Meu espaço</p>
       <nav class="nav-list"><a class="nav-link" href="psychologist-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a><a class="nav-link active" href="psychologist-agenda.html"><span class="nav-icon" aria-hidden="true">□</span>Agenda</a><a class="nav-link" href="psychologist-clients.html"><span class="nav-icon" aria-hidden="true">○</span>Clientes</a><a class="nav-link" href="psychologist-finances.html"><span class="nav-icon" aria-hidden="true">＄</span>Financeiro</a></nav>
-      <div class="sidebar-footer"><div class="admin-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div></div><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
+      <div class="sidebar-footer"><div class="admin-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div></div><button class="edit-profile-btn" id="open-edit-modal" type="button">✎&nbsp; Editar perfil</button><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
     </aside>
     <main class="main">
-      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
+      <header class="topbar"><button class="topbar-avatar" id="topbar-avatar" title="Editar perfil" aria-label="Editar perfil">--</button></header>
       <section class="page-heading"><div><p class="eyebrow">Organização da prática</p><h1>Agenda</h1><p class="page-description">Visualize sua semana e mantenha o ritmo dos atendimentos.</p></div><div class="week-controls"><button class="today-button" id="today-button" type="button">Hoje</button><button class="control-button" id="previous-week" type="button" aria-label="Semana anterior">‹</button><p class="week-label" id="week-label"></p><button class="control-button" id="next-week" type="button" aria-label="Próxima semana">›</button></div></section>
       <section class="summary" aria-label="Resumo da semana"><article class="summary-card"><span>Sessões na semana</span><strong id="week-count">0</strong><small>Agenda sincronizada</small></article><article class="summary-card"><span>Hoje</span><strong id="today-count">0</strong><small id="today-label">Nenhuma sessão</small></article><article class="summary-card"><span>Horários livres</span><strong id="free-count">0</strong><small>Entre 08h e 18h</small></article></section>
       <section class="calendar-panel" aria-label="Agenda semanal"><div class="calendar-scroll"><div class="calendar" id="calendar"></div></div><p class="empty-note" id="empty-note">Sua agenda semanal ainda não possui sessões cadastradas.</p></section>
@@ -405,6 +406,10 @@
     }
     renderCalendar();
     Promise.all([loadProfile(), loadClients(), loadAppointments()]).then(renderCalendar).catch((error) => showToast(error.message));
+
+    function goToEditProfile() { window.location.href = 'psychologist-dashboard.html?edit=1'; }
+    document.querySelector('#open-edit-modal').addEventListener('click', goToEditProfile);
+    document.querySelector('#topbar-avatar').addEventListener('click', goToEditProfile);
   </script>
 </body>
 </html>

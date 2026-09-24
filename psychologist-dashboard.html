@@ -304,6 +304,13 @@
 
     loadProfile();
     loadDashboardData();
+
+    // Abrir modal automaticamente se veio de outra página com ?edit=1
+    if (new URLSearchParams(window.location.search).get('edit') === '1') {
+      // Aguarda o perfil carregar antes de abrir
+      loadProfile().then(() => openEditModal()).catch(() => {});
+      history.replaceState(null, '', window.location.pathname);
+    }
   </script>
 </body>
 </html>

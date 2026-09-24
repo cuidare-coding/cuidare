@@ -42,9 +42,10 @@
     .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
     .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
     .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
-    .main { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
-    .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
-    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .edit-profile-btn { display: flex; align-items: center; gap: .45rem; width: 100%; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; padding: .48rem .75rem; color: #cce6d8; background: rgba(255,255,255,.07); cursor: pointer; font-size: .73rem; margin-bottom: .55rem; transition: background .15s; }
+    .edit-profile-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; cursor: pointer; transition: opacity .15s; border: 0; }
+    .topbar-avatar:hover { opacity: .82; }
     .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
     h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
     .page-description { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
@@ -123,11 +124,12 @@
           <span class="avatar" id="sidebar-avatar">--</span>
           <div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div>
         </div>
+        <button class="edit-profile-btn" id="open-edit-modal" type="button">✎&nbsp; Editar perfil</button>
         <button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button>
       </div>
     </aside>
     <main class="main">
-      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
+      <header class="topbar"><button class="topbar-avatar" id="topbar-avatar" title="Editar perfil" aria-label="Editar perfil">--</button></header>
       <section class="hero">
         <div>
           <p class="eyebrow">Gestão Financeira</p>
@@ -442,6 +444,10 @@
     };
 
     document.querySelector('#logout-button').onclick = () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); };
+
+    function goToEditProfile() { window.location.href = 'psychologist-dashboard.html?edit=1'; }
+    document.querySelector('#open-edit-modal').addEventListener('click', goToEditProfile);
+    document.querySelector('#topbar-avatar').addEventListener('click', goToEditProfile);
 
     loadProfile();
     loadClients();
