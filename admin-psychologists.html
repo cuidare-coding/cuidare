@@ -283,7 +283,7 @@
         setModal(false);
         form.reset();
         await loadPsychologists();
-        showToast(editingPsychologistId ? 'Dados atualizados com sucesso.' : 'Psicólogo cadastrado com sucesso.');
+        showToast(result.message || (editingPsychologistId ? 'Dados atualizados com sucesso.' : 'Psicólogo cadastrado com sucesso.'));
         editingPsychologistId = null;
       } catch (error) {
         showToast(error.message);
