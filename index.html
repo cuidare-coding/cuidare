@@ -798,10 +798,136 @@
       gap: 1rem;
     }
 
+    /* ── Diretório / busca de psicólogos ── */
+    .hero-search-hint { margin: .6rem 0 0; color: var(--muted); font-size: .74rem; }
+    .search-filters {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+      gap: .9rem;
+      align-items: end;
+      margin-bottom: 1.75rem;
+      padding: 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+    }
+    .filter-field { display: grid; gap: .35rem; }
+    .filter-field span { color: var(--ink); font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .filter-field input, .filter-field select {
+      width: 100%;
+      min-height: 2.75rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: .6rem .7rem;
+      color: var(--ink);
+      background: #fff;
+      font-size: .85rem;
+    }
+    .filter-field input:focus, .filter-field select:focus { outline: 3px solid var(--mint); border-color: var(--accent); }
+    .filter-clear {
+      min-height: 2.75rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0 1.1rem;
+      color: var(--accent-dark);
+      background: #fff;
+      font-size: .8rem;
+      font-weight: 700;
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .filter-clear:hover { border-color: var(--accent); background: var(--mint-light); }
+    .directory-status {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .6rem;
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    .directory-status[data-variant="error"] { color: var(--coral); }
+    .directory-retry {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: .35rem .8rem;
+      color: var(--accent-dark);
+      background: #fff;
+      font-size: .75rem;
+      font-weight: 700;
+    }
+    .directory-retry:hover { border-color: var(--accent); background: var(--mint-light); }
+    .directory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .directory-grid[aria-busy="true"] { opacity: .55; }
+    .directory-card {
+      display: flex;
+      flex-direction: column;
+      gap: .9rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .directory-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .directory-card-head { display: flex; align-items: center; gap: .85rem; }
+    .directory-avatar {
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 2.9rem;
+      height: 2.9rem;
+      border-radius: 50%;
+      color: var(--accent-dark);
+      background: var(--mint);
+      font-weight: 700;
+    }
+    .directory-card-head strong { display: block; font: 1.05rem Georgia, 'Times New Roman', serif; }
+    .directory-sub { display: block; margin-top: .15rem; color: var(--muted); font-size: .76rem; }
+    .directory-badge {
+      margin-left: auto;
+      padding: .2rem .5rem;
+      border: 1px solid var(--mint);
+      border-radius: 20px;
+      color: var(--accent-dark);
+      background: var(--mint-light);
+      font-size: .65rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .directory-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .directory-tag { padding: .22rem .55rem; border-radius: 20px; color: var(--muted); background: var(--paper); font-size: .7rem; }
+    .directory-bio { margin: 0; color: var(--muted); font-size: .85rem; line-height: 1.6; }
+    .directory-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      margin-top: auto;
+      padding-top: .9rem;
+      border-top: 1px solid var(--line);
+    }
+    .directory-price { display: grid; color: var(--accent-dark); font-size: .95rem; font-weight: 700; }
+    .directory-price small { color: var(--muted); font-size: .65rem; font-weight: 400; }
+    .directory-cta { padding: .6rem 1rem; font-size: .78rem; white-space: nowrap; }
+    .directory-empty {
+      grid-column: 1 / -1;
+      margin: 0;
+      padding: 2rem;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: #fff;
+      text-align: center;
+      font-size: .9rem;
+    }
+
     /* Responsive */
     @media (max-width: 980px) {
       .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
       .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .search-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .directory-grid { grid-template-columns: repeat(2, 1fr); }
       .steps-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; max-width: 28rem; margin: 0 auto; }
       .trust-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
@@ -824,6 +950,8 @@
         box-shadow: var(--shadow);
       }
       .features-grid { grid-template-columns: 1fr; }
+      .search-filters { grid-template-columns: 1fr; }
+      .directory-grid { grid-template-columns: 1fr; }
       .trust-grid { grid-template-columns: 1fr; gap: 1.25rem; }
       .footer-grid { grid-template-columns: 1fr; }
       .footer-bottom { flex-direction: column; text-align: center; }
@@ -842,8 +970,8 @@
         </a>
 
         <ul class="nav-links">
-          <li><a class="nav-link" href="#pacientes">Para Pacientes</a></li>
-          <li><a class="nav-link" href="#psicologos">Para Psicólogos</a></li>
+          <li><a class="nav-link" href="#busca">Para Pacientes</a></li>
+          <li><a class="nav-link" href="#recursos">Para Psicólogos</a></li>
           <li><a class="nav-link" href="#como-funciona">Como Funciona</a></li>
           <li><a class="nav-link" href="#planos">Planos</a></li>
           <li><a class="nav-link" href="#faq">Dúvidas</a></li>
@@ -851,7 +979,7 @@
 
         <div class="nav-actions">
           <a class="btn btn-ghost" href="login.html">Entrar</a>
-          <a class="btn btn-primary" href="#pacientes">Agendar Consulta</a>
+          <a class="btn btn-primary" href="#busca">Agendar Consulta</a>
           <button class="mobile-toggle" id="menu-btn" aria-label="Menu de Navegação">☰</button>
         </div>
       </nav>
@@ -883,9 +1011,10 @@
             <div id="hero-view-patient">
               <p style="font-size: .84rem; color: var(--muted); margin: 0 0 .8rem;">Encontre profissionais verificados pelo CRP para atendimento online ou presencial:</p>
               <div class="search-box-wrap">
-                <input class="search-box-input" type="search" placeholder="Qual apoio busca? (ex: Ansiedade, TCC, Casal, Infantil...)">
-                <a class="btn btn-primary" href="login.html">Buscar Psicólogo</a>
+                <input class="search-box-input" id="hero-search-input" type="search" placeholder="Qual apoio busca? (ex: Ansiedade, TCC, Casal, Infantil...)" aria-label="Buscar psicólogo por queixa, abordagem, cidade ou nome">
+                <button class="btn btn-primary" id="hero-search-button" type="button">Buscar Psicólogo</button>
               </div>
+              <p class="hero-search-hint">Busca gratuita no diretório de profissionais verificados pelo CRP.</p>
             </div>
 
             <!-- View for Psychologists -->
@@ -973,6 +1102,50 @@
           <span>Ambiente acolhedor e focado no bem-estar</span>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Diretório: busca pública de psicólogos verificados -->
+  <section class="section" id="busca" style="background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Diretório Cuidare</span>
+        <h2 class="section-title">Encontre seu psicólogo verificado</h2>
+        <p class="section-desc">Busque por queixa, especialidade, abordagem, cidade ou valor. Todos os perfis listados passam pela verificação do CRP.</p>
+      </div>
+
+      <form class="search-filters" id="directory-filters" role="search" aria-label="Filtros do diretório de psicólogos">
+        <label class="filter-field">
+          <span>Buscar</span>
+          <input id="filter-query" type="search" placeholder="Ex.: ansiedade, luto, TCC" autocomplete="off">
+        </label>
+        <label class="filter-field">
+          <span>Especialidade / abordagem</span>
+          <select id="filter-expertise">
+            <option value="">Todas</option>
+          </select>
+        </label>
+        <label class="filter-field">
+          <span>Cidade ou UF</span>
+          <input id="filter-location" type="text" placeholder="Ex.: São Paulo, SP" autocomplete="off">
+        </label>
+        <label class="filter-field">
+          <span>Valor da sessão</span>
+          <input id="filter-max-price" type="number" min="0" step="10" placeholder="Até R$ 200" inputmode="numeric">
+        </label>
+        <label class="filter-field">
+          <span>Convênio</span>
+          <select id="filter-insurance">
+            <option value="">Indiferente</option>
+            <option value="true">Aceita convênio</option>
+            <option value="false">Não aceita</option>
+          </select>
+        </label>
+        <button class="filter-clear" id="filter-clear" type="button">Limpar</button>
+      </form>
+
+      <p class="directory-status" id="directory-status" role="status" aria-live="polite">Carregando profissionais verificados...</p>
+      <div class="directory-grid" id="directory-results" aria-busy="true"></div>
     </div>
   </section>
 
@@ -1231,7 +1404,7 @@
         <h2>Comece hoje a cuidar da sua saúde mental ou do seu consultório.</h2>
         <p>Junte-se a uma comunidade que valoriza a escuta, a empatia e a tecnologia a serviço do bem-estar.</p>
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-          <a class="btn btn-primary" href="login.html" style="padding: .9rem 2rem; font-size: 1rem;">Encontrar Psicólogo</a>
+          <a class="btn btn-primary" href="#busca" style="padding: .9rem 2rem; font-size: 1rem;">Encontrar Psicólogo</a>
           <a class="btn btn-secondary" href="login.html" style="padding: .9rem 2rem; font-size: 1rem;">Sou Psicólogo</a>
         </div>
       </div>
@@ -1255,9 +1428,9 @@
         <div class="footer-col">
           <h4>Para Pacientes</h4>
           <ul class="footer-links">
-            <li><a href="#recursos">Buscar Psicólogos</a></li>
-            <li><a href="#recursos">Especialidades</a></li>
-            <li><a href="#recursos">Atendimento Online</a></li>
+            <li><a href="#busca">Buscar Psicólogos</a></li>
+            <li><a href="#busca">Especialidades</a></li>
+            <li><a href="#busca">Atendimento Online</a></li>
             <li><a href="#faq">Como Funciona</a></li>
           </ul>
         </div>
@@ -1290,6 +1463,7 @@
     </div>
   </footer>
 
+  <script src="directory-search.js"></script>
   <script>
     // Mobile Menu Toggle
     const menuBtn = document.getElementById('menu-btn');
