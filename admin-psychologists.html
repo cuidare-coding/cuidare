@@ -136,7 +136,18 @@
     .modal-backdrop.open { opacity: 1; pointer-events: auto; }
     .modal { width: min(100%, 30rem); border-radius: 6px; padding: 1.5rem; background: #fff; box-shadow: 0 24px 60px rgba(16,35,27,.2); transform: translateY(.75rem); transition: transform .2s; }
     .modal-backdrop.open .modal { transform: translateY(0); }
-    .modal-header { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.3rem; }
+    #profile-modal .modal { width: min(100%, 42rem); max-height: 88vh; overflow-y: auto; }
+    .profile-modal-hero { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
+    .profile-modal-avatar { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; color: var(--accent-dark); background: var(--mint); font-size: 1.1rem; font-weight: 700; flex-shrink: 0; }
+    .profile-modal-hero h3 { margin: 0 0 .2rem; font: 1.15rem Georgia, serif; }
+    .profile-modal-hero span { font-size: .72rem; color: var(--muted); }
+    .profile-section-title { margin: 1.25rem 0 .6rem; color: var(--accent); font-size: .63rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem 1.5rem; }
+    .profile-field { font-size: .78rem; }
+    .profile-field dt { color: var(--muted); font-size: .68rem; margin-bottom: .2rem; }
+    .profile-field dd { margin: 0; font-weight: 600; word-break: break-word; }
+    .profile-field.full { grid-column: 1 / -1; }
+    .profile-field dd.bio-text { font-weight: 400; line-height: 1.55; white-space: pre-wrap; }    .modal-header { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.3rem; }
     .modal-header h2 { margin: 0; font-size: 1.5rem; }
     .close-button { border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 1.35rem; }
     .form-grid { display: grid; gap: .9rem; }
@@ -315,7 +326,45 @@
     }
 
     function openProfile(psychologist) {
-      profileContent.innerHTML = `<div class="form-grid"><p><strong>Nome</strong><br>${escapeHtml(psychologist.name)}</p><p><strong>E-mail</strong><br>${escapeHtml(psychologist.email)}</p><p><strong>CRP</strong><br>${escapeHtml(psychologist.crp)}</p><p><strong>Especialidade</strong><br>${escapeHtml(psychologist.specialty || 'Não informada')}</p><p><strong>Bio</strong><br>${escapeHtml(psychologist.bio || 'Não informada')}</p><p><strong>Status</strong><br>${psychologist.verified ? 'Verificado' : 'Pendente'}</p></div>`;
+      const insurance = psychologist.accepts_insurance === true ? 'Sim'
+        : psychologist.accepts_insurance === false ? 'Não' : 'Não informado';
+      const price = psychologist.session_price != null
+        ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(psychologist.session_price)
+        : 'Não informado';
+      const location = [psychologist.city, psychologist.state].filter(Boolean).join(' – ') || 'Não informada';
+
+      profileContent.innerHTML = `
+        <div class="profile-modal-hero">
+          <span class="profile-modal-avatar">${escapeHtml(initials(psychologist.name))}</span>
+          <div>
+            <h3>${escapeHtml(psychologist.name)}</h3>
+            <span>${escapeHtml(psychologist.specialty || 'Especialidade não informada')} · CRP ${escapeHtml(psychologist.crp)}</span>
+          </div>
+        </div>
+
+        <p class="profile-section-title">Informações de contato</p>
+        <dl class="profile-grid">
+          <div class="profile-field"><dt>E-mail</dt><dd>${escapeHtml(psychologist.email)}</dd></div>
+          <div class="profile-field"><dt>Telefone / WhatsApp</dt><dd>${escapeHtml(psychologist.phone || 'Não informado')}</dd></div>
+          <div class="profile-field"><dt>Localização</dt><dd>${escapeHtml(location)}</dd></div>
+          <div class="profile-field"><dt>Idiomas</dt><dd>${escapeHtml(psychologist.languages || 'Não informado')}</dd></div>
+        </dl>
+
+        <p class="profile-section-title">Prática clínica</p>
+        <dl class="profile-grid">
+          <div class="profile-field"><dt>Abordagem</dt><dd>${escapeHtml(psychologist.approach || 'Não informada')}</dd></div>
+          <div class="profile-field"><dt>Valor da sessão</dt><dd>${escapeHtml(price)}</dd></div>
+          <div class="profile-field"><dt>Aceita convênio</dt><dd>${escapeHtml(insurance)}</dd></div>
+          <div class="profile-field"><dt>Status da conta</dt><dd><span class="status ${psychologist.verified ? 'active' : 'pending'}">${psychologist.verified ? 'Verificado' : 'Pendente'}</span></dd></div>
+          <div class="profile-field full"><dt>Apresentação / Bio</dt><dd class="bio-text">${escapeHtml(psychologist.bio || 'Não informada')}</dd></div>
+        </dl>
+
+        <p class="profile-section-title">Sistema</p>
+        <dl class="profile-grid">
+          <div class="profile-field"><dt>ID</dt><dd>${psychologist.id}</dd></div>
+          <div class="profile-field"><dt>Cadastro</dt><dd>${escapeHtml(formatDate(psychologist.created_at))}</dd></div>
+        </dl>
+      `;
       setProfileModal(true);
     }
 
