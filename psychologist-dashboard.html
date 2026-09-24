@@ -279,8 +279,7 @@
     });
 
     // Guardar referência ao perfil carregado para pré-preencher o modal
-    const _origLoadProfile = loadProfile;
-    loadProfile = async function() {
+    async function loadProfile() {
       try {
         const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } });
         const result = await response.json();
@@ -301,7 +300,7 @@
         document.querySelector('#sidebar-avatar').textContent = initials(profile.name);
         document.querySelector('#topbar-avatar').textContent = initials(profile.name);
       } catch (error) { showToast(error.message); }
-    };
+    }
 
     loadProfile();
     loadDashboardData();
