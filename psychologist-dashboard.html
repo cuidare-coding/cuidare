@@ -43,10 +43,36 @@
     .avatar { width: 2.25rem; height: 2.25rem; color: var(--accent-dark); background: #d8eee2; font-weight: 700; }
     .admin-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
     .admin-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+    .edit-profile-btn { display: flex; align-items: center; gap: .45rem; width: 100%; border: 1px solid rgba(255,255,255,.2); border-radius: 5px; padding: .48rem .75rem; color: #cce6d8; background: rgba(255,255,255,.07); cursor: pointer; font-size: .73rem; margin-bottom: .55rem; transition: background .15s; }
+    .edit-profile-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
     .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
     .main { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
     .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
-    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; cursor: pointer; transition: opacity .15s; }
+    .topbar-avatar:hover { opacity: .82; }
+    /* ── Modal de edição de perfil ── */
+    .modal-backdrop { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: rgba(15,40,30,.45); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal { width: min(560px, 95vw); max-height: 90vh; overflow-y: auto; border-radius: 8px; background: var(--panel); box-shadow: 0 32px 80px rgba(15,40,30,.22); padding: 2rem; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .modal-header h2 { margin: 0; font-size: 1.2rem; }
+    .modal-close { display: grid; place-items: center; width: 2rem; height: 2rem; border: 0; border-radius: 50%; background: var(--paper); color: var(--muted); cursor: pointer; font-size: 1.1rem; line-height: 1; }
+    .modal-close:hover { background: var(--line); }
+    .modal-section { margin: 1.25rem 0 .5rem; color: var(--accent); font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .75rem; }
+    .field label { color: var(--muted); font-size: .72rem; font-weight: 600; }
+    .field input, .field textarea, .field select { border: 1px solid var(--line); border-radius: 4px; padding: .55rem .7rem; color: var(--ink); background: var(--paper); font-family: inherit; font-size: .82rem; transition: border-color .15s; }
+    .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--accent); background: #fff; }
+    .field textarea { resize: vertical; min-height: 5rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: .65rem; margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1.25rem; }
+    .btn { border: 0; border-radius: 4px; padding: .6rem 1.2rem; font-size: .8rem; font-weight: 600; cursor: pointer; }
+    .btn-ghost { background: var(--paper); color: var(--muted); }
+    .btn-ghost:hover { background: var(--line); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } .modal { padding: 1.25rem; } }
     .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
     h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
     h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
@@ -85,14 +111,51 @@
       <a class="brand" href="psychologist-dashboard.html"><span class="brand-mark" aria-hidden="true">C</span>Cuidare</a>
       <p class="nav-label">Meu espaço</p>
       <nav class="nav-list"><a class="nav-link active" href="psychologist-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a><a class="nav-link" href="psychologist-agenda.html"><span class="nav-icon" aria-hidden="true">□</span>Agenda</a><a class="nav-link" href="psychologist-clients.html"><span class="nav-icon" aria-hidden="true">○</span>Clientes</a><a class="nav-link" href="psychologist-finances.html"><span class="nav-icon" aria-hidden="true">＄</span>Financeiro</a></nav>
-      <div class="sidebar-footer"><div class="admin-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div></div><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
+      <div class="sidebar-footer"><div class="admin-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div></div><button class="edit-profile-btn" id="open-edit-modal" type="button">✎&nbsp; Editar perfil</button><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
     </aside>
     <main class="main">
-      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar">--</span></header>
+      <header class="topbar"><button class="topbar-avatar" id="topbar-avatar" title="Editar perfil" aria-label="Editar perfil">--</button></header>
       <section class="hero"><div><p class="eyebrow">Área do psicólogo</p><h1 id="welcome-title">Bom dia.</h1><p class="page-description" id="welcome-description">Seu espaço de trabalho para acompanhar a prática clínica.</p></div></section>
       <section class="metrics" aria-label="Resumo da agenda"><article class="metric"><span>Sessões hoje</span><strong id="today-appointments">0</strong><small id="today-caption">Nenhuma sessão cadastrada</small></article><article class="metric"><span>Pacientes ativos</span><strong id="client-count">0</strong><small>Na sua carteira</small></article><article class="metric"><span>Perfil</span><strong id="profile-status">--</strong><small id="profile-crp-metric">CRP carregando...</small></article></section>
-      <section class="content-grid"><article class="panel" id="agenda"><div class="panel-header"><h2>Agenda de hoje</h2><a class="panel-link" href="psychologist-agenda.html">Ver agenda</a></div><div class="schedule-list" id="today-schedule"><div class="empty-state">Carregando agenda...</div></div></article><article class="panel" id="pacientes"><div class="panel-header"><h2>Meu perfil</h2><a class="panel-link" href="psychologist-clients.html">Ver clientes</a></div><div class="profile"><div class="profile-row"><span>Nome</span><strong id="profile-name">Carregando...</strong></div><div class="profile-row"><span>E-mail</span><strong id="profile-email">Carregando...</strong></div><div class="profile-row"><span>CRP</span><strong id="profile-crp">Carregando...</strong></div><div class="profile-row"><span>Especialidade</span><strong id="profile-specialty">Carregando...</strong></div><div class="profile-row"><span>Biografia</span><strong id="profile-bio">Carregando...</strong></div></div></article></section>
+      <section class="content-grid"><article class="panel" id="agenda"><div class="panel-header"><h2>Agenda de hoje</h2><a class="panel-link" href="psychologist-agenda.html">Ver agenda</a></div><div class="schedule-list" id="today-schedule"><div class="empty-state">Carregando agenda...</div></div></article><article class="panel" id="pacientes"><div class="panel-header"><h2>Meu perfil</h2><a class="panel-link" href="#" id="panel-edit-link">Editar</a></div><div class="profile"><div class="profile-row"><span>Nome</span><strong id="profile-name">Carregando...</strong></div><div class="profile-row"><span>E-mail</span><strong id="profile-email">Carregando...</strong></div><div class="profile-row"><span>CRP</span><strong id="profile-crp">Carregando...</strong></div><div class="profile-row"><span>Especialidade</span><strong id="profile-specialty">Carregando...</strong></div><div class="profile-row"><span>Biografia</span><strong id="profile-bio">Carregando...</strong></div></div></article></section>
     </main>
+  </div>
+  <!-- Modal: editar perfil -->
+  <div class="modal-backdrop" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="edit-modal-title">Editar perfil</h2>
+        <button class="modal-close" id="close-edit-modal" aria-label="Fechar">✕</button>
+      </div>
+      <form id="edit-profile-form" novalidate>
+        <p class="modal-section">Informações básicas</p>
+        <div class="field"><label for="edit-name">Nome completo</label><input id="edit-name" name="name" type="text" autocomplete="name" required></div>
+        <div class="form-row">
+          <div class="field"><label for="edit-specialty">Especialidade</label><input id="edit-specialty" name="specialty" type="text" placeholder="ex: Terapia Cognitivo-Comportamental"></div>
+          <div class="field"><label for="edit-approach">Abordagem</label><input id="edit-approach" name="approach" type="text" placeholder="ex: Psicanálise, TCC, Gestalt"></div>
+        </div>
+        <div class="field"><label for="edit-bio">Biografia / Apresentação para pacientes</label><textarea id="edit-bio" name="bio" placeholder="Conte um pouco sobre você, sua formação e como trabalha..."></textarea></div>
+
+        <p class="modal-section">Localização e contato</p>
+        <div class="form-row">
+          <div class="field"><label for="edit-city">Cidade</label><input id="edit-city" name="city" type="text"></div>
+          <div class="field"><label for="edit-state">Estado (UF)</label><input id="edit-state" name="state" type="text" maxlength="2" placeholder="SP"></div>
+        </div>
+        <div class="field"><label for="edit-phone">Telefone / WhatsApp</label><input id="edit-phone" name="phone" type="tel" placeholder="(11) 9 0000-0000"></div>
+        <div class="field"><label for="edit-languages">Idiomas de atendimento</label><input id="edit-languages" name="languages" type="text" placeholder="Português, Inglês..."></div>
+
+        <p class="modal-section">Atendimento</p>
+        <div class="form-row">
+          <div class="field"><label for="edit-session-price">Valor da sessão (R$)</label><input id="edit-session-price" name="session_price" type="number" min="0" step="0.01" placeholder="0,00"></div>
+          <div class="field"><label for="edit-accepts-insurance">Aceita convênio?</label><select id="edit-accepts-insurance" name="accepts_insurance"><option value="">Não informado</option><option value="true">Sim</option><option value="false">Não</option></select></div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-ghost" type="button" id="cancel-edit-modal">Cancelar</button>
+          <button class="btn btn-primary" type="submit" id="save-profile-btn">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="appointment-recurrence.js"></script>
@@ -105,27 +168,6 @@
     function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]); }
     function isToday(value) { return new Date(value).toDateString() === new Date().toDateString(); }
     function formatTime(value) { return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date(value)); }
-    async function loadProfile() {
-      try {
-        const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Não foi possível carregar seu perfil.');
-        const profile = result.psychologist;
-        const shortName = profile.name.split(/\s+/)[0];
-        document.querySelector('#welcome-title').textContent = `Bom dia, ${shortName}.`;
-        document.querySelector('#welcome-description').textContent = `${profile.specialty || 'Psicólogo'} · CRP ${profile.crp}`;
-        document.querySelector('#sidebar-name').textContent = profile.name;
-        document.querySelector('#profile-name').textContent = profile.name;
-        document.querySelector('#profile-email').textContent = profile.email;
-        document.querySelector('#profile-crp').textContent = profile.crp;
-        document.querySelector('#profile-specialty').textContent = profile.specialty || 'Não informada';
-        document.querySelector('#profile-bio').textContent = profile.bio || 'Não informada';
-        document.querySelector('#profile-status').textContent = profile.verified ? 'Verificado' : 'Pendente';
-        document.querySelector('#profile-crp-metric').textContent = `CRP ${profile.crp}`;
-        document.querySelector('#sidebar-avatar').textContent = initials(profile.name);
-        document.querySelector('#topbar-avatar').textContent = initials(profile.name);
-      } catch (error) { showToast(error.message); }
-    }
     async function loadDashboardData() {
       try {
         const headers = { Authorization: `Bearer ${token}` };
@@ -156,6 +198,111 @@
       } catch (error) { showToast(error.message); }
     }
     document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); });
+
+    // ── Modal de edição de perfil ──────────────────────────────────────────
+    const editModal = document.querySelector('#edit-modal');
+    let currentProfile = {};
+
+    function openEditModal() {
+      // Pré-preencher com os dados atuais
+      document.querySelector('#edit-name').value = currentProfile.name || '';
+      document.querySelector('#edit-specialty').value = currentProfile.specialty || '';
+      document.querySelector('#edit-bio').value = currentProfile.bio || '';
+      document.querySelector('#edit-approach').value = currentProfile.approach || '';
+      document.querySelector('#edit-city').value = currentProfile.city || '';
+      document.querySelector('#edit-state').value = currentProfile.state || '';
+      document.querySelector('#edit-phone').value = currentProfile.phone || '';
+      document.querySelector('#edit-languages').value = currentProfile.languages || '';
+      document.querySelector('#edit-session-price').value = currentProfile.session_price || '';
+      document.querySelector('#edit-accepts-insurance').value =
+        currentProfile.accepts_insurance === true ? 'true' :
+        currentProfile.accepts_insurance === false ? 'false' : '';
+      editModal.classList.add('open');
+      document.querySelector('#edit-name').focus();
+    }
+
+    function closeEditModal() { editModal.classList.remove('open'); }
+
+    document.querySelector('#open-edit-modal').addEventListener('click', openEditModal);
+    document.querySelector('#topbar-avatar').addEventListener('click', openEditModal);
+    document.querySelector('#panel-edit-link').addEventListener('click', (e) => { e.preventDefault(); openEditModal(); });
+    document.querySelector('#close-edit-modal').addEventListener('click', closeEditModal);
+    document.querySelector('#cancel-edit-modal').addEventListener('click', closeEditModal);
+    editModal.addEventListener('click', (e) => { if (e.target === editModal) closeEditModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeEditModal(); });
+
+    document.querySelector('#edit-profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.querySelector('#save-profile-btn');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+      const acceptsInsuranceRaw = document.querySelector('#edit-accepts-insurance').value;
+      const body = {
+        name: document.querySelector('#edit-name').value.trim(),
+        specialty: document.querySelector('#edit-specialty').value.trim() || null,
+        bio: document.querySelector('#edit-bio').value.trim() || null,
+        approach: document.querySelector('#edit-approach').value.trim() || null,
+        city: document.querySelector('#edit-city').value.trim() || null,
+        state: document.querySelector('#edit-state').value.trim().toUpperCase() || null,
+        phone: document.querySelector('#edit-phone').value.trim() || null,
+        languages: document.querySelector('#edit-languages').value.trim() || null,
+        session_price: document.querySelector('#edit-session-price').value ? Number(document.querySelector('#edit-session-price').value) : null,
+        accepts_insurance: acceptsInsuranceRaw === 'true' ? true : acceptsInsuranceRaw === 'false' ? false : null,
+      };
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists/me`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(body),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Erro ao salvar perfil.');
+        // Atualizar cache local e a UI
+        currentProfile = { ...currentProfile, ...body };
+        const shortName = body.name.split(/\s+/)[0];
+        document.querySelector('#welcome-title').textContent = `Bom dia, ${shortName}.`;
+        document.querySelector('#welcome-description').textContent = `${body.specialty || 'Psicólogo'} · CRP ${currentProfile.crp}`;
+        document.querySelector('#sidebar-name').textContent = body.name;
+        document.querySelector('#sidebar-avatar').textContent = initials(body.name);
+        document.querySelector('#topbar-avatar').textContent = initials(body.name);
+        document.querySelector('#profile-name').textContent = body.name;
+        document.querySelector('#profile-specialty').textContent = body.specialty || 'Não informada';
+        document.querySelector('#profile-bio').textContent = body.bio || 'Não informada';
+        closeEditModal();
+        showToast('Perfil atualizado com sucesso!');
+      } catch (error) {
+        showToast(error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar alterações';
+      }
+    });
+
+    // Guardar referência ao perfil carregado para pré-preencher o modal
+    const _origLoadProfile = loadProfile;
+    loadProfile = async function() {
+      try {
+        const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível carregar seu perfil.');
+        const profile = result.psychologist;
+        currentProfile = profile;
+        const shortName = profile.name.split(/\s+/)[0];
+        document.querySelector('#welcome-title').textContent = `Bom dia, ${shortName}.`;
+        document.querySelector('#welcome-description').textContent = `${profile.specialty || 'Psicólogo'} · CRP ${profile.crp}`;
+        document.querySelector('#sidebar-name').textContent = profile.name;
+        document.querySelector('#profile-name').textContent = profile.name;
+        document.querySelector('#profile-email').textContent = profile.email;
+        document.querySelector('#profile-crp').textContent = profile.crp;
+        document.querySelector('#profile-specialty').textContent = profile.specialty || 'Não informada';
+        document.querySelector('#profile-bio').textContent = profile.bio || 'Não informada';
+        document.querySelector('#profile-status').textContent = profile.verified ? 'Verificado' : 'Pendente';
+        document.querySelector('#profile-crp-metric').textContent = `CRP ${profile.crp}`;
+        document.querySelector('#sidebar-avatar').textContent = initials(profile.name);
+        document.querySelector('#topbar-avatar').textContent = initials(profile.name);
+      } catch (error) { showToast(error.message); }
+    };
+
     loadProfile();
     loadDashboardData();
   </script>
