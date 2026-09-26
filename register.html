@@ -516,12 +516,23 @@
         return;
       }
 
-      // Verificação de registro: bloqueia somente quando o provedor confirmou "não encontrado"
+      // Verificação de registro: bloqueia somente quando um provider real (não stub)
+      // confirmou explicitamente que o registro não existe.
+      // situacao "desconhecido" = stub ou falha de consulta → não bloqueia, só avisa.
       const verificacao = await verificarRegistro();
-      if (verificacao && verificacao.encontrado === false) {
+      const bloqueiaRegistro =
+        verificacao &&
+        verificacao.encontrado === false &&
+        verificacao.situacao !== 'desconhecido' &&
+        verificacao.origem !== 'stub' &&
+        verificacao.origem !== 'erro' &&
+        verificacao.origem !== 'validacao';
+      if (bloqueiaRegistro) {
         setStatus('Número de CRP não localizado. Confira o número e tente novamente.');
         return;
       }
+      // CRP com formato inválido (retorna 400 com origem "validacao"): avisa mas não bloqueia
+      // — o admin revisará manualmente.
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Criando conta...';
