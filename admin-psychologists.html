@@ -6,32 +6,16 @@
   <meta name="description" content="Administração de psicólogos da Cuidare">
   <title>Psicólogos | Cuidare</title>
   <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script src="assets/auth-guard.js"></script>
   <script>
-    (async () => {
-      const token = sessionStorage.getItem('cuidare_admin_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
-
-      if (!token) {
-        window.location.replace('admlogin.html');
-        return;
-      }
-
-      try {
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ access_token: token })
-        });
-        const result = await response.json();
-        if (!response.ok || result.user?.account_type !== 'admin') {
-          throw new Error('Sessão administrativa inválida.');
-        }
-        document.documentElement.classList.remove('auth-checking');
-      } catch (_error) {
-        sessionStorage.removeItem('cuidare_admin_access_token');
-        window.location.replace('admlogin.html');
-      }
-    })();
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_admin_access_token',
+      redirect: 'admlogin.html',
+      accountType: 'admin',
+      invalidMessage: 'Sessão administrativa inválida.'
+    });
   </script>
   <style>
     html.auth-checking body { visibility: hidden; }
@@ -236,7 +220,7 @@
     const toast = document.querySelector('#toast');
     const psychologistForm = document.querySelector('#psychologist-form');
     let editingPsychologistId = null;
-    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const apiBase = CuidareApi.base;
 
     function setMenu(open) { sidebar.classList.toggle('open', open); overlay.classList.toggle('open', open); menuButton.setAttribute('aria-expanded', String(open)); }
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timeout); showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2600); }
@@ -297,14 +281,6 @@
     const psychologistsList = document.querySelector('#psychologists-list');
     let psychologists = [];
 
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
-    }
-
-    function initials(name) {
-      return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
-    }
-
     function formatDate(value) {
       if (!value) return 'Sem data';
       return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value));
@@ -330,7 +306,7 @@
         const emailStatusClass = psychologist.email_verified ? 'active' : 'pending';
         const verifyBtn = !psychologist.email_verified ? `<button type="button" data-action="verify-email" style="color: var(--accent); font-weight: bold;">Verificar E-mail</button>` : '';
 
-        return `<tr data-status="${status}" data-id="${psychologist.id}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)} <span class="status ${emailStatusClass}" style="font-size: 10px; margin-left: 5px;">${emailVerifiedStatus}</span></span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span>${listingBadge}</td><td><div class="action-group"><button class="table-button profile-action" type="button">Ver perfil</button><div class="action-menu"><button class="table-button options-action" type="button" aria-label="Abrir opções">•••</button><div class="action-menu-list">${verifyBtn}<button type="button" data-action="edit">Editar cadastro</button><button type="button" data-action="toggle-listing">${listingAction}</button><button class="delete-action" type="button" data-action="delete">Excluir cadastro</button></div></div></div></td></tr>`;
+        return `<tr data-status="${status}" data-id="${psychologist.id}"><td><div class="psychologist"><span class="psychologist-avatar">${CuidareFormat.escapeHtml(CuidareFormat.initials(psychologist.name))}</span><div><strong>${CuidareFormat.escapeHtml(psychologist.name)}</strong><span>${CuidareFormat.escapeHtml(psychologist.email)} <span class="status ${emailStatusClass}" style="font-size: 10px; margin-left: 5px;">${emailVerifiedStatus}</span></span></div></div></td><td>${CuidareFormat.escapeHtml(psychologist.crp)}</td><td>${CuidareFormat.escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span>${listingBadge}</td><td><div class="action-group"><button class="table-button profile-action" type="button">Ver perfil</button><div class="action-menu"><button class="table-button options-action" type="button" aria-label="Abrir opções">•••</button><div class="action-menu-list">${verifyBtn}<button type="button" data-action="edit">Editar cadastro</button><button type="button" data-action="toggle-listing">${listingAction}</button><button class="delete-action" type="button" data-action="delete">Excluir cadastro</button></div></div></div></td></tr>`;
       }).join('') : '<tr><td colspan="5">Nenhum psicólogo cadastrado.</td></tr>';
       filterRows();
     }
@@ -345,35 +321,35 @@
 
       profileContent.innerHTML = `
         <div class="profile-modal-hero">
-          <span class="profile-modal-avatar">${escapeHtml(initials(psychologist.name))}</span>
+          <span class="profile-modal-avatar">${CuidareFormat.escapeHtml(CuidareFormat.initials(psychologist.name))}</span>
           <div>
-            <h3>${escapeHtml(psychologist.name)}</h3>
-            <span>${escapeHtml(psychologist.specialty || 'Especialidade não informada')} · CRP ${escapeHtml(psychologist.crp)}</span>
+            <h3>${CuidareFormat.escapeHtml(psychologist.name)}</h3>
+            <span>${CuidareFormat.escapeHtml(psychologist.specialty || 'Especialidade não informada')} · CRP ${CuidareFormat.escapeHtml(psychologist.crp)}</span>
           </div>
         </div>
 
         <p class="profile-section-title">Informações de contato</p>
         <dl class="profile-grid">
-          <div class="profile-field"><dt>E-mail</dt><dd>${escapeHtml(psychologist.email)}</dd></div>
-          <div class="profile-field"><dt>Telefone / WhatsApp</dt><dd>${escapeHtml(psychologist.phone || 'Não informado')}</dd></div>
-          <div class="profile-field"><dt>Localização</dt><dd>${escapeHtml(location)}</dd></div>
-          <div class="profile-field"><dt>Idiomas</dt><dd>${escapeHtml(psychologist.languages || 'Não informado')}</dd></div>
+          <div class="profile-field"><dt>E-mail</dt><dd>${CuidareFormat.escapeHtml(psychologist.email)}</dd></div>
+          <div class="profile-field"><dt>Telefone / WhatsApp</dt><dd>${CuidareFormat.escapeHtml(psychologist.phone || 'Não informado')}</dd></div>
+          <div class="profile-field"><dt>Localização</dt><dd>${CuidareFormat.escapeHtml(location)}</dd></div>
+          <div class="profile-field"><dt>Idiomas</dt><dd>${CuidareFormat.escapeHtml(psychologist.languages || 'Não informado')}</dd></div>
         </dl>
 
         <p class="profile-section-title">Prática clínica</p>
         <dl class="profile-grid">
-          <div class="profile-field"><dt>Abordagem</dt><dd>${escapeHtml(psychologist.approach || 'Não informada')}</dd></div>
-          <div class="profile-field"><dt>Valor da sessão</dt><dd>${escapeHtml(price)}</dd></div>
-          <div class="profile-field"><dt>Aceita convênio</dt><dd>${escapeHtml(insurance)}</dd></div>
+          <div class="profile-field"><dt>Abordagem</dt><dd>${CuidareFormat.escapeHtml(psychologist.approach || 'Não informada')}</dd></div>
+          <div class="profile-field"><dt>Valor da sessão</dt><dd>${CuidareFormat.escapeHtml(price)}</dd></div>
+          <div class="profile-field"><dt>Aceita convênio</dt><dd>${CuidareFormat.escapeHtml(insurance)}</dd></div>
           <div class="profile-field"><dt>Status da conta</dt><dd><span class="status ${psychologist.verified ? 'active' : 'pending'}">${psychologist.verified ? 'Verificado' : 'Pendente'}</span></dd></div>
           <div class="profile-field"><dt>Aparece na busca</dt><dd>${psychologist.show_in_directory === false ? '<span class="status pending">Oculto</span>' : '<span class="status active">Visível</span>'}</dd></div>
-          <div class="profile-field full"><dt>Apresentação / Bio</dt><dd class="bio-text">${escapeHtml(psychologist.bio || 'Não informada')}</dd></div>
+          <div class="profile-field full"><dt>Apresentação / Bio</dt><dd class="bio-text">${CuidareFormat.escapeHtml(psychologist.bio || 'Não informada')}</dd></div>
         </dl>
 
         <p class="profile-section-title">Sistema</p>
         <dl class="profile-grid">
           <div class="profile-field"><dt>ID</dt><dd>${psychologist.id}</dd></div>
-          <div class="profile-field"><dt>Cadastro</dt><dd>${escapeHtml(formatDate(psychologist.created_at))}</dd></div>
+          <div class="profile-field"><dt>Cadastro</dt><dd>${CuidareFormat.escapeHtml(formatDate(psychologist.created_at))}</dd></div>
         </dl>
       `;
       setProfileModal(true);
@@ -505,7 +481,7 @@
         psychologists = result.psychologists || [];
         renderPsychologists();
       } catch (error) {
-        psychologistsList.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+        psychologistsList.innerHTML = `<tr><td colspan="5">${CuidareFormat.escapeHtml(error.message)}</td></tr>`;
         showToast(error.message);
       }
     }

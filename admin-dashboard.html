@@ -6,32 +6,16 @@
   <meta name="description" content="Painel administrativo da Cuidare">
   <title>Painel administrativo | Cuidare</title>
   <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script src="assets/auth-guard.js"></script>
   <script>
-    (async () => {
-      const token = sessionStorage.getItem('cuidare_admin_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
-
-      if (!token) {
-        window.location.replace('admlogin.html');
-        return;
-      }
-
-      try {
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ access_token: token })
-        });
-        const result = await response.json();
-        if (!response.ok || result.user?.account_type !== 'admin') {
-          throw new Error('Sessão administrativa inválida.');
-        }
-        document.documentElement.classList.remove('auth-checking');
-      } catch (_error) {
-        sessionStorage.removeItem('cuidare_admin_access_token');
-        window.location.replace('admlogin.html');
-      }
-    })();
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_admin_access_token',
+      redirect: 'admlogin.html',
+      accountType: 'admin',
+      invalidMessage: 'Sessão administrativa inválida.'
+    });
   </script>
   <style>
     html.auth-checking body { visibility: hidden; }
@@ -399,7 +383,7 @@
     const overlay = document.querySelector('#overlay');
     const menuButton = document.querySelector('#menu-button');
     const toast = document.querySelector('#toast');
-    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const apiBase = CuidareApi.base;
 
     function setMenu(open) {
       sidebar.classList.toggle('open', open);
@@ -445,14 +429,6 @@
     const date = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
     document.querySelector('#current-date').textContent = date.charAt(0).toUpperCase() + date.slice(1);
 
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
-    }
-
-    function initials(name) {
-      return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
-    }
-
     function formatDate(value) {
       if (!value) return 'Sem data';
       return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value));
@@ -472,8 +448,8 @@
         document.querySelector('#psychologist-active').textContent = active.length;
         document.querySelector('#psychologist-pending').textContent = pending.length;
         document.querySelector('#psychologist-new').textContent = psychologists.filter((item) => item.created_at && new Date(item.created_at) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length;
-        document.querySelector('#recent-psychologists').innerHTML = psychologists.slice(0, 5).map((psychologist) => `<tr><td><div class="user"><span class="user-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>Psicólogo</td><td><span class="account-status ${psychologist.verified ? 'active' : 'pending'}">${psychologist.verified ? 'Ativo' : 'Pendente'}</span></td><td><a class="table-action" href="admin-psychologists.html">Ver</a></td></tr>`).join('') || '<tr><td colspan="4">Nenhum psicólogo cadastrado.</td></tr>';
-        document.querySelector('#pending-psychologists').innerHTML = pending.slice(0, 5).map((psychologist) => `<div class="pending-item"><div class="pending-info"><strong>${escapeHtml(psychologist.name)}</strong><span>CRP ${escapeHtml(psychologist.crp)} · ${escapeHtml(formatDate(psychologist.created_at))}</span></div><a class="review-button" href="admin-psychologists.html?status=pending">Revisar</a></div>`).join('') || '<p class="pending-info">Nenhuma aprovação pendente.</p>';
+        document.querySelector('#recent-psychologists').innerHTML = psychologists.slice(0, 5).map((psychologist) => `<tr><td><div class="user"><span class="user-avatar">${CuidareFormat.escapeHtml(CuidareFormat.initials(psychologist.name))}</span><div><strong>${CuidareFormat.escapeHtml(psychologist.name)}</strong><span>${CuidareFormat.escapeHtml(psychologist.email)}</span></div></div></td><td>Psicólogo</td><td><span class="account-status ${psychologist.verified ? 'active' : 'pending'}">${psychologist.verified ? 'Ativo' : 'Pendente'}</span></td><td><a class="table-action" href="admin-psychologists.html">Ver</a></td></tr>`).join('') || '<tr><td colspan="4">Nenhum psicólogo cadastrado.</td></tr>';
+        document.querySelector('#pending-psychologists').innerHTML = pending.slice(0, 5).map((psychologist) => `<div class="pending-item"><div class="pending-info"><strong>${CuidareFormat.escapeHtml(psychologist.name)}</strong><span>CRP ${CuidareFormat.escapeHtml(psychologist.crp)} · ${CuidareFormat.escapeHtml(formatDate(psychologist.created_at))}</span></div><a class="review-button" href="admin-psychologists.html?status=pending">Revisar</a></div>`).join('') || '<p class="pending-info">Nenhuma aprovação pendente.</p>';
       } catch (error) {
         showToast(error.message);
       }

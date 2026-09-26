@@ -6,32 +6,16 @@
   <meta name="description" content="Gestão Financeira e Planos de Assinatura - Painel Administrativo Cuidare">
   <title>Financeiro & Planos | Cuidare</title>
   <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script src="assets/auth-guard.js"></script>
   <script>
-    (async () => {
-      const token = sessionStorage.getItem('cuidare_admin_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
-
-      if (!token) {
-        window.location.replace('admlogin.html');
-        return;
-      }
-
-      try {
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ access_token: token })
-        });
-        const result = await response.json();
-        if (!response.ok || result.user?.account_type !== 'admin') {
-          throw new Error('Sessão administrativa inválida.');
-        }
-        document.documentElement.classList.remove('auth-checking');
-      } catch (_error) {
-        sessionStorage.removeItem('cuidare_admin_access_token');
-        window.location.replace('admlogin.html');
-      }
-    })();
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_admin_access_token',
+      redirect: 'admlogin.html',
+      accountType: 'admin',
+      invalidMessage: 'Sessão administrativa inválida.'
+    });
   </script>
   <style>
     html.auth-checking body { visibility: hidden; }
@@ -720,7 +704,7 @@
     const overlay = document.querySelector('#overlay');
     const menuButton = document.querySelector('#menu-button');
     const toast = document.querySelector('#toast');
-    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const apiBase = CuidareApi.base;
 
     let allSubscriptions = [];
     let allPlans = [];
@@ -757,10 +741,6 @@
       if (!dateStr) return '-';
       const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'));
       return isNaN(d) ? dateStr : d.toLocaleDateString('pt-BR');
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
     }
 
     function switchTab(tabKey) {
@@ -893,17 +873,17 @@
         <div class="plan-card" style="${p.is_active ? '' : 'opacity: 0.75; border-style: dashed;'}">
           <div>
             <div class="plan-card-header">
-              <h3 class="plan-card-title">${escapeHtml(p.name)}</h3>
+              <h3 class="plan-card-title">${CuidareFormat.escapeHtml(p.name)}</h3>
               <span class="status-badge ${p.is_active ? 'paid' : 'none'}">${p.is_active ? 'Ativo' : 'Desativado'}</span>
             </div>
             <div class="plan-card-price">${formatBRL(p.price)}</div>
             <div class="plan-card-cycle">Cobrança ${p.billing_cycle === 'monthly' ? 'Mensal' : p.billing_cycle === 'yearly' ? 'Anual' : 'Trimestral'}</div>
-            <p class="plan-card-desc">${escapeHtml(p.description || 'Sem descrição cadastrada.')}</p>
+            <p class="plan-card-desc">${CuidareFormat.escapeHtml(p.description || 'Sem descrição cadastrada.')}</p>
           </div>
           <div class="plan-card-footer">
             <span><strong>${p.subscribers_count}</strong> psicólogo(s)</span>
             <div style="display: flex; gap: .4rem;">
-              <button class="action-btn" onclick="openPlanModal(${escapeHtml(JSON.stringify(p))})">Editar</button>
+              <button class="action-btn" onclick="openPlanModal(${CuidareFormat.escapeHtml(JSON.stringify(p))})">Editar</button>
               ${p.is_active 
                 ? `<button class="action-btn delete-btn" onclick="deletePlan(${p.id})">Desativar</button>` 
                 : `<button class="action-btn pay-btn" onclick="reactivatePlan(${p.id})">Reativar</button>`
@@ -945,10 +925,10 @@
         return `
           <tr>
             <td>
-              <strong>${escapeHtml(sub.psychologist_name)}</strong><br>
-              <small style="color: var(--muted);">CRP ${escapeHtml(sub.psychologist_crp)} · ${escapeHtml(sub.psychologist_email)}</small>
+              <strong>${CuidareFormat.escapeHtml(sub.psychologist_name)}</strong><br>
+              <small style="color: var(--muted);">CRP ${CuidareFormat.escapeHtml(sub.psychologist_crp)} · ${CuidareFormat.escapeHtml(sub.psychologist_email)}</small>
             </td>
-            <td><span class="plan-tag ${sub.plan_id ? '' : 'none'}">${escapeHtml(sub.plan_name)}</span></td>
+            <td><span class="plan-tag ${sub.plan_id ? '' : 'none'}">${CuidareFormat.escapeHtml(sub.plan_name)}</span></td>
             <td><strong>${sub.plan_id ? formatBRL(sub.plan_price) : '-'}</strong></td>
             <td>${sub.plan_id ? `Todo dia ${sub.due_day}` : '-'}</td>
             <td>${formatDate(sub.last_payment_date)}</td>
@@ -963,8 +943,8 @@
             </td>
             <td>
               <div style="display: flex; gap: .35rem;">
-                <button class="action-btn" onclick="openAssignModal(${escapeHtml(JSON.stringify(sub))})">Alterar Plano</button>
-                ${sub.plan_id ? `<button class="action-btn pay-btn" onclick="openPaymentModal(${escapeHtml(JSON.stringify(sub))})">Dar Baixa</button>` : ''}
+                <button class="action-btn" onclick="openAssignModal(${CuidareFormat.escapeHtml(JSON.stringify(sub))})">Alterar Plano</button>
+                ${sub.plan_id ? `<button class="action-btn pay-btn" onclick="openPaymentModal(${CuidareFormat.escapeHtml(JSON.stringify(sub))})">Dar Baixa</button>` : ''}
               </div>
             </td>
           </tr>
@@ -1029,10 +1009,10 @@
             tbody.innerHTML = data.history.map(h => `
               <tr>
                 <td>${formatDate(h.paid_date)}</td>
-                <td><strong>${escapeHtml(h.psychologist_name)}</strong><br><small style="color: var(--muted);">CRP ${escapeHtml(h.psychologist_crp)}</small></td>
-                <td><span class="plan-tag">${escapeHtml(h.plan_name)}</span></td>
-                <td><strong>${escapeHtml(h.reference_month)}</strong></td>
-                <td>${escapeHtml(h.payment_method)}</td>
+                <td><strong>${CuidareFormat.escapeHtml(h.psychologist_name)}</strong><br><small style="color: var(--muted);">CRP ${CuidareFormat.escapeHtml(h.psychologist_crp)}</small></td>
+                <td><span class="plan-tag">${CuidareFormat.escapeHtml(h.plan_name)}</span></td>
+                <td><strong>${CuidareFormat.escapeHtml(h.reference_month)}</strong></td>
+                <td>${CuidareFormat.escapeHtml(h.payment_method)}</td>
                 <td><strong style="color: var(--accent);">${formatBRL(h.amount)}</strong></td>
                 <td><button class="action-btn delete-btn" onclick="deleteHistoryRecord(${h.id})">Remover</button></td>
               </tr>

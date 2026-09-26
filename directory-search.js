@@ -4,30 +4,29 @@
  * Conversa com GET /api/psychologists/directory (endpoint público) e renderiza
  * os cards de resultado. As funções puras ficam expostas em
  * `window.CuidareDirectorySearch` (e em `module.exports` para testes com Node).
+ *
+ * Depende de `assets/api.js` e `assets/format.js`, que precisam carregar antes
+ * deste arquivo no `index.html`.
  */
 (function (global) {
   'use strict';
 
-  const API_BASE = (global && global.CUIDARE_API_URL) || 'https://cuidareapi.onrender.com';
+  // Utilitarios e base da API compartilhados (ui/assets). No navegador vêm de
+  // window.CuidareFormat / window.CuidareApi, carregados antes deste arquivo; nos
+  // checks Node não existe window, então resolvemos por require.
+  const sharedFormat = (global && global.CuidareFormat)
+    || (typeof require === 'function' ? require('./assets/format.js') : null);
+  const sharedApi = (global && global.CuidareApi)
+    || (typeof require === 'function' ? require('./assets/api.js') : null);
+  if (!sharedFormat || !sharedApi) throw new Error('assets/format.js e assets/api.js devem carregar antes de directory-search.js');
+
+  const API_BASE = sharedApi.base;
   const DIRECTORY_LIMIT = 24;
   const DEBOUNCE_MS = 350;
   const BIO_PREVIEW_LENGTH = 180;
 
-  function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, (character) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
-    })[character]);
-  }
-
-  function initials(name) {
-    return String(name || '')
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase();
-  }
+  const escapeHtml = sharedFormat.escapeHtml;
+  const initials = sharedFormat.initials;
 
   function formatPrice(value) {
     if (value === null || value === undefined || value === '') return null;

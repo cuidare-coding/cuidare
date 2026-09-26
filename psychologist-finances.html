@@ -6,21 +6,15 @@
   <meta name="description" content="Gestão Financeira - Cuidare">
   <title>Financeiro | Cuidare</title>
   <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/auth-guard.js"></script>
   <script>
-    (async () => {
-      const token = sessionStorage.getItem('cuidare_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
-      if (!token) { window.location.replace('login.html'); return; }
-      try {
-        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: token }) });
-        const result = await response.json();
-        if (!response.ok || result.user?.account_type !== 'psychologist') throw new Error('Sessão inválida.');
-        document.documentElement.classList.remove('auth-checking');
-      } catch (_error) {
-        sessionStorage.removeItem('cuidare_access_token');
-        window.location.replace('login.html');
-      }
-    })();
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_access_token',
+      redirect: 'login.html',
+      accountType: 'psychologist',
+      invalidMessage: 'Sessão inválida.'
+    });
   </script>
   <style>
     html.auth-checking body { visibility: hidden; }
@@ -261,7 +255,7 @@
 
   <script>
     const token = sessionStorage.getItem('cuidare_access_token');
-    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const apiBase = CuidareApi.base;
     const toast = document.querySelector('#toast');
 
     function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }

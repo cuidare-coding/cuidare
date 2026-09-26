@@ -6,21 +6,16 @@
   <meta name="description" content="Área de trabalho do psicólogo Cuidare">
   <title>Meu espaço | Cuidare</title>
   <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script src="assets/auth-guard.js"></script>
   <script>
-    (async () => {
-      const token = sessionStorage.getItem('cuidare_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
-      if (!token) { window.location.replace('login.html'); return; }
-      try {
-        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: token }) });
-        const result = await response.json();
-        if (!response.ok || result.user?.account_type !== 'psychologist') throw new Error('Sessão inválida.');
-        document.documentElement.classList.remove('auth-checking');
-      } catch (_error) {
-        sessionStorage.removeItem('cuidare_access_token');
-        window.location.replace('login.html');
-      }
-    })();
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_access_token',
+      redirect: 'login.html',
+      accountType: 'psychologist',
+      invalidMessage: 'Sessão inválida.'
+    });
   </script>
   <style>
     html.auth-checking body { visibility: hidden; }
@@ -161,11 +156,9 @@
   <script src="appointment-recurrence.js"></script>
   <script>
     const token = sessionStorage.getItem('cuidare_access_token');
-    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const apiBase = CuidareApi.base;
     const toast = document.querySelector('#toast');
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 2800); }
-    function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
-    function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]); }
     function isToday(value) { return new Date(value).toDateString() === new Date().toDateString(); }
     function formatTime(value) { return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date(value)); }
     async function loadDashboardData() {
@@ -192,7 +185,7 @@
         document.querySelector('#today-schedule').innerHTML = todayAppointments.length
           ? todayAppointments.map((appointment) => {
             const repeat = CuidareRecurrence.isRecurring(appointment.recurrence) ? ` · ${CuidareRecurrence.recurrenceLabel(appointment.recurrence)}` : '';
-            return `<div class="schedule-item"><div class="schedule-info"><strong>${escapeHtml(appointment.patient)}</strong><span>${escapeHtml(appointment.type)} · ${appointment.duration_minutes} min${escapeHtml(repeat)}</span></div><span class="schedule-time">${formatTime(appointment.starts_at)}</span></div>`;
+            return `<div class="schedule-item"><div class="schedule-info"><strong>${CuidareFormat.escapeHtml(appointment.patient)}</strong><span>${CuidareFormat.escapeHtml(appointment.type)} · ${appointment.duration_minutes} min${CuidareFormat.escapeHtml(repeat)}</span></div><span class="schedule-time">${formatTime(appointment.starts_at)}</span></div>`;
           }).join('')
           : '<div class="empty-state">Nenhuma sessão agendada para hoje.</div>';
       } catch (error) { showToast(error.message); }
@@ -263,8 +256,8 @@
         document.querySelector('#welcome-title').textContent = `Bom dia, ${shortName}.`;
         document.querySelector('#welcome-description').textContent = `${body.specialty || 'Psicólogo'} · CRP ${currentProfile.crp}`;
         document.querySelector('#sidebar-name').textContent = body.name;
-        document.querySelector('#sidebar-avatar').textContent = initials(body.name);
-        document.querySelector('#topbar-avatar').textContent = initials(body.name);
+        document.querySelector('#sidebar-avatar').textContent = CuidareFormat.initials(body.name);
+        document.querySelector('#topbar-avatar').textContent = CuidareFormat.initials(body.name);
         document.querySelector('#profile-name').textContent = body.name;
         document.querySelector('#profile-specialty').textContent = body.specialty || 'Não informada';
         document.querySelector('#profile-bio').textContent = body.bio || 'Não informada';
@@ -297,8 +290,8 @@
         document.querySelector('#profile-bio').textContent = profile.bio || 'Não informada';
         document.querySelector('#profile-status').textContent = profile.verified ? 'Verificado' : 'Pendente';
         document.querySelector('#profile-crp-metric').textContent = `CRP ${profile.crp}`;
-        document.querySelector('#sidebar-avatar').textContent = initials(profile.name);
-        document.querySelector('#topbar-avatar').textContent = initials(profile.name);
+        document.querySelector('#sidebar-avatar').textContent = CuidareFormat.initials(profile.name);
+        document.querySelector('#topbar-avatar').textContent = CuidareFormat.initials(profile.name);
       } catch (error) { showToast(error.message); }
     }
 

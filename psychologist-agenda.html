@@ -6,18 +6,16 @@
   <meta name="description" content="Agenda semanal do psicólogo Cuidare">
   <title>Agenda | Cuidare</title>
   <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script src="assets/auth-guard.js"></script>
   <script>
-    (async () => {
-      const token = sessionStorage.getItem('cuidare_access_token');
-      const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/verify`;
-      if (!token) { window.location.replace('login.html'); return; }
-      try {
-        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ access_token: token }) });
-        const result = await response.json();
-        if (!response.ok || result.user?.account_type !== 'psychologist') throw new Error('Sessão inválida.');
-        document.documentElement.classList.remove('auth-checking');
-      } catch (_error) { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); }
-    })();
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_access_token',
+      redirect: 'login.html',
+      accountType: 'psychologist',
+      invalidMessage: 'Sessão inválida.'
+    });
   </script>
   <style>
     html.auth-checking body { visibility: hidden; }
@@ -149,7 +147,7 @@
   <script src="appointment-recurrence.js"></script>
   <script>
     const token = sessionStorage.getItem('cuidare_access_token');
-    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const apiBase = CuidareApi.base;
     const calendar = document.querySelector('#calendar');
     const weekLabel = document.querySelector('#week-label');
     const emptyNote = document.querySelector('#empty-note');
@@ -178,7 +176,6 @@
         })
         .sort((first, second) => new Date(first.starts_at) - new Date(second.starts_at));
     }
-    function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase(); }
     function renderCalendar() {
       const today = new Date();
       const endWeek = new Date(currentWeek); endWeek.setDate(endWeek.getDate() + 6);
@@ -400,8 +397,8 @@
         if (!response.ok) throw new Error(result.error || 'Não foi possível carregar seu perfil.');
         const name = result.psychologist.name;
         document.querySelector('#sidebar-name').textContent = name;
-        document.querySelector('#sidebar-avatar').textContent = initials(name);
-        document.querySelector('#topbar-avatar').textContent = initials(name);
+        document.querySelector('#sidebar-avatar').textContent = CuidareFormat.initials(name);
+        document.querySelector('#topbar-avatar').textContent = CuidareFormat.initials(name);
       } catch (error) { showToast(error.message); }
     }
     renderCalendar();

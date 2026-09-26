@@ -283,13 +283,14 @@
 		</section>
 	</main>
 
+  <script src="assets/api.js"></script>
 	<script>
 		const form = document.querySelector('#admin-login-form');
 		const password = document.querySelector('#password');
 		const toggle = document.querySelector('#password-toggle');
 		const status = document.querySelector('#form-status');
 		const submitButton = form.querySelector('.submit-button');
-		const apiUrl = `${window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com'}/api/auth/admin/login`;
+		const apiUrl = `${CuidareApi.base}/api/auth/admin/login`;
 
 		toggle.addEventListener('click', () => {
 			const isPassword = password.type === 'password';

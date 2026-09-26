@@ -282,13 +282,14 @@
     </section>
   </main>
 
+  <script src="assets/api.js"></script>
   <script>
     const form = document.querySelector('#psychologist-login-form');
     const password = document.querySelector('#password');
     const toggle = document.querySelector('#password-toggle');
     const status = document.querySelector('#form-status');
     const submitButton = form.querySelector('.submit-button');
-    const apiBase = window.CUIDARE_API_URL || 'https://cuidareapi.onrender.com';
+    const apiBase = CuidareApi.base;
 
     toggle.addEventListener('click', () => {
       const isPassword = password.type === 'password';
