@@ -312,15 +312,16 @@
 
     function renderPsychologists() {
       const total = psychologists.length;
-      const active = psychologists.filter((item) => item.verified).length;
+      const active = psychologists.filter((item) => item.email_verified).length;
       document.querySelector('#total-count').textContent = total;
       const sidebarCount = document.querySelector('#sidebar-psych-count');
       if (sidebarCount) sidebarCount.textContent = total;
       document.querySelector('#active-count').textContent = active;
       document.querySelector('#pending-count').textContent = total - active;
       psychologistsList.innerHTML = psychologists.length ? psychologists.map((psychologist) => {
-        const status = psychologist.verified ? 'active' : 'pending';
-        const statusLabel = psychologist.verified ? 'Ativo' : 'Pendente';
+        const isFullyVerified = psychologist.email_verified === true;
+        const status = isFullyVerified ? 'active' : 'pending';
+        const statusLabel = isFullyVerified ? 'Ativo' : 'Pendente';
         const hiddenFromSearch = psychologist.show_in_directory === false;
         const listingBadge = hiddenFromSearch ? ' <span class="status pending">Oculto da busca</span>' : '';
         const listingAction = hiddenFromSearch ? 'Mostrar na busca' : 'Ocultar da busca';
