@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Convite de acompanhamento na Cuidare">
+  <title>Convite | Cuidare</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #68756e;
+      --paper: #f5f7f2;
+      --panel: #ffffff;
+      --line: #dce4dc;
+      --accent: #196a52;
+      --accent-dark: #0f4d3b;
+      --focus: #a8d8c4;
+      --error: #a13b34;
+      --gold: #a56c19;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem 1rem;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .card {
+      width: min(100%, 30rem);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 2.75rem 2.5rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: bold;
+      letter-spacing: .02em;
+      margin-bottom: 2rem;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      font-family: Arial, sans-serif;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--accent-dark);
+    }
+
+    .eyebrow {
+      margin: 0 0 .5rem;
+      color: var(--accent);
+      font-family: Arial, sans-serif;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 .6rem;
+      font-size: 1.7rem;
+      font-weight: 400;
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+      font-family: Arial, sans-serif;
+      font-size: .88rem;
+      line-height: 1.65;
+    }
+
+    /* Ficha do profissional: só o perfil público que o convite devolve. */
+    .invite-card {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: 5px;
+      padding: 1.1rem 1.2rem;
+      background: #fbfdfb;
+      margin-bottom: 1.5rem;
+    }
+
+    .invite-card strong { display: block; font: 1rem Georgia, 'Times New Roman', serif; }
+    .invite-rows { display: grid; gap: .5rem; margin-top: .9rem; }
+    .invite-row { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: .5rem; font: .78rem Arial, sans-serif; }
+    .invite-row span { color: var(--muted); }
+    .invite-row b { font-weight: 600; text-align: right; word-break: break-word; }
+    .tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .9rem; }
+    .tag { border-radius: 999px; padding: .2rem .6rem; color: var(--accent-dark); background: #d9eee3; font: 700 .66rem Arial, sans-serif; }
+
+    .notice {
+      margin: 0 0 1.5rem;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: .9rem 1rem;
+      color: var(--ink);
+      background: #fdf8ee;
+      font: .8rem Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    .actions { display: grid; gap: .6rem; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: .9rem 1.5rem;
+      border-radius: 4px;
+      font: 700 .8rem Arial, sans-serif;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: .6; cursor: wait; }
+    .btn-primary { border: 0; color: #fff; background: var(--accent); }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-ghost { color: var(--accent-dark); background: transparent; border: 1px solid var(--line); }
+    .btn-ghost:hover { background: var(--paper); }
+    .btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    .fine-print {
+      margin: 1.25rem 0 0;
+      color: var(--muted);
+      font: .74rem Arial, sans-serif;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .error-box {
+      margin: 0 0 1.5rem;
+      border: 1px solid #e8cfcd;
+      border-left: 3px solid var(--error);
+      border-radius: 4px;
+      padding: .9rem 1rem;
+      color: var(--error);
+      background: #fdf5f4;
+      font: .8rem Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 520px) { .card { padding: 2rem 1.5rem; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="card">
+    <a class="brand" href="index.html" aria-label="Cuidare — página inicial">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      Cuidare
+    </a>
+
+    <!-- Estado: carregando -->
+    <div id="view-loading">
+      <p class="eyebrow">Convite</p>
+      <h1>Verificando o convite…</h1>
+      <p>Aguarde um momento enquanto confirmamos os dados do convite.</p>
+    </div>
+
+    <!-- Estado: convite válido, visitante sem sessão -->
+    <div id="view-guest" style="display:none;">
+      <p class="eyebrow">Convite</p>
+      <h1 id="guest-title">Você recebeu um convite</h1>
+      <p id="guest-message"></p>
+      <div class="notice" id="guest-identity"></div>
+      <div class="actions">
+        <a class="btn btn-primary" id="guest-login" href="client-login.html">Já tenho conta — entrar</a>
+        <a class="btn btn-ghost" id="guest-register" href="client-register.html">Criar minha conta</a>
+      </div>
+      <p class="fine-print">O convite só pode ser aceito pela conta cadastrada com o e-mail para o qual ele foi enviado.</p>
+    </div>
+
+    <!-- Estado: convite válido, conta autenticada -->
+    <div id="view-accept" style="display:none;">
+      <p class="eyebrow">Convite</p>
+      <h1>Vínculo com <span id="accept-name">seu profissional</span></h1>
+      <p>Ao aceitar, este profissional passa a acompanhar as sessões registradas no seu prontuário com ele. Nenhum dado seu é alterado.</p>
+      <div class="notice" id="accept-identity"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="accept-button" type="button">Aceitar convite</button>
+        <a class="btn btn-ghost" href="client-dashboard.html">Agora não</a>
+      </div>
+    </div>
+
+    <!-- Estado: erro do servidor ao carregar o convite -->
+    <div id="view-error" style="display:none;">
+      <p class="eyebrow">Convite</p>
+      <h1>Convite indisponível</h1>
+      <div class="error-box" id="error-message"></div>
+      <div class="actions">
+        <a class="btn btn-primary" href="client-login.html">Ir para o login</a>
+      </div>
+      <p class="fine-print">Se você acredita que deveria ter recebido um convite, fale com o profissional que enviou.</p>
+    </div>
+
+    <!-- Estado: sem token na URL -->
+    <div id="view-notoken" style="display:none;">
+      <p class="eyebrow">Convite</p>
+      <h1>Nenhum convite informado</h1>
+      <p>Abra o link de convite que o profissional enviou para o seu e-mail.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="client-login.html">Ir para o login</a>
+      </div>
+    </div>
+
+    <!-- Ficha do convite, preenchida com o payload público do backend -->
+    <div class="invite-card" id="invite-card" style="display:none;"></div>
+  </div>
+
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script>
+    const TOKEN_KEY = 'cuidare_client_access_token';
+    const SESSION_URL = '/api/client/auth/session';
+    const apiBase = CuidareApi.base;
+    const VIEWS = ['view-loading', 'view-guest', 'view-accept', 'view-error', 'view-notoken'];
+
+    // O token vive na URL, como veio do e-mail. O botão de aceitar é montado
+    // depois do preview, então o valor lido no init é o suficiente.
+    const inviteToken = new URLSearchParams(window.location.search).get('token');
+
+    function showView(id) {
+      VIEWS.forEach((view) => {
+        document.getElementById(view).style.display = view === id ? 'block' : 'none';
+      });
+    }
+
+    function formatDate(value) {
+      if (!value) return 'Não informado';
+      return new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
+
+    // ---- Ficha ----
+    // Sai daqui apenas o que o backend devolveu em `GET /api/client/invites/<token>`:
+    // nome, CRP, especialidade, abordagem e cidade do profissional, o nome que
+    // ele deu ao cadastro e a validade. Nada de prontuário, e-mail, telefone
+    // ou valores — o payload não os traz.
+    function renderInviteCard(invite) {
+      const psychologist = invite.psychologist || {};
+      const card = document.getElementById('invite-card');
+      const location = [psychologist.city, psychologist.state].filter(Boolean).join(' - ');
+
+      const rows = [
+        ['CRP', psychologist.crp],
+        ['Cidade', location],
+        ['Convite válido até', formatDate(invite.expires_at)]
+      ].filter((row) => row[1]);
+
+      const tags = [psychologist.specialty, psychologist.approach]
+        .filter(Boolean)
+        .map((value) => `<span class="tag">${CuidareFormat.escapeHtml(value)}</span>`)
+        .join('');
+
+      card.innerHTML = `
+        <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional Cuidare')}</strong>
+        ${tags ? `<div class="tags">${tags}</div>` : ''}
+        <div class="invite-rows">
+          ${rows.map(([label, value]) => `
+            <div class="invite-row"><span>${CuidareFormat.escapeHtml(label)}</span><b>${CuidareFormat.escapeHtml(value)}</b></div>
+          `).join('')}
+        </div>
+      `;
+      card.style.display = 'block';
+
+      // O nome que o profissional deu ao cadastro: é o que permite confirmar
+      // "sou eu" antes de criar a conta.
+      const identity = invite.client_name
+        ? `<strong>Cadastro:</strong> ${CuidareFormat.escapeHtml(invite.client_name)}. Se este não é o seu nome, este convite não é seu.`
+        : 'Se você não reconhece este profissional, não aceite o convite.';
+
+      document.getElementById('guest-identity').innerHTML = identity;
+      document.getElementById('accept-identity').innerHTML = identity;
+      document.getElementById('accept-name').textContent = psychologist.name || 'seu profissional';
+    }
+
+    // ---- Sessão ----
+    // Presença do token no sessionStorage não prova nada: um token expirado
+    // também está lá. O backend que decide.
+    async function temSessaoValida() {
+      const token = sessionStorage.getItem(TOKEN_KEY);
+      if (!token) return false;
+
+      try {
+        const response = await fetch(`${apiBase}${SESSION_URL}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: token })
+        });
+        if (!response.ok) {
+          sessionStorage.removeItem(TOKEN_KEY);
+          return false;
+        }
+        const data = await response.json();
+        return data.user?.account_type === 'client';
+      } catch (_error) {
+        // Sem rede: trata como não autenticado em vez de-travar a página.
+        return false;
+      }
+    }
+
+    // ---- Preview ----
+    async function loadInvite() {
+      let response;
+      let data;
+
+      try {
+        // Rota pública: mostra para quem é o convite antes de existir conta.
+        response = await fetch(`${apiBase}/api/client/invites/${encodeURIComponent(inviteToken)}`);
+        data = await response.json();
+      } catch (_error) {
+        document.getElementById('error-message').textContent =
+          'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
+        showView('view-error');
+        return;
+      }
+
+      if (!response.ok) {
+        const error = document.getElementById('error-message');
+        if (response.status === 410) {
+          error.textContent = 'Este convite expirou. Peça um novo convite ao profissional que o enviou.';
+        } else if (response.status === 404) {
+          error.textContent = 'Este convite não existe ou já foi utilizado.';
+        } else if (response.status === 409) {
+          error.textContent = data.error || 'Este convite não está mais disponível.';
+        } else if (response.status === 429) {
+          error.textContent = 'Muitas tentativas. Aguarde um instante e recarregue a página.';
+        } else {
+          error.textContent = data.error || 'Não foi possível verificar este convite.';
+        }
+        showView('view-error');
+        return;
+      }
+
+      // HTTP 410 com status "expired" ainda devolve a ficha; nesse caso o
+      // backend já replied 410 e caímos no bloco acima.
+      renderInviteCard(data.invite || {});
+
+      if (await temSessaoValida()) {
+        showView('view-accept');
+        return;
+      }
+
+      // O token viaja pela URL até o login/cadastro — o sessionStorage
+      // desta área guarda somente o token de sessão.
+      const encoded = encodeURIComponent(inviteToken);
+      document.getElementById('guest-login').setAttribute('href', `client-login.html?invite=${encoded}`);
+      document.getElementById('guest-register').setAttribute('href', `client-register.html?invite=${encoded}`);
+      document.getElementById('guest-message').textContent =
+        'Entre na sua conta para aceitar, ou crie uma agora. A conta precisa ser a mesma para a qual o convite foi enviado.';
+      showView('view-guest');
+    }
+
+    // ---- Aceitar ----
+    async function acceptInvite() {
+      const button = document.getElementById('accept-button');
+      button.disabled = true;
+      button.textContent = 'Aceitando...';
+
+      try {
+        // Sem `client_id` e sem `psychologist_id` no corpo: o backend deriva
+        // tudo do token de sessão e do token do convite. Aceitar não reenvia
+        // o prontuário, não cria outro e não casa por e-mail ou nome.
+        const response = await fetch(`${apiBase}/api/client/invites/accept`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`
+          },
+          body: JSON.stringify({ token: inviteToken })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            sessionStorage.removeItem(TOKEN_KEY);
+            window.location.replace(`client-login.html?invite=${encodeURIComponent(inviteToken)}`);
+            return;
+          }
+          const error = document.getElementById('error-message');
+          error.textContent = data.error || 'Não foi possível aceitar este convite.';
+          showView('view-error');
+          return;
+        }
+
+        window.location.replace('client-dashboard.html');
+      } catch (_error) {
+        document.getElementById('error-message').textContent =
+          'Não foi possível conectar ao servidor. Tente novamente.';
+        showView('view-error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Aceitar convite';
+      }
+    }
+
+    document.getElementById('accept-button').addEventListener('click', acceptInvite);
+
+    if (!inviteToken) {
+      showView('view-notoken');
+    } else {
+      loadInvite();
+    }
+  </script>
+</body>
+</html>

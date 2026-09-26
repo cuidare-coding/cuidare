@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Solicitações e vínculos com profissionais Cuidare">
+  <title>Meus profissionais | Cuidare</title>
+  <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script src="assets/auth-guard.js"></script>
+  <script>
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_client_access_token',
+      redirect: 'client-login.html',
+      accountType: 'client',
+      invalidMessage: 'Sessão inválida.',
+      // Token de cliente é assinado com `cuidare-client-auth`. O endpoint
+      // padrão do guard usa `cuidare-auth` e rejeitaria este token.
+      verifyUrl: '/api/client/auth/session'
+    });
+  </script>
+  <style>
+    html.auth-checking body { visibility: hidden; }
+    :root { --ink: #17211d; --muted: #68756e; --paper: #f3f6f1; --panel: #fff; --line: #dfe7df; --accent: #196a52; --accent-dark: #0f4d3b; --mint: #d9eee3; --gold: #a56c19; --error: #a13b34; --shadow: 0 18px 40px rgba(28, 62, 47, .07); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: var(--paper); font-family: Arial, sans-serif; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .app-shell { display: grid; grid-template-columns: 17rem minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; height: 100vh; padding: 1.5rem 1rem; color: #eef7f1; background: var(--accent-dark); background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.11) 0 1px, transparent 1px), linear-gradient(160deg, #0f4d3b, #196a52 70%, #2b8062); background-size: 22px 22px, auto; }
+    .brand { display: inline-flex; align-items: center; gap: .7rem; margin: .25rem .65rem 2.5rem; color: inherit; font: bold 1.2rem Georgia, 'Times New Roman', serif; text-decoration: none; }
+    .brand-mark, .avatar { display: grid; place-items: center; border-radius: 50%; }
+    .brand-mark { width: 2.25rem; height: 2.25rem; border: 1px solid rgba(255,255,255,.55); font-size: .9rem; }
+    .nav-label { margin: 0 .8rem .7rem; color: #add7c3; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: .35rem; }
+    .nav-link { display: flex; align-items: center; gap: .75rem; min-height: 2.9rem; border: 1px solid transparent; border-radius: 5px; padding: .65rem .8rem; color: #cce6d8; font-size: .82rem; text-decoration: none; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.1); }
+    .nav-icon { display: grid; place-items: center; width: 1.35rem; color: #a9d9c2; font-size: 1rem; }
+    .sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,.15); padding: 1rem .65rem .25rem; }
+    .account-mini { display: flex; align-items: center; gap: .65rem; margin-bottom: .9rem; }
+    .avatar { width: 2.25rem; height: 2.25rem; color: var(--accent-dark); background: #d8eee2; font-weight: 700; }
+    .account-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .account-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+    .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
+    .main { width: 100%; max-width: 1000px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
+    .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
+    .page-description { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
+    .hero { margin-bottom: 1.9rem; }
+    .sections { display: grid; gap: 1.25rem; }
+    .panel { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); }
+    .panel-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.35rem 1rem; }
+    .panel-header h2 { margin: 0; font-size: 1.25rem; }
+    .panel-count { color: var(--muted); font-size: .72rem; font-weight: 700; }
+    .empty-state { padding: 0 1.35rem 1.35rem; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+    .link-list { display: grid; gap: .7rem; padding: 0 1.35rem 1.35rem; }
+    .link-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 5px; padding: .9rem 1rem; background: #fbfdfb; }
+    .link-card[data-status="requested"] { border-left-color: var(--gold); }
+    .link-card[data-status="active"] { border-left-color: var(--accent); }
+    .link-card[data-status="ended"],
+    .link-card[data-status="rejected"],
+    .link-card[data-status="canceled"],
+    .link-card[data-status="declined"] { border-left-color: var(--line); background: #fafbfa; }
+    .link-body { min-width: 0; }
+    .link-body strong { display: block; font: .88rem Georgia, 'Times New Roman', serif; }
+    .link-meta { display: flex; flex-wrap: wrap; gap: .3rem .85rem; margin-top: .35rem; color: var(--muted); font-size: .7rem; }
+    .badge { display: inline-block; border-radius: 999px; padding: .18rem .6rem; font-size: .65rem; font-weight: 700; letter-spacing: .03em; }
+    .badge-requested { color: #7d5210; background: #f7ecd8; }
+    .badge-invited { color: #7d5210; background: #f7ecd8; }
+    .badge-active { color: var(--accent-dark); background: var(--mint); }
+    .badge-terminal { color: var(--muted); background: var(--paper); border: 1px solid var(--line); }
+    .link-actions { flex-shrink: 0; }
+    .cancel-button { border: 1px solid var(--line); border-radius: 4px; padding: .45rem .85rem; color: var(--muted); background: var(--panel); cursor: pointer; font-size: .72rem; font-weight: 600; }
+    .cancel-button:hover { color: var(--error); border-color: var(--error); }
+    .cancel-button:disabled { opacity: .55; cursor: wait; }
+    .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } }
+    @media (max-width: 520px) { .link-card { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="client-dashboard.html"><span class="brand-mark" aria-hidden="true">C</span>Cuidare</a>
+      <p class="nav-label">Meu espaço</p>
+      <nav class="nav-list"><a class="nav-link" href="client-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a><a class="nav-link active" href="client-requests.html"><span class="nav-icon" aria-hidden="true">○</span>Meus profissionais</a></nav>
+      <div class="sidebar-footer"><div class="account-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Paciente</strong><span>Conta Cuidare</span></div></div><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar" aria-hidden="true">--</span></header>
+      <section class="hero"><div><p class="eyebrow">Área do paciente</p><h1>Meus profissionais</h1><p class="page-description">Solicitações em aberto, vínculos ativos e o histórico do que você já solicitou.</p></div></section>
+
+      <div class="sections">
+        <article class="panel" id="panel-pending">
+          <div class="panel-header"><h2>Solicitações pendentes</h2><span class="panel-count" id="count-pending">0</span></div>
+          <div class="link-list" id="list-pending"><div class="empty-state">Carregando...</div></div>
+        </article>
+
+        <article class="panel" id="panel-active">
+          <div class="panel-header"><h2>Vínculos ativos</h2><span class="panel-count" id="count-active">0</span></div>
+          <div class="link-list" id="list-active"><div class="empty-state">Carregando...</div></div>
+        </article>
+
+        <article class="panel" id="panel-history">
+          <div class="panel-header"><h2>Histórico</h2><span class="panel-count" id="count-history">0</span></div>
+          <div class="link-list" id="list-history"><div class="empty-state">Carregando...</div></div>
+        </article>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const TOKEN_KEY = 'cuidare_client_access_token';
+    const apiBase = CuidareApi.base;
+    const toast = document.querySelector('#toast');
+
+    // Status que o backend define em `models.py`. `LINK_PENDING_STATUSES` é
+    // (requested, invited, active); o resto é terminal e nunca reabre.
+    const ACTIVE = 'active';
+    const REQUESTED = 'requested';
+    const INVITED = 'invited';
+    const TERMINAL = ['rejected', 'canceled', 'declined', 'ended'];
+
+    const LABELS = {
+      requested: 'Aguardando resposta',
+      invited: 'Convite enviado',
+      active: 'Ativo',
+      rejected: 'Recusado',
+      canceled: 'Cancelado',
+      declined: 'Recusado',
+      ended: 'Encerrado'
+    };
+
+    let pending = [];
+    let active = [];
+    let history = [];
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      return new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function authHeaders() {
+      return { Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}` };
+    }
+
+    function handleAuthFailure(response) {
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        window.location.replace('client-login.html');
+        return true;
+      }
+      return false;
+    }
+
+    // ---- Classificação ----
+    // `requested` e `invited` ficam em "pendentes": nenhum dos dois é
+    // cancelável por aqui — o convite é do psicólogo. Só `requested` é uma
+    // solicitação que a CONTA fez, e é o único cancelável.
+    function classify(links) {
+      return links.reduce((acc, link) => {
+        if (link.status === ACTIVE) {
+          acc.active.push(link);
+        } else if (link.status === REQUESTED || link.status === INVITED) {
+          acc.pending.push(link);
+        } else if (TERMINAL.includes(link.status)) {
+          acc.history.push(link);
+        }
+        return acc;
+      }, { pending: [], active: [], history: [] });
+    }
+
+    function badgeClass(status) {
+      if (status === ACTIVE) return 'badge-active';
+      if (status === REQUESTED || status === INVITED) return 'badge-invited';
+      return 'badge-terminal';
+    }
+
+    function renderCard(link) {
+      const psychologist = link.psychologist || {};
+      const location = [psychologist.city, psychologist.state].filter(Boolean).join(' - ');
+      const requestedAt = formatDate(link.created_at);
+
+      const meta = [];
+      if (psychologist.crp) meta.push(`CRP ${psychologist.crp}`);
+      if (psychologist.specialty) meta.push(psychologist.specialty);
+      if (location) meta.push(location);
+      if (requestedAt) meta.push(`Em ${requestedAt}`);
+      if (link.status === REQUESTED) meta.push('Enviada por você');
+      if (link.status === INVITED) meta.push('Enviada pelo profissional');
+      if (link.status === ACTIVE && link.responded_at) meta.push(`Ativo desde ${formatDate(link.responded_at)}`);
+      if (link.ended_reason) meta.push(link.ended_reason);
+
+      // Cancelar existe só para `requested`. O botão de outro status nem é
+      // renderizado — e o backend volta 404 se alguém tentar por fora.
+      const action = link.status === REQUESTED
+        ? `<div class="link-actions"><button class="cancel-button" type="button" data-cancel="${link.id}">Cancelar</button></div>`
+        : '';
+
+      return `<div class="link-card" data-status="${CuidareFormat.escapeHtml(link.status)}">
+        <div class="link-body">
+          <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional')}</strong>
+          <div class="link-meta">
+            <span class="badge ${badgeClass(link.status)}">${CuidareFormat.escapeHtml(LABELS[link.status] || link.status)}</span>
+            ${meta.map((value) => `<span>${CuidareFormat.escapeHtml(value)}</span>`).join('')}
+          </div>
+        </div>
+        ${action}
+      </div>`;
+    }
+
+    function renderSection(containerId, countId, links, emptyMessage) {
+      const container = document.querySelector(containerId);
+      document.querySelector(countId).textContent = String(links.length);
+      container.innerHTML = links.length
+        ? links.map(renderCard).join('')
+        : `<div class="empty-state">${emptyMessage}</div>`;
+    }
+
+    function render() {
+      renderSection('#list-pending', '#count-pending', pending,
+        'Nenhuma solicitação em aberto.');
+      renderSection('#list-active', '#count-active', active,
+        'Você ainda não tem vínculo ativo com nenhum profissional.');
+      renderSection('#list-history', '#count-history', history,
+        'Nenhum registro anterior.');
+    }
+
+    async function loadLinks() {
+      try {
+        // Sem parâmetro de escopo: a lista é sempre da conta do token.
+        const response = await fetch(`${apiBase}/api/client/links`, { headers: authHeaders() });
+        if (handleAuthFailure(response)) return;
+        if (!response.ok) throw new Error('Não foi possível carregar seus vínculos agora.');
+
+        const data = await response.json();
+        const groups = classify(data.links || []);
+        pending = groups.pending;
+        active = groups.active;
+        history = groups.history;
+        render();
+      } catch (error) {
+        showToast(error.message === 'Failed to fetch'
+          ? 'Não foi possível conectar ao servidor.'
+          : error.message);
+      }
+    }
+
+    async function loadAccount() {
+      try {
+        const response = await fetch(`${apiBase}/api/client/me`, { headers: authHeaders() });
+        if (handleAuthFailure(response)) return;
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const account = data.account || {};
+        const initials = CuidareFormat.initials(account.full_name || '');
+        document.querySelector('#sidebar-avatar').textContent = initials;
+        document.querySelector('#topbar-avatar').textContent = initials;
+        document.querySelector('#sidebar-name').textContent = account.full_name || 'Paciente';
+      } catch (_error) {
+        // Identidade é opcional nesta tela: a lista de vínculos é o essencial.
+      }
+    }
+
+    // ---- Cancelar ----
+    // O id vem do botão, que veio do payload do servidor. Ainda assim o
+    // escopo é reconferido no backend (`client_account_id == identity.sub` e
+    // `status == requested`); a UI só evita a ida desnecessária.
+    document.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-cancel]');
+      if (!button) return;
+
+      const linkId = button.getAttribute('data-cancel');
+      button.disabled = true;
+      button.textContent = 'Cancelando...';
+
+      try {
+        const response = await fetch(`${apiBase}/api/client/links/${encodeURIComponent(linkId)}/cancel`, {
+          method: 'POST',
+          headers: authHeaders()
+        });
+        if (handleAuthFailure(response)) return;
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Não foi possível cancelar a solicitação.');
+
+        showToast(data.message || 'Solicitação cancelada.');
+        await loadLinks();
+      } catch (error) {
+        showToast(error.message === 'Failed to fetch'
+          ? 'Não foi possível conectar ao servidor.'
+          : error.message);
+        button.disabled = false;
+        button.textContent = 'Cancelar';
+      }
+    });
+
+    document.querySelector('#logout-button').addEventListener('click', async () => {
+      sessionStorage.removeItem(TOKEN_KEY);
+      try {
+        await fetch(`${apiBase}/api/client/auth/logout`, { method: 'POST' });
+      } catch (_error) {
+        // Logout local já aconteceu; falha de rede não deve travar a saída.
+      }
+      window.location.replace('client-login.html');
+    });
+
+    loadAccount();
+    loadLinks();
+  </script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Área do paciente Cuidare">
+  <title>Meu espaço | Cuidare</title>
+  <script>document.documentElement.classList.add('auth-checking');</script>
+  <script src="assets/api.js"></script>
+  <script src="assets/format.js"></script>
+  <script src="assets/auth-guard.js"></script>
+  <script>
+    CuidareAuth.guard({
+      tokenKey: 'cuidare_client_access_token',
+      redirect: 'client-login.html',
+      accountType: 'client',
+      invalidMessage: 'Sessão inválida.',
+      // Token de cliente é assinado com `cuidare-client-auth`. O endpoint
+      // padrão do guard usa `cuidare-auth` e rejeitaria este token.
+      verifyUrl: '/api/client/auth/session'
+    });
+  </script>
+  <style>
+    html.auth-checking body { visibility: hidden; }
+    :root { --ink: #17211d; --muted: #68756e; --paper: #f3f6f1; --panel: #fff; --line: #dfe7df; --accent: #196a52; --accent-dark: #0f4d3b; --mint: #d9eee3; --gold: #a56c19; --error: #a13b34; --shadow: 0 18px 40px rgba(28, 62, 47, .07); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; color: var(--ink); background: var(--paper); font-family: Arial, sans-serif; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .app-shell { display: grid; grid-template-columns: 17rem minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; height: 100vh; padding: 1.5rem 1rem; color: #eef7f1; background: var(--accent-dark); background-image: radial-gradient(circle at 20% 15%, rgba(255,255,255,.11) 0 1px, transparent 1px), linear-gradient(160deg, #0f4d3b, #196a52 70%, #2b8062); background-size: 22px 22px, auto; }
+    .brand { display: inline-flex; align-items: center; gap: .7rem; margin: .25rem .65rem 2.5rem; color: inherit; font: bold 1.2rem Georgia, 'Times New Roman', serif; text-decoration: none; }
+    .brand-mark, .avatar { display: grid; place-items: center; border-radius: 50%; }
+    .brand-mark { width: 2.25rem; height: 2.25rem; border: 1px solid rgba(255,255,255,.55); font-size: .9rem; }
+    .nav-label { margin: 0 .8rem .7rem; color: #add7c3; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .nav-list { display: grid; gap: .35rem; }
+    .nav-link { display: flex; align-items: center; gap: .75rem; min-height: 2.9rem; border: 1px solid transparent; border-radius: 5px; padding: .65rem .8rem; color: #cce6d8; font-size: .82rem; text-decoration: none; }
+    .nav-link:hover, .nav-link.active { color: #fff; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.1); }
+    .nav-icon { display: grid; place-items: center; width: 1.35rem; color: #a9d9c2; font-size: 1rem; }
+    .sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,.15); padding: 1rem .65rem .25rem; }
+    .account-mini { display: flex; align-items: center; gap: .65rem; margin-bottom: .9rem; }
+    .avatar { width: 2.25rem; height: 2.25rem; color: var(--accent-dark); background: #d8eee2; font-weight: 700; }
+    .account-mini strong { display: block; font: .8rem Georgia, 'Times New Roman', serif; }
+    .account-mini span { display: block; margin-top: .2rem; color: #add7c3; font-size: .67rem; }
+    .logout-button { width: 100%; border: 0; padding: .55rem 0; color: #cce6d8; background: transparent; cursor: pointer; font-size: .75rem; text-align: left; }
+    .main { width: 100%; max-width: 1180px; min-width: 0; margin: 0 auto; padding: 1.5rem clamp(1.25rem, 4vw, 3.5rem) 3rem; }
+    .topbar { display: flex; justify-content: flex-end; min-height: 3rem; margin-bottom: 2.35rem; }
+    .topbar-avatar { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; background: var(--accent); font-size: .76rem; font-weight: 700; }
+    .eyebrow { margin: 0 0 .55rem; color: var(--accent); font-size: .68rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.15rem); line-height: 1; }
+    .page-description { margin: .7rem 0 0; color: var(--muted); font-size: .82rem; }
+    .hero { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.9rem; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+    .metric, .panel { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); box-shadow: var(--shadow); }
+    .metric { padding: 1.2rem; }
+    .metric span { color: var(--muted); font-size: .73rem; }
+    .metric strong { display: block; margin-top: .7rem; font: 2rem Georgia, 'Times New Roman', serif; }
+    .metric small { display: block; margin-top: .3rem; color: var(--accent); font-size: .68rem; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(17rem, .8fr); gap: 1.25rem; }
+    .panel-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.35rem 1rem; }
+    .panel-header h2 { margin: 0; font-size: 1.25rem; }
+    .panel-link { color: var(--accent); font-size: .72rem; text-decoration: none; white-space: nowrap; }
+    .panel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .empty-state { padding: 0 1.35rem 1.35rem; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+    .empty-state a { color: var(--accent); }
+    .schedule-list { display: grid; gap: 0; padding: 0 1.35rem 1.35rem; }
+    .schedule-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding: .85rem 0; }
+    .schedule-info strong { display: block; font: .82rem Georgia, 'Times New Roman', serif; }
+    .schedule-info span { display: block; margin-top: .25rem; color: var(--muted); font-size: .68rem; }
+    .schedule-time { color: var(--accent-dark); font-size: .75rem; font-weight: 700; white-space: nowrap; text-align: right; }
+    .profile { display: grid; gap: .9rem; padding: 0 1.35rem 1.35rem; }
+    .profile-row { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; font-size: .78rem; }
+    .profile-row span { color: var(--muted); }
+    .profile-row strong { font-weight: 600; text-align: right; word-break: break-word; }
+    .psychologist-list { display: grid; gap: .75rem; padding: 0 1.35rem 1.35rem; }
+    .psychologist-card { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 5px; padding: .9rem 1rem; background: #fbfdfb; }
+    .psychologist-card strong { display: block; font: .88rem Georgia, 'Times New Roman', serif; }
+    .psychologist-meta { display: flex; flex-wrap: wrap; gap: .35rem .9rem; margin-top: .4rem; color: var(--muted); font-size: .7rem; }
+    .psychologist-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .55rem; }
+    .tag { border: 1px solid var(--line); border-radius: 999px; padding: .2rem .6rem; color: var(--accent-dark); background: var(--mint); font-size: .66rem; font-weight: 700; }
+    .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } .hero { display: block; } .metrics, .content-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="client-dashboard.html"><span class="brand-mark" aria-hidden="true">C</span>Cuidare</a>
+      <p class="nav-label">Meu espaço</p>
+      <nav class="nav-list"><a class="nav-link active" href="client-dashboard.html"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</a><a class="nav-link" href="client-requests.html"><span class="nav-icon" aria-hidden="true">○</span>Meus professionals</a></nav>
+      <div class="sidebar-footer"><div class="account-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Paciente</strong><span>Conta Cuidare</span></div></div><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span class="topbar-avatar" id="topbar-avatar" aria-hidden="true">--</span></header>
+      <section class="hero"><div><p class="eyebrow">Área do paciente</p><h1 id="welcome-title">Olá.</h1><p class="page-description" id="welcome-description">Acompanhe suas sessões e seus profissionais.</p></div></section>
+      <section class="metrics" aria-label="Resumo da conta">
+        <article class="metric"><span>Próximas sessões</span><strong id="metric-sessions">0</strong><small id="metric-sessions-caption">Nenhuma sessão agendada</small></article>
+        <article class="metric"><span>Profissionais</span><strong id="metric-psychologists">0</strong><small>Com vínculo ativo</small></article>
+        <article class="metric"><span>Conta</span><strong id="metric-status">--</strong><small id="metric-status-caption">Carregando...</small></article>
+      </section>
+      <section class="content-grid">
+        <article class="panel" id="sessoes">
+          <div class="panel-header"><h2>Próximas sessões</h2></div>
+          <div class="schedule-list" id="upcoming-list"><div class="empty-state">Carregando sessões...</div></div>
+        </article>
+        <div style="display: grid; gap: 1.25rem; align-content: start;">
+          <article class="panel" id="conta">
+            <div class="panel-header"><h2>Minha conta</h2></div>
+            <div class="profile">
+              <div class="profile-row"><span>Nome</span><strong id="account-name">Carregando...</strong></div>
+              <div class="profile-row"><span>E-mail</span><strong id="account-email">Carregando...</strong></div>
+              <div class="profile-row" id="account-phone-row"><span>Telefone</span><strong id="account-phone">--</strong></div>
+            </div>
+          </article>
+          <article class="panel" id="profissionais">
+            <div class="panel-header"><h2>Meus psicólogos</h2><a class="panel-link" href="client-requests.html">Ver vínculos</a></div>
+            <div class="psychologist-list" id="psychologist-list"><div class="empty-state">Carregando...</div></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const TOKEN_KEY = 'cuidare_client_access_token';
+    const apiBase = CuidareApi.base;
+    const toast = document.querySelector('#toast');
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    // Mesmo formatador de `psychologist-agenda.html`, para as duas áreas
+    // mostrarem o mesmo horário para o mesmo ISO.
+    function formatSession(value) {
+      const date = new Date(value);
+      return `${date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    // Token inválado/expirado durante a carga: o guard já redireciona, mas
+    // uma sessão que expira no meio da carga devia ir para o login também.
+    function authHeaders() {
+      return { Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}` };
+    }
+
+    function handleAuthFailure(response) {
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem(TOKEN_KEY);
+        window.location.replace('client-login.html');
+        return true;
+      }
+      return false;
+    }
+
+    // ---- Conta ----
+    function renderAccount(account) {
+      const name = account.full_name || '—';
+      document.querySelector('#account-name').textContent = name;
+      document.querySelector('#account-email').textContent = account.email || '—';
+      document.querySelector('#account-phone').textContent = account.phone || 'Não informado';
+
+      // Sem telefone, a linha inteira sai: nada de "Telefone: —".
+      if (!account.phone) {
+        document.querySelector('#account-phone-row').style.display = 'none';
+      }
+
+      const initials = CuidareFormat.initials(name);
+      document.querySelector('#sidebar-avatar').textContent = initials;
+      document.querySelector('#topbar-avatar').textContent = initials;
+      document.querySelector('#sidebar-name').textContent = name;
+      document.title = `${name} | Cuidare`;
+    }
+
+    // ---- Profissionais (só vínculos `active`) ----
+    // A conta pode ter vários Requests com o mesmo psicólogo: linhas
+    // terminais (rejected, canceled, ended) ficam fora daqui.
+    function activeLinks(links) {
+      return links.filter((link) => link.status === 'active');
+    }
+
+    function renderPsychologists(links) {
+      const container = document.querySelector('#psychologist-list');
+      const active = activeLinks(links);
+
+      document.querySelector('#metric-psychologists').textContent = String(active.length);
+
+      if (!active.length) {
+        container.innerHTML = '<div class="empty-state">Você ainda não tem vínculo ativo com nenhum profissional. Quando um Convite for aceito, o profissional aparece aqui.</div>';
+        return;
+      }
+
+      container.innerHTML = active.map((link) => {
+        const psychologist = link.psychologist || {};
+        const location = [psychologist.city, psychologist.state].filter(Boolean).join(' - ');
+
+        // Somente o perfil público do profissional — o mesmo que o diretório
+        // expõe. Nada de e-mail, telefone, CRP de contato ou faturamento.
+        const tags = [psychologist.specialty, psychologist.approach, location]
+          .filter(Boolean)
+          .map((value) => `<span class="tag">${CuidareFormat.escapeHtml(value)}</span>`)
+          .join('');
+
+        return `<div class="psychologist-card">
+          <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional')}</strong>
+          <div class="psychologist-meta">
+            ${psychologist.crp ? `<span>CRP ${CuidareFormat.escapeHtml(psychologist.crp)}</span>` : ''}
+            ${psychologist.languages ? `<span>${CuidareFormat.escapeHtml(psychologist.languages)}</span>` : ''}
+            ${location ? `<span>${CuidareFormat.escapeHtml(location)}</span>` : ''}
+          </div>
+          ${tags ? `<div class="psychologist-tags">${tags}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    // ---- Próximas sessões ----
+    // O backend já entregou só as próximas e só as que vêm de `Client` ligado
+    // a um vínculo `active` desta conta. Aqui não há `client_id` nem
+    // `appointment_id` vindo do navegador.
+    function renderAppointments(appointments) {
+      const container = document.querySelector('#upcoming-list');
+      document.querySelector('#metric-sessions').textContent = String(appointments.length);
+      document.querySelector('#metric-sessions-caption').textContent = appointments.length
+        ? 'Agendadas com seus profissionais'
+        : 'Nenhuma sessão agendada';
+
+      if (!appointments.length) {
+        container.innerHTML = '<div class="empty-state">Você não tem sessões agendadas no momento.</div>';
+        return;
+      }
+
+      container.innerHTML = appointments.map((appointment) => {
+        const psychologist = appointment.psychologist || {};
+        const details = [appointment.type, `${appointment.duration_minutes} min`].filter(Boolean).join(' · ');
+
+        return `<div class="schedule-item">
+          <div class="schedule-info">
+            <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional')}</strong>
+            <span>${CuidareFormat.escapeHtml(details)}</span>
+          </div>
+          <span class="schedule-time">${CuidareFormat.escapeHtml(formatSession(appointment.starts_at))}</span>
+        </div>`;
+      }).join('');
+    }
+
+    async function loadDashboard() {
+      const headers = authHeaders();
+
+      try {
+        const [accountResponse, appointmentsResponse, linksResponse] = await Promise.all([
+          fetch(`${apiBase}/api/client/me`, { headers }),
+          fetch(`${apiBase}/api/client/appointments`, { headers }),
+          fetch(`${apiBase}/api/client/links`, { headers })
+        ]);
+
+        if (handleAuthFailure(accountResponse)) return;
+        if (handleAuthFailure(appointmentsResponse)) return;
+        if (handleAuthFailure(linksResponse)) return;
+
+        if (!accountResponse.ok || !appointmentsResponse.ok || !linksResponse.ok) {
+          throw new Error('Não foi possível carregar seus dados agora.');
+        }
+
+        const [accountData, appointmentsData, linksData] = await Promise.all([
+          accountResponse.json(),
+          appointmentsResponse.json(),
+          linksResponse.json()
+        ]);
+
+        renderAccount(accountData.account || {});
+        renderPsychologists(linksData.links || []);
+        renderAppointments(appointmentsData.appointments || []);
+
+        const total = activeLinks(linksData.links || []).length;
+        document.querySelector('#welcome-title').textContent = `Olá, ${(accountData.account?.full_name || '').split(' ')[0] || 'bem-vindo'}.`;
+        document.querySelector('#welcome-description').textContent = total
+          ? 'Acompanhe suas sessões e seus profissionais.'
+          : 'Você ainda não tem vínculo ativo com nenhum profissional.';
+        document.querySelector('#metric-status').textContent = 'Ativa';
+        document.querySelector('#metric-status-caption').textContent = 'E-mail confirmado';
+      } catch (error) {
+        showToast(error.message === 'Failed to fetch'
+          ? 'Não foi possível conectar ao servidor.'
+          : error.message);
+      }
+    }
+
+    document.querySelector('#logout-button').addEventListener('click', async () => {
+      // Mesmo contrato do logout de psicólogo: o front apaga o token local e
+      // avisa o servidor para limpar o cookie. O token não é invalidado no
+      // servidor (risco nº 3 do AGENTS.md).
+      sessionStorage.removeItem(TOKEN_KEY);
+      try {
+        await fetch(`${apiBase}/api/client/auth/logout`, { method: 'POST' });
+      } catch (_error) {
+        // Logout local já aconteceu; falha de rede não deve travar a saída.
+      }
+      window.location.replace('client-login.html');
+    });
+
+    loadDashboard();
+  </script>
+</body>
+</html>
