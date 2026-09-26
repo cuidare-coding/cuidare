@@ -324,7 +324,12 @@
         const hiddenFromSearch = psychologist.show_in_directory === false;
         const listingBadge = hiddenFromSearch ? ' <span class="status pending">Oculto da busca</span>' : '';
         const listingAction = hiddenFromSearch ? 'Mostrar na busca' : 'Ocultar da busca';
-        return `<tr data-status="${status}" data-id="${psychologist.id}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)}</span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span>${listingBadge}</td><td><div class="action-group"><button class="table-button profile-action" type="button">Ver perfil</button><div class="action-menu"><button class="table-button options-action" type="button" aria-label="Abrir opções">•••</button><div class="action-menu-list"><button type="button" data-action="edit">Editar cadastro</button><button type="button" data-action="toggle-listing">${listingAction}</button><button class="delete-action" type="button" data-action="delete">Excluir cadastro</button></div></div></div></td></tr>`;
+        
+        const emailVerifiedStatus = psychologist.email_verified ? 'Verificado' : 'Não verificado';
+        const emailStatusClass = psychologist.email_verified ? 'active' : 'pending';
+        const verifyBtn = !psychologist.email_verified ? `<button type="button" data-action="verify-email" style="color: var(--accent); font-weight: bold;">Verificar E-mail</button>` : '';
+
+        return `<tr data-status="${status}" data-id="${psychologist.id}"><td><div class="psychologist"><span class="psychologist-avatar">${escapeHtml(initials(psychologist.name))}</span><div><strong>${escapeHtml(psychologist.name)}</strong><span>${escapeHtml(psychologist.email)} <span class="status ${emailStatusClass}" style="font-size: 10px; margin-left: 5px;">${emailVerifiedStatus}</span></span></div></div></td><td>${escapeHtml(psychologist.crp)}</td><td>${escapeHtml(formatDate(psychologist.created_at))}</td><td><span class="status ${status}">${statusLabel}</span>${listingBadge}</td><td><div class="action-group"><button class="table-button profile-action" type="button">Ver perfil</button><div class="action-menu"><button class="table-button options-action" type="button" aria-label="Abrir opções">•••</button><div class="action-menu-list">${verifyBtn}<button type="button" data-action="edit">Editar cadastro</button><button type="button" data-action="toggle-listing">${listingAction}</button><button class="delete-action" type="button" data-action="delete">Excluir cadastro</button></div></div></div></td></tr>`;
       }).join('') : '<tr><td colspan="5">Nenhum psicólogo cadastrado.</td></tr>';
       filterRows();
     }
@@ -416,7 +421,7 @@
         specialty: psychologist.specialty || '',
         bio: psychologist.bio || '',
         verified: Boolean(psychologist.verified),
-        show_in_directory: showInDirectory,
+        show_in_//directory: showInDirectory,
         approach: psychologist.approach ?? null,
         phone: psychologist.phone ?? null,
         city: psychologist.city ?? null,
@@ -441,6 +446,22 @@
       }
     }
 
+    async function verifyEmail(psychologist) {
+      try {
+        const response = await fetch(`${apiBase}/api/admin/psychologists/${psychologist.id}/verify-email`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${sessionStorage.getItem('cuidare_admin_access_token')}` }
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Não foi possível verificar o e-mail.');
+        psychologist.email_verified = true;
+        renderPsychologists();
+        showToast(result.message || 'E-mail verificado com sucesso!');
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
     psychologistsList.addEventListener('click', (event) => {
       const row = event.target.closest('tr[data-id]');
       if (!row) return;
@@ -460,6 +481,9 @@
       } else if (action === 'toggle-listing') {
         event.target.closest('.action-menu').classList.remove('open');
         toggleListing(psychologist);
+      } else if (action === 'verify-email') {
+        event.target.closest('.action-menu').classList.remove('open');
+        verifyEmail(psychologist);
       } else if (action === 'delete') {
         event.target.closest('.action-menu').classList.remove('open');
         deletePsychologist(psychologist);
