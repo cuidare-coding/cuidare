@@ -313,6 +313,9 @@
   <script>
     const apiBase = CuidareApi.base;
 
+    // Mesma proteção do login: resposta não-JSON não pode virar tela branca.
+    async function lerJson(response, padrao) { try { return await response.json(); } catch { return padrao; } }
+
     // Convite em aberto viaja pela URL (`?invite=`), nunca por storage: o
     // sessionStorage da área do cliente guarda somente o token de sessão.
     const inviteToken = new URLSearchParams(window.location.search).get('invite');
@@ -366,7 +369,7 @@
             password: form.password.value
           })
         });
-        const result = await response.json();
+        const result = await lerJson(response, {});
 
         if (!response.ok) {
           throw new Error(result.error || 'Não foi possível criar a conta.');

@@ -141,6 +141,10 @@
       return `${date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
     }
 
+    // Resposta pode não ser JSON (proxy, 500 do Flask, HTML de erro). As três
+    // cargas abaixo são lidas por aqui, para nenhuma delas virar tela branca.
+    async function lerJson(response, padrao) { try { return await response.json(); } catch { return padrao; } }
+
     // Token inválado/expirado durante a carga: o guard já redireciona, mas
     // uma sessão que expira no meio da carga devia ir para o login também.
     function authHeaders() {
@@ -265,9 +269,9 @@
         }
 
         const [accountData, appointmentsData, linksData] = await Promise.all([
-          accountResponse.json(),
-          appointmentsResponse.json(),
-          linksResponse.json()
+          lerJson(accountResponse, {}),
+          lerJson(appointmentsResponse, {}),
+          lerJson(linksResponse, {})
         ]);
 
         renderAccount(accountData.account || {});

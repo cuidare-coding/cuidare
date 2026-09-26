@@ -270,6 +270,10 @@
     const TOKEN_KEY = 'cuidare_client_access_token';
     const apiBase = CuidareApi.base;
 
+    // Resposta pode não ser JSON (proxy, 500 do Flask, HTML de erro). Um
+    // `response.json()` rejeitado transformaria falha de rede em tela branca.
+    async function lerJson(response, padrao) { try { return await response.json(); } catch { return padrao; } }
+
     const form = document.querySelector('#client-login-form');
     const status = document.querySelector('#form-status');
     const submitButton = form.querySelector('.submit-button');
@@ -326,7 +330,7 @@
             password: form.password.value
           })
         });
-        const result = await response.json();
+        const result = await lerJson(response, {});
 
         if (!response.ok) {
           // 403 aqui é só uma causa possível: conta inativa OU e-mail não

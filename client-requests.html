@@ -78,6 +78,21 @@
     .cancel-button:disabled { opacity: .55; cursor: wait; }
     .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
     .toast.show { opacity: 1; transform: translateY(0); }
+    /* --- Buscar profissional --- */
+    .search-bar { display: flex; gap: .6rem; border-top: 1px solid var(--line); padding: 1rem 1.35rem; }
+    .search-field { position: relative; flex: 1; }
+    .search-field span { position: absolute; top: 50%; left: .8rem; color: var(--muted); transform: translateY(-50%); }
+    .search-input { width: 100%; min-height: 2.7rem; border: 1px solid var(--line); border-radius: 4px; padding: .65rem .8rem .65rem 2.2rem; color: var(--ink); background: #fbfcfa; font: inherit; font-size: .78rem; }
+    .search-input:focus { outline: 3px solid var(--mint); border-color: var(--accent); }
+    .search-button { min-height: 2.7rem; border: 0; border-radius: 4px; padding: 0 1.1rem; color: #fff; background: var(--accent); cursor: pointer; font-size: .75rem; font-weight: 700; }
+    .search-button:hover { background: var(--accent-dark); }
+    .search-button:disabled { opacity: .6; cursor: wait; }
+    .result-list { display: grid; gap: .7rem; padding: 1rem 1.35rem 1.35rem; }
+    .result-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 5px; padding: .9rem 1rem; background: #fbfdfb; }
+    .request-button { flex-shrink: 0; border: 1px solid var(--accent); border-radius: 4px; padding: .45rem .85rem; color: #fff; background: var(--accent); cursor: pointer; font-size: .72rem; font-weight: 600; }
+    .request-button:hover { background: var(--accent-dark); }
+    .request-button:disabled { border-color: var(--line); color: var(--muted); background: var(--paper); cursor: not-allowed; }
+    .search-note { color: var(--muted); font-size: .72rem; line-height: 1.6; }
     @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } }
     @media (max-width: 520px) { .link-card { flex-direction: column; align-items: flex-start; } }
   </style>
@@ -95,6 +110,12 @@
       <section class="hero"><div><p class="eyebrow">Área do paciente</p><h1>Meus profissionais</h1><p class="page-description">Solicitações em aberto, vínculos ativos e o histórico do que você já solicitou.</p></div></section>
 
       <div class="sections">
+        <article class="panel" id="panel-search">
+          <div class="panel-header"><h2>Encontrar profissional</h2><span class="panel-count" id="count-results">0</span></div>
+          <form class="search-bar" id="search-form"><label class="search-field" for="directory-search"><span aria-hidden="true">⌕</span><input class="search-input" id="directory-search" type="search" placeholder="Busque por nome, especialidade ou cidade" autocomplete="off"></label><button class="search-button" id="search-button" type="submit">Buscar</button></form>
+          <div class="result-list" id="directory-results"><div class="empty-state">Busque um profissional para solicitar um vínculo. Ele vai analisar o pedido e responder por aqui.</div></div>
+        </article>
+
         <article class="panel" id="panel-pending">
           <div class="panel-header"><h2>Solicitações pendentes</h2><span class="panel-count" id="count-pending">0</span></div>
           <div class="link-list" id="list-pending"><div class="empty-state">Carregando...</div></div>
@@ -119,6 +140,10 @@
     const apiBase = CuidareApi.base;
     const toast = document.querySelector('#toast');
 
+    // Resposta pode não ser JSON (proxy, 500 do Flask, HTML de erro). Toda
+    // leitura de corpo passa por aqui.
+    async function lerJson(response, padrao) { try { return await response.json(); } catch { return padrao; } }
+
     // Status que o backend define em `models.py`. `LINK_PENDING_STATUSES` é
     // (requested, invited, active); o resto é terminal e nunca reabre.
     const ACTIVE = 'active';
@@ -139,6 +164,11 @@
     let pending = [];
     let active = [];
     let history = [];
+    let directory = [];
+    // psychologist_id -> status do vínculo JÁ existente com essa pessoa.
+    // Derivado dos vínculos que o backend devolveu, nunca de id guardado no
+    // navegador: é só para o botão não oferecer o que já existe.
+    let statusPorProfissional = new Map();
 
     function showToast(message) {
       toast.textContent = message;
@@ -237,6 +267,128 @@
         'Nenhum registro anterior.');
     }
 
+    // ---- Buscar profissional ----
+    // O diretório é o endpoint PÚBLICO `/api/psychologists/directory`. A UI
+    // não filtra por `verified` nem por `show_in_directory`: quem decide o que
+    // é solicitável é o backend, em `POST /api/client/links`.
+    //
+    // `session_price` e `accepts_insurance` vêm no payload público, mas não são
+    // renderizados aqui: a área do cliente não exibe valor.
+    function montarQuery(termo) {
+      const params = new URLSearchParams();
+      const limpo = String(termo || '').trim();
+      if (limpo) params.set('q', limpo);
+      params.set('limit', '12');
+      return params.toString();
+    }
+
+    function rotuloDoVinculoExistente(psychologistId) {
+      const status = statusPorProfissional.get(psychologistId);
+      if (!status) return null;
+      if (status === ACTIVE) return 'Vínculo ativo';
+      if (status === REQUESTED) return 'Solicitação enviada';
+      if (status === INVITED) return 'Convite recebido';
+      return 'Encerrado';
+    }
+
+    function renderDirectory() {
+      const container = document.querySelector('#directory-results');
+      document.querySelector('#count-results').textContent = String(directory.length);
+
+      if (!directory.length) {
+        container.innerHTML = '<div class="empty-state">Nenhum profissional encontrado com esse termo.</div>';
+        return;
+      }
+
+      container.innerHTML = directory.map((psychologist) => {
+        const id = psychologist.id;
+        const local = [psychologist.city, psychologist.state].filter(Boolean).join(' - ');
+        const meta = [];
+        if (psychologist.crp) meta.push(`CRP ${psychologist.crp}`);
+        if (psychologist.specialty) meta.push(psychologist.specialty);
+        if (psychologist.approach) meta.push(psychologist.approach);
+        if (local) meta.push(local);
+
+        // Ação conforme o que já existe. A única regra do backend aqui é o
+        // vínculo pendente/ativo duplicado (409); terminal pode reabrir.
+        // O `id` vem do servidor como inteiro, mas entra escapado mesmo assim:
+        // atributo é um contexto de HTML e não custa nada proteger.
+        const existente = rotuloDoVinculoExistente(id);
+        const acao = existente
+          ? `<div class="link-actions"><button class="request-button" type="button" disabled>${CuidareFormat.escapeHtml(existente)}</button></div>`
+          : `<div class="link-actions"><button class="request-button" type="button" data-request="${CuidareFormat.escapeHtml(String(id))}">Solicitar vínculo</button></div>`;
+
+        return `<div class="result-card">
+          <div class="link-body">
+            <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional')}</strong>
+            <div class="link-meta">${meta.map((valor) => `<span>${CuidareFormat.escapeHtml(valor)}</span>`).join('')}</div>
+          </div>
+          ${acao}
+        </div>`;
+      }).join('');
+    }
+
+    async function searchDirectory(event) {
+      if (event) event.preventDefault();
+      const botao = document.querySelector('#search-button');
+      const container = document.querySelector('#directory-results');
+      botao.disabled = true;
+      botao.textContent = 'Buscando...';
+      container.innerHTML = '<div class="empty-state">Buscando profissionais...</div>';
+
+      try {
+        const query = montarQuery(document.querySelector('#directory-search').value);
+        // Rota pública: não leva token. Nenhum id de conta trafega aqui.
+        const response = await fetch(`${apiBase}/api/psychologists/directory?${query}`);
+        const data = await lerJson(response, {});
+        if (!response.ok) throw new Error(data.error || 'Não foi possível buscar profissionais.');
+
+        directory = data.psychologists || [];
+        renderDirectory();
+      } catch (error) {
+        directory = [];
+        document.querySelector('#count-results').textContent = '0';
+        container.innerHTML = `<div class="empty-state">${CuidareFormat.escapeHtml(
+          error.message === 'Failed to fetch'
+            ? 'Não foi possível conectar ao servidor.'
+            : error.message
+        )}</div>`;
+      } finally {
+        botao.disabled = false;
+        botao.textContent = 'Buscar';
+      }
+    }
+
+    // Solicitar vínculo. O corpo leva SÓ `psychologist_id`: a conta vem do
+    // token e o prontuário só nasce quando o psicólogo aceitar.
+    async function requestLink(psychologistId, psychologistName) {
+      if (!window.confirm(`Solicitar vínculo com ${psychologistName}? O profissional vai analisar o pedido.`)) return;
+      try {
+        const response = await fetch(`${apiBase}/api/client/links`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionStorage.getItem(TOKEN_KEY)}`
+          },
+          body: JSON.stringify({ psychologist_id: psychologistId })
+        });
+        if (handleAuthFailure(response)) return;
+
+        const data = await lerJson(response, {});
+        if (!response.ok) throw new Error(data.error || 'Não foi possível enviar a solicitação.');
+
+        showToast(data.message || 'Solicitação enviada.');
+        // Recarrega os vínculos para o novo `requested` aparecer no lugar
+        // certo e para o botão do diretório refletir o novo estado.
+        await loadLinks();
+        renderDirectory();
+      } catch (error) {
+        showToast(error.message === 'Failed to fetch'
+          ? 'Não foi possível conectar ao servidor.'
+          : error.message);
+      }
+    }
+
     async function loadLinks() {
       try {
         // Sem parâmetro de escopo: a lista é sempre da conta do token.
@@ -244,11 +396,21 @@
         if (handleAuthFailure(response)) return;
         if (!response.ok) throw new Error('Não foi possível carregar seus vínculos agora.');
 
-        const data = await response.json();
+        const data = await lerJson(response, {});
         const groups = classify(data.links || []);
         pending = groups.pending;
         active = groups.active;
         history = groups.history;
+
+        // Índice psychologist_id -> status, para o diretório saber o que já
+        // existe. Todo vínculo devolvido pelo backend já vem com o
+        // `psychologist` preenchido, inclusive os terminais do histórico.
+        statusPorProfissional = new Map();
+        [...pending, ...active, ...history].forEach((link) => {
+          const id = link.psychologist && link.psychologist.id;
+          if (id !== undefined && id !== null) statusPorProfissional.set(id, link.status);
+        });
+
         render();
       } catch (error) {
         showToast(error.message === 'Failed to fetch'
@@ -263,7 +425,7 @@
         if (handleAuthFailure(response)) return;
         if (!response.ok) return;
 
-        const data = await response.json();
+        const data = await lerJson(response, {});
         const account = data.account || {};
         const initials = CuidareFormat.initials(account.full_name || '');
         document.querySelector('#sidebar-avatar').textContent = initials;
@@ -278,7 +440,23 @@
     // O id vem do botão, que veio do payload do servidor. Ainda assim o
     // escopo é reconferido no backend (`client_account_id == identity.sub` e
     // `status == requested`); a UI só evita a ida desnecessária.
+    // ---- Solicitar vínculo (diretório) ----
+    document.querySelector('#search-form').addEventListener('submit', searchDirectory);
+    document.querySelector('#directory-search').addEventListener('search', searchDirectory);
+
     document.addEventListener('click', async (event) => {
+      const requestButton = event.target.closest('[data-request]');
+      if (requestButton) {
+        const psychologistId = Number(requestButton.getAttribute('data-request'));
+        const alvo = directory.find((item) => item.id === psychologistId);
+        if (alvo) {
+          requestButton.disabled = true;
+          await requestLink(psychologistId, alvo.name || 'este profissional');
+          renderDirectory();
+        }
+        return;
+      }
+
       const button = event.target.closest('[data-cancel]');
       if (!button) return;
 
@@ -293,7 +471,7 @@
         });
         if (handleAuthFailure(response)) return;
 
-        const data = await response.json();
+        const data = await lerJson(response, {});
         if (!response.ok) throw new Error(data.error || 'Não foi possível cancelar a solicitação.');
 
         showToast(data.message || 'Solicitação cancelada.');
@@ -308,6 +486,9 @@
     });
 
     document.querySelector('#logout-button').addEventListener('click', async () => {
+      // Mesmo contrato do dashboard: apaga o token local e avisa o servidor
+      // para limpar o cookie. O token não é invalidado no servidor
+      // (risco nº 3 do AGENTS.md).
       sessionStorage.removeItem(TOKEN_KEY);
       try {
         await fetch(`${apiBase}/api/client/auth/logout`, { method: 'POST' });

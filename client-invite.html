@@ -243,6 +243,9 @@
     const TOKEN_KEY = 'cuidare_client_access_token';
     const SESSION_URL = '/api/client/auth/session';
     const apiBase = CuidareApi.base;
+
+    // Resposta pode não ser JSON (proxy, 500 do Flask, HTML de erro).
+    async function lerJson(response, padrao) { try { return await response.json(); } catch { return padrao; } }
     const VIEWS = ['view-loading', 'view-guest', 'view-accept', 'view-error', 'view-notoken'];
 
     // O token vive na URL, como veio do e-mail. O botão de aceitar é montado
@@ -320,7 +323,7 @@
           sessionStorage.removeItem(TOKEN_KEY);
           return false;
         }
-        const data = await response.json();
+        const data = await lerJson(response, {});
         return data.user?.account_type === 'client';
       } catch (_error) {
         // Sem rede: trata como não autenticado em vez de-travar a página.
@@ -336,7 +339,7 @@
       try {
         // Rota pública: mostra para quem é o convite antes de existir conta.
         response = await fetch(`${apiBase}/api/client/invites/${encodeURIComponent(inviteToken)}`);
-        data = await response.json();
+        data = await lerJson(response, {});
       } catch (_error) {
         document.getElementById('error-message').textContent =
           'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
@@ -398,7 +401,7 @@
           },
           body: JSON.stringify({ token: inviteToken })
         });
-        const data = await response.json();
+        const data = await lerJson(response, {});
 
         if (!response.ok) {
           if (response.status === 401) {

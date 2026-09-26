@@ -199,6 +199,9 @@
   <script src="assets/api.js"></script>
   <script>
     const API_BASE = CuidareApi.base;
+
+    // Resposta pode não ser JSON; `padrao` evita `response.json()` cru.
+    async function lerJson(response, padrao) { try { return await response.json(); } catch { return padrao; } }
     const VIEWS = ['view-loading', 'view-success', 'view-already', 'view-expired', 'view-error', 'view-notoken'];
 
     function showView(id) {
@@ -216,7 +219,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token })
         });
-        const data = await res.json();
+        const data = await lerJson(res, {});
 
         if (res.ok) {
           showView(data.already ? 'view-already' : 'view-success');
