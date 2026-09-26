@@ -63,11 +63,29 @@
     .panel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
     .empty-state { padding: 0 1.35rem 1.35rem; color: var(--muted); font-size: .8rem; line-height: 1.6; }
     .empty-state a { color: var(--accent); }
-    .schedule-list { display: grid; gap: 0; padding: 0 1.35rem 1.35rem; }
-    .schedule-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding: .85rem 0; }
-    .schedule-info strong { display: block; font: .82rem Georgia, 'Times New Roman', serif; }
-    .schedule-info span { display: block; margin-top: .25rem; color: var(--muted); font-size: .68rem; }
-    .schedule-time { color: var(--accent-dark); font-size: .75rem; font-weight: 700; white-space: nowrap; text-align: right; }
+    .upcoming { padding: 0 1.35rem 1.35rem; }
+    .next-session { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 6px; padding: 1.1rem 1.2rem; background: linear-gradient(180deg, #f3fbf6, #fbfdfb); }
+    .next-badge { margin: 0 0 .75rem; color: var(--accent); font: bold .65rem Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+    .next-when { margin: 0; font: 1.45rem Georgia, 'Times New Roman', serif; line-height: 1.2; }
+    .next-time { margin: .25rem 0 0; color: var(--accent-dark); font-size: 1.85rem; font-weight: 700; line-height: 1; }
+    .next-time-missing { color: var(--muted); font-size: 1rem; font-weight: 400; font-style: italic; }
+    .next-who { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .8rem; margin-top: 1rem; border-top: 1px solid var(--line); padding-top: .85rem; }
+    .next-who strong { font: .92rem Georgia, 'Times New Roman', serif; word-break: break-word; }
+    .next-crp, .next-place { color: var(--muted); font-size: .7rem; }
+    .next-meta { display: flex; flex-wrap: wrap; gap: .35rem; margin: .75rem 0 0; padding: 0; list-style: none; }
+    .next-meta li { border: 1px solid var(--line); border-radius: 999px; padding: .2rem .65rem; color: var(--accent-dark); background: var(--mint); font-size: .66rem; font-weight: 700; }
+    .others-title { margin: 1.5rem 0 0; font-size: .95rem; }
+    .schedule-list { display: grid; gap: 0; margin: .5rem 0 0; padding: 0; list-style: none; }
+    .schedule-item { display: grid; grid-template-columns: 7.25rem minmax(0, 1fr); align-items: center; gap: 1rem; border-top: 1px solid var(--line); padding: .85rem 0; }
+    .schedule-day strong { display: block; font: .82rem Georgia, 'Times New Roman', serif; }
+    .schedule-day span { display: block; margin-top: .2rem; color: var(--accent-dark); font-size: .78rem; font-weight: 700; }
+    .schedule-info { min-width: 0; }
+    .schedule-info strong { display: block; font: .82rem Georgia, 'Times New Roman', serif; word-break: break-word; }
+    .schedule-sub { display: block; margin-top: .25rem; color: var(--muted); font-size: .68rem; word-break: break-word; }
+    .upcoming-error { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; }
+    .retry-button { border: 1px solid var(--accent); border-radius: 5px; padding: .5rem .9rem; color: var(--accent-dark); background: var(--mint); cursor: pointer; font-size: .72rem; font-weight: 700; }
+    .retry-button:hover { background: #cbe6d8; }
+    .retry-button:focus-visible, .nav-link:focus-visible, .panel-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .profile { display: grid; gap: .9rem; padding: 0 1.35rem 1.35rem; }
     .profile-row { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding-top: .8rem; font-size: .78rem; }
     .profile-row span { color: var(--muted); }
@@ -81,6 +99,7 @@
     .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; }
     .toast.show { opacity: 1; transform: translateY(0); }
     @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } .hero { display: block; } .metrics, .content-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .upcoming { padding: 0 1rem 1rem; } .next-session { padding: 1rem; } .next-time { font-size: 1.6rem; } .schedule-item { grid-template-columns: minmax(0, 1fr); gap: .3rem; } .schedule-day { display: flex; align-items: baseline; gap: .6rem; } .schedule-day span { margin-top: 0; } }
   </style>
 </head>
 <body>
@@ -95,14 +114,14 @@
       <header class="topbar"><span class="topbar-avatar" id="topbar-avatar" aria-hidden="true">--</span></header>
       <section class="hero"><div><p class="eyebrow">Área do paciente</p><h1 id="welcome-title">Olá.</h1><p class="page-description" id="welcome-description">Acompanhe suas sessões e seus profissionais.</p></div></section>
       <section class="metrics" aria-label="Resumo da conta">
-        <article class="metric"><span>Próximas sessões</span><strong id="metric-sessions">0</strong><small id="metric-sessions-caption">Nenhuma sessão agendada</small></article>
+        <article class="metric"><span>Próximas sessões</span><strong id="metric-sessions">—</strong><small id="metric-sessions-caption">Carregando...</small></article>
         <article class="metric"><span>Profissionais</span><strong id="metric-psychologists">0</strong><small>Com vínculo ativo</small></article>
         <article class="metric"><span>Conta</span><strong id="metric-status">--</strong><small id="metric-status-caption">Carregando...</small></article>
       </section>
       <section class="content-grid">
         <article class="panel" id="sessoes">
           <div class="panel-header"><h2>Próximas sessões</h2></div>
-          <div class="schedule-list" id="upcoming-list"><div class="empty-state">Carregando sessões...</div></div>
+          <div class="upcoming" id="upcoming-list"><div class="empty-state">Carregando sessões...</div></div>
         </article>
         <div style="display: grid; gap: 1.25rem; align-content: start;">
           <article class="panel" id="conta">
@@ -134,11 +153,42 @@
       window.setTimeout(() => toast.classList.remove('show'), 2800);
     }
 
-    // Mesmo formatador de `psychologist-agenda.html`, para as duas áreas
-    // mostrarem o mesmo horário para o mesmo ISO.
-    function formatSession(value) {
-      const date = new Date(value);
-      return `${date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+    // ---- Datas ----
+    // O backend manda `starts_at` em ISO-8601 COM offset: a coluna é
+    // DateTime(timezone=True), então `isoformat()` sempre traz `+00:00`. Regra
+    // desta etapa: o instante que o backend representa é o instante que a tela
+    // mostra. Por isso o ISO vai CRU para `new Date()` e nunca passa por
+    // `slice`/`substring`/`replace` — cortar a string jogaria a sessão para o
+    // dia anterior e apagaria o fuso.
+    //
+    // Data e hora saem do MESMO objeto `Date`, então nunca discordam entre si
+    // (o caso clássico é "15 de maio às 00:30", que vem de um ISO do dia 16).
+    function partesDaSessao(iso) {
+      const data = new Date(iso);
+      if (Number.isNaN(data.getTime())) return null;
+      return {
+        dia: capitalizar(data.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })),
+        diaCurto: data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+        hora: data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      };
+    }
+
+    function capitalizar(texto) {
+      const limpo = String(texto || '');
+      return limpo ? limpo.charAt(0).toUpperCase() + limpo.slice(1) : '';
+    }
+
+    // Duração legível, só a partir de `duration_minutes`, que o backend já
+    // entrega pronto: 50 -> "50 min", 60 -> "1h", 90 -> "1h 30min".
+    // Nunca derivada de preço, e nunca recalculada a partir de outra data.
+    function formatarDuracao(minutos) {
+      const total = Number(minutos);
+      if (!Number.isFinite(total) || total <= 0) return null;
+      const horas = Math.floor(total / 60);
+      const resto = total % 60;
+      if (!horas) return `${resto} min`;
+      if (!resto) return `${horas}h`;
+      return `${horas}h ${resto}min`;
     }
 
     // Resposta pode não ser JSON (proxy, 500 do Flask, HTML de erro). As três
@@ -223,60 +273,144 @@
     // ---- Próximas sessões ----
     // O backend já entregou só as próximas e só as que vêm de `Client` ligado
     // a um vínculo `active` desta conta. Aqui não há `client_id` nem
-    // `appointment_id` vindo do navegador.
-    function renderAppointments(appointments) {
-      const container = document.querySelector('#upcoming-list');
-      document.querySelector('#metric-sessions').textContent = String(appointments.length);
-      document.querySelector('#metric-sessions-caption').textContent = appointments.length
-        ? 'Agendadas com seus profissionais'
-        : 'Nenhuma sessão agendada';
+    // `appointment_id` vindo do navegador, e o front não decide a quem a
+    // sessão pertence: ele só renderiza a coleção já autorizada.
+    //
+    // A ordenação é a do backend (`order_by(Appointment.starts_at)`, crescente).
+    // Não reordenamos no front de propósito: uma segunda ordenação em JS
+    // dependeria do fuso e poderia trocar a ordem de duas sessões próximas.
+    // `status` NÃO aparece no payload (omitido de propósito na Etapa 6A) e,
+    // portanto, não é inventado aqui.
+    function cartaoProxima(appointment) {
+      const psychologist = appointment.psychologist || {};
+      const partes = partesDaSessao(appointment.starts_at);
+      const local = [psychologist.city, psychologist.state].filter(Boolean).join(' - ');
+      const meta = [formatarDuracao(appointment.duration_minutes), capitalizar(appointment.type)]
+        .filter(Boolean)
+        .map((value) => `<li>${CuidareFormat.escapeHtml(value)}</li>`)
+        .join('');
 
-      if (!appointments.length) {
-        container.innerHTML = '<div class="empty-state">Você não tem sessões agendadas no momento.</div>';
+      return `<article class="next-session">
+        <h3 class="next-badge">Próxima sessão</h3>
+        <p class="next-when">${partes ? CuidareFormat.escapeHtml(partes.dia) : 'Data a confirmar'}</p>
+        <p class="next-time${partes ? '' : ' next-time-missing'}">${partes ? CuidareFormat.escapeHtml(partes.hora) : 'Horário a confirmar'}</p>
+        <div class="next-who">
+          <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional')}</strong>
+          ${psychologist.crp ? `<span class="next-crp">CRP ${CuidareFormat.escapeHtml(psychologist.crp)}</span>` : ''}
+          ${local ? `<span class="next-place">${CuidareFormat.escapeHtml(local)}</span>` : ''}
+        </div>
+        ${meta ? `<ul class="next-meta">${meta}</ul>` : ''}
+      </article>`;
+    }
+
+    function cartaoOutra(appointment) {
+      const psychologist = appointment.psychologist || {};
+      const partes = partesDaSessao(appointment.starts_at);
+      const resumo = [formatarDuracao(appointment.duration_minutes), capitalizar(appointment.type)]
+        .filter(Boolean)
+        .join(' · ');
+
+      return `<li class="schedule-item">
+        <div class="schedule-day">
+          <strong>${partes ? CuidareFormat.escapeHtml(partes.diaCurto) : 'A confirmar'}</strong>
+          ${partes ? `<span>${CuidareFormat.escapeHtml(partes.hora)}</span>` : ''}
+        </div>
+        <div class="schedule-info">
+          <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional')}</strong>
+          ${resumo ? `<span class="schedule-sub">${CuidareFormat.escapeHtml(resumo)}</span>` : ''}
+        </div>
+      </li>`;
+    }
+
+    function marcarMetrica(texto, legenda) {
+      document.querySelector('#metric-sessions').textContent = texto;
+      document.querySelector('#metric-sessions-caption').textContent = legenda;
+    }
+
+    function mostrarVazio() {
+      marcarMetrica('0', 'Nenhuma sessão agendada');
+      document.querySelector('#upcoming-list').innerHTML =
+        '<div class="empty-state">Você não tem próximas sessões agendadas. Quando uma sessão for agendada, ela aparecerá aqui.</div>';
+    }
+
+    // Erro da API não é sessão vazia: a métrica e a lista dizem que não deu,
+    // em vez de ficarem presas em "Carregando..." para sempre.
+    function mostrarErroSessoes() {
+      marcarMetrica('—', 'Não foi possível carregar');
+      document.querySelector('#upcoming-list').innerHTML =
+        '<div class="empty-state upcoming-error"><span>Não foi possível carregar suas próximas sessões.</span><button class="retry-button" type="button" id="retry-sessions">Tentar novamente</button></div>';
+      document.querySelector('#retry-sessions').addEventListener('click', loadAppointments);
+    }
+
+    function renderAppointments(appointments) {
+      const lista = Array.isArray(appointments) ? appointments : [];
+      marcarMetrica(String(lista.length), lista.length
+        ? 'Agendadas com seus profissionais'
+        : 'Nenhuma sessão agendada');
+
+      if (!lista.length) {
+        mostrarVazio();
         return;
       }
 
-      container.innerHTML = appointments.map((appointment) => {
-        const psychologist = appointment.psychologist || {};
-        const details = [appointment.type, `${appointment.duration_minutes} min`].filter(Boolean).join(' · ');
+      // A primeira da lista é a mais próxima: o backend já devolveu em ordem
+      // crescente e o piso é `starts_at >= agora`, então a sessão passada
+      // nunca chega aqui.
+      const outras = lista.slice(1);
+      const cabecalho = outras.length
+        ? `<h3 class="others-title">Outras próximas sessões (${outras.length})</h3>`
+        : '';
 
-        return `<div class="schedule-item">
-          <div class="schedule-info">
-            <strong>${CuidareFormat.escapeHtml(psychologist.name || 'Profissional')}</strong>
-            <span>${CuidareFormat.escapeHtml(details)}</span>
-          </div>
-          <span class="schedule-time">${CuidareFormat.escapeHtml(formatSession(appointment.starts_at))}</span>
-        </div>`;
-      }).join('');
+      document.querySelector('#upcoming-list').innerHTML = cartaoProxima(lista[0])
+        + cabecalho
+        + (outras.length ? `<ul class="schedule-list">${outras.map(cartaoOutra).join('')}</ul>` : '');
+    }
+
+    // A seção de sessões carrega sozinha. Uma falha em `/me` ou em `/links` não
+    // pode deixar a lista de sessões presa no estado de carregamento.
+    async function loadAppointments() {
+      try {
+        const response = await fetch(`${apiBase}/api/client/appointments`, { headers: authHeaders() });
+        if (handleAuthFailure(response)) return;
+        if (!response.ok) {
+          mostrarErroSessoes();
+          return;
+        }
+        const data = await lerJson(response, {});
+        renderAppointments(data.appointments || []);
+      } catch (_error) {
+        // Só o texto. Nenhum status, endpoint ou detalhe técnico chega ao cliente.
+        mostrarErroSessoes();
+      }
     }
 
     async function loadDashboard() {
       const headers = authHeaders();
 
+      // Seções independentes: a de sessões carrega e trata o próprio erro, para
+      // que uma falha em `/me` ou em `/links` não a derrube junto.
+      loadAppointments();
+
       try {
-        const [accountResponse, appointmentsResponse, linksResponse] = await Promise.all([
+        const [accountResponse, linksResponse] = await Promise.all([
           fetch(`${apiBase}/api/client/me`, { headers }),
-          fetch(`${apiBase}/api/client/appointments`, { headers }),
           fetch(`${apiBase}/api/client/links`, { headers })
         ]);
 
         if (handleAuthFailure(accountResponse)) return;
-        if (handleAuthFailure(appointmentsResponse)) return;
         if (handleAuthFailure(linksResponse)) return;
 
-        if (!accountResponse.ok || !appointmentsResponse.ok || !linksResponse.ok) {
+        if (!accountResponse.ok || !linksResponse.ok) {
           throw new Error('Não foi possível carregar seus dados agora.');
         }
 
-        const [accountData, appointmentsData, linksData] = await Promise.all([
+        const [accountData, linksData] = await Promise.all([
           lerJson(accountResponse, {}),
-          lerJson(appointmentsResponse, {}),
           lerJson(linksResponse, {})
         ]);
 
         renderAccount(accountData.account || {});
         renderPsychologists(linksData.links || []);
-        renderAppointments(appointmentsData.appointments || []);
 
         const total = activeLinks(linksData.links || []).length;
         document.querySelector('#welcome-title').textContent = `Olá, ${(accountData.account?.full_name || '').split(' ')[0] || 'bem-vindo'}.`;
