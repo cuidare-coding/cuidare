@@ -93,37 +93,120 @@
     .secondary-button { border: 1px solid var(--line); border-radius: 4px; padding: .75rem 1rem; color: var(--muted); background: #fff; cursor: pointer; font-size: .75rem; }
     .toast { position: fixed; right: 1.25rem; bottom: 1.25rem; max-width: 22rem; border: 1px solid var(--line); border-radius: 5px; padding: .85rem 1rem; color: var(--ink); background: #fff; box-shadow: var(--shadow); font-size: .78rem; opacity: 0; pointer-events: none; transform: translateY(1rem); transition: opacity .2s, transform .2s; z-index: 30; }
     .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* --- Link requests section --- */
+    .link-requests-section { margin-top: 1.9rem; }
+    .link-requests-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+    .link-requests-header h2 { margin: 0; font-size: 1.25rem; }
+    .link-requests-list { display: grid; gap: .75rem; }
+    .link-request-card { border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 6px; background: #fbfdfb; padding: 1rem 1.25rem; }
+    .link-request-header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
+    .link-request-name { font: 1rem Georgia, 'Times New Roman', serif; }
+    .link-request-meta { display: flex; flex-wrap: wrap; gap: .5rem 1rem; color: var(--muted); font-size: .7rem; }
+    .link-request-actions { display: flex; gap: .5rem; margin-top: .75rem; }
+    .link-request-actions button { min-width: 7rem; }
+    .btn-accept { border: 0; border-radius: 4px; padding: .6rem 1rem; color: #fff; background: var(--accent); cursor: pointer; font-size: .72rem; font-weight: 700; }
+    .btn-accept:hover { background: var(--accent-dark); }
+    .btn-reject { border: 1px solid var(--line); border-radius: 4px; padding: .6rem 1rem; color: var(--muted); background: #fff; cursor: pointer; font-size: .72rem; font-weight: 700; }
+    .btn-reject:hover { border-color: var(--red); color: var(--red); background: #fff5f5; }
+    .link-request-loading { text-align: center; padding: 1.5rem; color: var(--muted); }
+    .link-request-empty { text-align: center; padding: 1.5rem; color: var(--muted); }
+    .link-request-error { text-align: center; padding: 1.5rem; color: var(--red); }
+
+    /* Modal for accept strategy */
+    .modal-select { display: grid; gap: .9rem; }
+    .radio-group { display: grid; gap: .5rem; }
+    .radio-label { display: flex; align-items: center; gap: .5rem; cursor: pointer; font-size: .8rem; }
+    .radio-label input { accent-color: var(--accent); }
+    .client-select-label { display: grid; gap: .4rem; }
+    .client-select { min-height: 2.8rem; border: 1px solid var(--line); border-radius: 4px; padding: .65rem .75rem; color: var(--ink); background: #fbfcfa; font-size: .8rem; }
+    .client-select:disabled { opacity: .6; background: var(--paper); }
+
     @media (max-width: 850px) { .app-shell { display: block; } .sidebar { position: static; height: auto; min-height: auto; } .sidebar-footer { margin-top: 2rem; } .page-heading, .panel-header { display: block; } .page-heading .primary-button { width: 100%; margin-top: 1.2rem; } .search { width: 100%; margin-top: 1rem; } .table-wrap { padding-inline: 1rem; } table, tbody { display: block; min-width: 0; } thead { display: none; } tbody tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; border-top: 1px solid var(--line); padding: 1rem 0; } tbody td { display: block; border: 0; padding: 0; min-width: 0; } tbody td:first-child { grid-column: 1 / -1; } tbody td:nth-last-child(1) { grid-column: 1 / -1; text-align: right; } tbody td:not(:first-child) { border: 0; padding-top: .1rem; } tbody .data-label { display: block; } .actions-menu { top: auto; bottom: calc(100% - .4rem); } }
   </style>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegação principal"><a class="brand" href="psychologist-dashboard.html"><span class="brand-mark">C</span>Cuidare</a><p class="nav-label">Meu espaço</p><nav class="nav-list"><a class="nav-link" href="psychologist-dashboard.html"><span class="nav-icon">⌂</span>Visão geral</a><a class="nav-link" href="psychologist-agenda.html"><span class="nav-icon">□</span>Agenda</a><a class="nav-link active" href="psychologist-clients.html"><span class="nav-icon">○</span>Clientes</a><a class="nav-link" href="psychologist-finances.html"><span class="nav-icon">＄</span>Financeiro</a></nav><div class="sidebar-footer"><div class="admin-mini"><span class="avatar" id="sidebar-avatar">--</span><div><strong id="sidebar-name">Psicólogo</strong><span>Profissional Cuidare</span></div></div><button class="edit-profile-btn" id="open-edit-modal" type="button">✎&nbsp; Editar perfil</button><button class="logout-button" id="logout-button" type="button">↪&nbsp; Sair da conta</button></div></aside>
-    <main class="main"><header class="topbar"><button class="topbar-avatar" id="topbar-avatar" title="Editar perfil" aria-label="Editar perfil">--</button></header><section class="page-heading"><div><p class="eyebrow">Sua prática</p><h1>Clientes</h1><p class="page-description">Cadastre e organize as pessoas que você acompanha.</p></div><button class="primary-button" id="new-client" type="button">+ Cadastrar cliente</button></section><section class="panel"><div class="panel-header"><h2>Minha carteira</h2><input class="search" id="search" type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar clientes"></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Nascimento</th><th>Cadastro</th><th>Ações</th></tr></thead><tbody id="clients-list"><tr><td colspan="5" class="empty">Carregando clientes...</td></tr></tbody></table></div></section></main>
+    <main class="main"><header class="topbar"><button class="topbar-avatar" id="topbar-avatar" title="Editar perfil" aria-label="Editar perfil">--</button></header><section class="page-heading"><div><p class="eyebrow">Sua prática</p><h1>Clientes</h1><p class="page-description">Cadastre e organize as pessoas que você acompanha.</p></div><button class="primary-button" id="new-client" type="button">+ Cadastrar cliente</button></section><section class="panel"><div class="panel-header"><h2>Minha carteira</h2><input class="search" id="search" type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar clientes"></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Nascimento</th><th>Cadastro</th><th>Ações</th></tr></thead><tbody id="clients-list"><tr><td colspan="5" class="empty">Carregando clientes...</td></tr></tbody></table></div></section>
+
+  <section class="panel link-requests-section" aria-labelledby="link-requests-title">
+    <div class="panel-header">
+      <h2 id="link-requests-title">Solicitações de vínculo</h2>
+    </div>
+    <div class="link-requests-list" id="link-requests-list">
+      <div class="link-request-loading">Carregando solicitações...</div>
+    </div>
+  </section></main>
   </div>
   <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal"><div class="modal-header"><h2 id="modal-title">Cadastrar cliente</h2><button class="close-button" id="close-modal" type="button" aria-label="Fechar">×</button></div><form id="client-form" class="form-grid"><label>Nome completo<input name="name" required placeholder="Nome do cliente"></label><label>E-mail (opcional)<input name="email" type="email" placeholder="cliente@email.com"></label><label>Telefone (opcional)<input name="phone" type="tel" placeholder="(00) 00000-0000"></label><label>Data de nascimento (opcional)<input name="birth_date" type="date"></label><label>Observações (opcional)<textarea name="notes" placeholder="Informações administrativas ou observações iniciais"></textarea></label><div class="modal-actions"><button class="secondary-button" id="cancel-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar cliente</button></div></form></div></div>
+
+  <div class="modal-backdrop" id="accept-modal" role="dialog" aria-modal="true" aria-labelledby="accept-modal-title"><div class="modal"><div class="modal-header"><h2 id="accept-modal-title">Aceitar solicitação</h2><button class="close-button" id="close-accept-modal" type="button" aria-label="Fechar">×</button></div><form id="accept-form" class="modal-select"><div class="radio-group"><label class="radio-label"><input type="radio" name="strategy" value="create" checked> Criar novo cliente (usa dados da solicitação)</label><label class="radio-label"><input type="radio" name="strategy" value="link"> Vincular cliente existente</label></div><label class="client-select-label" id="client-select-label" style="display:none;">Cliente<select class="client-select" id="client-select" name="client_id" disabled><option value="">Selecione um cliente</option></select></label><div class="modal-actions"><button class="secondary-button" id="cancel-accept-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Confirmar</button></div></form></div></div>
+
+  <div class="modal-backdrop" id="reject-modal" role="dialog" aria-modal="true" aria-labelledby="reject-modal-title"><div class="modal"><div class="modal-header"><h2 id="reject-modal-title">Recusar solicitação</h2><button class="close-button" id="close-reject-modal" type="button" aria-label="Fechar">×</button></div><form id="reject-form" class="modal-select"><label>Motivo (opcional)<textarea name="reason" placeholder="Motivo da recusa..."></textarea></label><div class="modal-actions"><button class="secondary-button" id="cancel-reject-modal" type="button">Cancelar</button><button class="primary-button" type="submit">Confirmar recusa</button></div></form></div></div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script>
+<script>
     const token = sessionStorage.getItem('cuidare_access_token');
     const apiBase = CuidareApi.base;
     const modal = document.querySelector('#modal');
     const form = document.querySelector('#client-form');
     const clientsList = document.querySelector('#clients-list');
+    const linkRequestsList = document.querySelector('#link-requests-list');
+    const acceptModal = document.querySelector('#accept-modal');
+    const acceptForm = document.querySelector('#accept-form');
+    const rejectModal = document.querySelector('#reject-modal');
+    const rejectForm = document.querySelector('#reject-form');
     const toast = document.querySelector('#toast');
     let clients = [];
+    let linkRequests = [];
     let editingClientId = null;
+    let currentAcceptLinkId = null;
+    let currentRejectLinkId = null;
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timeout); showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2800); }
     function date(value) { return value ? new Intl.DateTimeFormat('pt-BR').format(new Date(`${value}T00:00:00`)) : 'Não informada'; }
+    function datetime(value) { return value ? new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : 'Não informada'; }
     async function lerJson(response, padrao) { try { return await response.json(); } catch { return padrao; } }
     function setModal(open) { modal.classList.toggle('open', open); if (open) form.elements.name.focus(); }
+    function setAcceptModal(open, linkId) {
+        acceptModal.classList.toggle('open', open);
+        if (open) {
+            currentAcceptLinkId = linkId;
+            acceptForm.elements.strategy[0].checked = true;
+            document.querySelector('#client-select-label').style.display = 'none';
+            document.querySelector('#client-select').disabled = true;
+            document.querySelector('#client-select').value = '';
+            loadClientsForSelect();
+        }
+    }
+    function setRejectModal(open, linkId) {
+        rejectModal.classList.toggle('open', open);
+        if (open) {
+            currentRejectLinkId = linkId;
+            rejectForm.elements.reason.value = '';
+        }
+    }
     function renderClients() { const query = document.querySelector('#search').value.toLowerCase(); const filtered = clients.filter((client) => `${client.name} ${client.email || ''}`.toLowerCase().includes(query)); clientsList.innerHTML = filtered.length ? filtered.map((client) => `<tr data-id="${client.id}"><td><div class="client-cell"><span class="client-avatar">${CuidareFormat.escapeHtml(CuidareFormat.initials(client.name))}</span><div class="client-detail"><strong>${CuidareFormat.escapeHtml(client.name)}</strong><span>${CuidareFormat.escapeHtml(client.email || 'Sem e-mail')}</span></div></div></td><td class="muted"><span class="data-label">Contato</span>${CuidareFormat.escapeHtml(client.phone || 'Não informado')}</td><td class="muted"><span class="data-label">Nascimento</span>${CuidareFormat.escapeHtml(date(client.birth_date))}</td><td class="muted"><span class="data-label">Cadastrado</span>${CuidareFormat.escapeHtml(date(client.created_at?.slice(0, 10)))}</td><td class="actions-cell"><button class="actions-button" type="button" aria-label="Abrir ações">•••</button><div class="actions-menu"><button type="button" data-action="edit">Editar cliente</button><button class="delete-action" type="button" data-action="delete">Excluir cliente</button></div></td></tr>`).join('') : '<tr><td colspan="5" class="empty">Nenhum cliente encontrado.</td></tr>'; }
     async function loadClients() { try { const response = await fetch(`${apiBase}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }); const result = await lerJson(response, {}); if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os clientes.'); clients = result.clients || []; renderClients(); } catch (error) { clientsList.innerHTML = `<tr><td colspan="5" class="empty">${CuidareFormat.escapeHtml(error.message)}</td></tr>`; showToast(error.message); } }
+    async function loadClientsForSelect() { try { const response = await fetch(`${apiBase}/api/clients`, { headers: { Authorization: `Bearer ${token}` } }); const result = await lerJson(response, {}); if (!response.ok) return; const select = document.querySelector('#client-select'); select.innerHTML = '<option value="">Selecione um cliente</option>' + (result.clients || []).map((c) => `<option value="${c.id}">${CuidareFormat.escapeHtml(c.name)}${c.email ? ' — ' + CuidareFormat.escapeHtml(c.email) : ''}</option>`).join(''); } catch { /* ignore */ } }
+    async function loadLinkRequests() { try { const response = await fetch(`${apiBase}/api/clients/link-requests`, { headers: { Authorization: `Bearer ${token}` } }); const result = await lerJson(response, {}); if (!response.ok) throw new Error(result.error || 'Não foi possível carregar as solicitações.'); linkRequests = result.requests || []; renderLinkRequests(); } catch (error) { linkRequestsList.innerHTML = `<div class="link-request-error">${CuidareFormat.escapeHtml(error.message)}</div>`; showToast(error.message); } }
+    function renderLinkRequests() { if (!linkRequests.length) { linkRequestsList.innerHTML = '<div class="link-request-empty">Nenhuma solicitação de vínculo pendente.</div>'; return; } linkRequestsList.innerHTML = linkRequests.map((req) => { const account = req.client_account || {}; const name = CuidareFormat.escapeHtml(account.full_name || 'Sem nome'); const email = CuidareFormat.escapeHtml(account.email || ''); const phone = account.phone ? CuidareFormat.escapeHtml(account.phone) : null; const created = datetime(req.created_at); return `<div class="link-request-card" data-link-id="${req.id}"><div class="link-request-header"><strong class="link-request-name">${name}</strong></div><div class="link-request-meta">${email ? `<span>✉ ${email}</span>` : ''}${phone ? `<span>📞 ${phone}</span>` : ''}<span>🕐 ${created}</span></div><div class="link-request-actions"><button class="btn-accept" type="button" data-accept="${req.id}">Aceitar</button><button class="btn-reject" type="button" data-reject="${req.id}">Recusar</button></div></div>`; }).join(''); }
     form.addEventListener('submit', async (event) => { event.preventDefault(); if (!form.reportValidity()) return; const button = form.querySelector('[type="submit"]'); button.disabled = true; try { const response = await fetch(`${apiBase}/api/clients${editingClientId ? `/${editingClientId}` : ''}`, { method: editingClientId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) }); const result = await lerJson(response, {}); if (!response.ok) throw new Error(result.error || 'Não foi possível salvar o cliente.'); if (editingClientId) clients = clients.map((client) => client.id === editingClientId ? result.client : client); else clients.push(result.client); renderClients(); form.reset(); editingClientId = null; document.querySelector('#modal-title').textContent = 'Cadastrar cliente'; setModal(false); showToast('Cliente salvo com sucesso.'); } catch (error) { showToast(error.message); } finally { button.disabled = false; } });
     clientsList.addEventListener('click', async (event) => { const row = event.target.closest('tr[data-id]'); if (!row) return; const client = clients.find((item) => String(item.id) === row.dataset.id); if (!client) return; const actionButton = event.target.closest('.actions-button'); if (actionButton) { document.querySelectorAll('.actions-menu.open').forEach((menu) => menu.classList.remove('open')); actionButton.nextElementSibling.classList.toggle('open'); return; } const action = event.target.closest('[data-action]')?.dataset.action; if (action === 'edit') { editingClientId = client.id; form.elements.name.value = client.name || ''; form.elements.email.value = client.email || ''; form.elements.phone.value = client.phone || ''; form.elements.birth_date.value = client.birth_date || ''; form.elements.notes.value = client.notes || ''; document.querySelector('#modal-title').textContent = 'Editar cliente'; event.target.closest('.actions-menu').classList.remove('open'); setModal(true); } if (action === 'delete') { if (!window.confirm(`Excluir o cadastro de ${client.name}?`)) return; try { const response = await fetch(`${apiBase}/api/clients/${client.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); const result = await lerJson(response, {}); if (!response.ok) { showToast(result.error || 'Não foi possível excluir o cliente. Tente novamente.'); return; } clients = clients.filter((item) => item.id !== client.id); renderClients(); showToast('Cliente excluído com sucesso.'); } catch (error) { showToast('Não foi possível excluir o cliente. Tente novamente.'); } } });
     document.addEventListener('click', (event) => { if (!event.target.closest('.actions-cell')) document.querySelectorAll('.actions-menu.open').forEach((menu) => menu.classList.remove('open')); });
-    document.querySelector('#new-client').addEventListener('click', () => { editingClientId = null; form.reset(); document.querySelector('#modal-title').textContent = 'Cadastrar cliente'; setModal(true); }); document.querySelector('#close-modal').addEventListener('click', () => setModal(false)); document.querySelector('#cancel-modal').addEventListener('click', () => setModal(false)); modal.addEventListener('click', (event) => { if (event.target === modal) setModal(false); }); document.querySelector('#search').addEventListener('input', renderClients); document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); });
+    document.querySelector('#new-client').addEventListener('click', () => { editingClientId = null; form.reset(); document.querySelector('#modal-title').textContent = 'Cadastrar cliente'; setModal(true); }); document.querySelector('#close-modal').addEventListener('click', () => setModal(false)); document.querySelector('#cancel-modal').addEventListener('click', () => setModal(false)); modal.addEventListener('click', (event) => { if (event.target === modal) setModal(false); }); document.querySelector('#search').addEventListener('input', renderClients);
+    // Accept modal events
+    acceptForm.addEventListener('change', (event) => { if (event.target.name === 'strategy') { const isLink = event.target.value === 'link'; document.querySelector('#client-select-label').style.display = isLink ? 'block' : 'none'; document.querySelector('#client-select').disabled = !isLink; } });
+    acceptForm.addEventListener('submit', async (event) => { event.preventDefault(); if (!currentAcceptLinkId) return; const formData = new FormData(acceptForm); const strategy = formData.get('strategy'); const payload = { strategy }; if (strategy === 'link') { const clientId = formData.get('client_id'); if (!clientId) { showToast('Selecione um cliente para vincular.'); return; } payload.client_id = parseInt(clientId, 10); } const button = acceptForm.querySelector('[type="submit"]'); button.disabled = true; try { const response = await fetch(`${apiBase}/api/clients/link-requests/${currentAcceptLinkId}/accept`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) }); const result = await lerJson(response, {}); if (!response.ok) throw new Error(result.error || 'Não foi possível aceitar a solicitação.'); setAcceptModal(false); showToast('Solicitação aceita com sucesso.'); await Promise.all([loadClients(), loadLinkRequests()]); } catch (error) { showToast(error.message); } finally { button.disabled = false; } });
+    document.querySelector('#close-accept-modal').addEventListener('click', () => setAcceptModal(false)); document.querySelector('#cancel-accept-modal').addEventListener('click', () => setAcceptModal(false)); acceptModal.addEventListener('click', (event) => { if (event.target === acceptModal) setAcceptModal(false); });
+    // Reject modal events
+    rejectForm.addEventListener('submit', async (event) => { event.preventDefault(); if (!currentRejectLinkId) return; const formData = new FormData(rejectForm); const reason = formData.get('reason') || ''; const button = rejectForm.querySelector('[type="submit"]'); button.disabled = true; try { const response = await fetch(`${apiBase}/api/clients/link-requests/${currentRejectLinkId}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ reason }) }); const result = await lerJson(response, {}); if (!response.ok) throw new Error(result.error || 'Não foi possível recusar a solicitação.'); setRejectModal(false); showToast('Solicitação recusada.'); await loadLinkRequests(); } catch (error) { showToast(error.message); } finally { button.disabled = false; } });
+    document.querySelector('#close-reject-modal').addEventListener('click', () => setRejectModal(false)); document.querySelector('#cancel-reject-modal').addEventListener('click', () => setRejectModal(false)); rejectModal.addEventListener('click', (event) => { if (event.target === rejectModal) setRejectModal(false); });
+    // Link requests list events (delegated)
+    linkRequestsList.addEventListener('click', (event) => { const acceptBtn = event.target.closest('[data-accept]'); if (acceptBtn) { setAcceptModal(true, acceptBtn.dataset.accept); return; } const rejectBtn = event.target.closest('[data-reject]'); if (rejectBtn) { setRejectModal(true, rejectBtn.dataset.reject); return; } });
+    document.querySelector('#logout-button').addEventListener('click', () => { sessionStorage.removeItem('cuidare_access_token'); window.location.replace('login.html'); });
     async function loadProfile() { try { const response = await fetch(`${apiBase}/api/psychologists/me`, { headers: { Authorization: `Bearer ${token}` } }); const result = await lerJson(response, {}); if (!response.ok) throw new Error(result.error || 'Não foi possível carregar seu perfil.'); const name = result.psychologist.name; document.querySelector('#sidebar-name').textContent = name; document.querySelector('#sidebar-avatar').textContent = CuidareFormat.initials(name); document.querySelector('#topbar-avatar').textContent = CuidareFormat.initials(name); } catch (error) { showToast(error.message); } }
-    loadProfile(); loadClients();
+    loadProfile(); loadClients(); loadLinkRequests();
 
     function goToEditProfile() { window.location.href = 'psychologist-dashboard.html?edit=1'; }
     document.querySelector('#open-edit-modal').addEventListener('click', goToEditProfile);
