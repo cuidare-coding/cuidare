@@ -192,6 +192,40 @@
       font: .74rem Arial, sans-serif;
     }
 
+    .crp-verify-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-top: .6rem;
+    }
+
+    .verify-btn {
+      flex: none;
+      padding: .45rem .9rem;
+      border: 1px solid var(--accent);
+      border-radius: 3px;
+      background: transparent;
+      color: var(--accent-dark);
+      cursor: pointer;
+      font: 700 .7rem Arial, sans-serif;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      transition: background .2s, color .2s;
+      white-space: nowrap;
+    }
+
+    .verify-btn:hover:not(:disabled) { background: var(--accent); color: #fff; }
+    .verify-btn:disabled { opacity: .6; cursor: wait; }
+
+    .crp-verify-row .status {
+      flex: 1;
+      min-height: 0;
+      margin: 0;
+      font-size: .78rem;
+    }
+
+    .status.warn { color: #8a6d1a; }
+
     .submit-button {
       width: 100%;
       min-height: 3.25rem;
@@ -327,6 +361,10 @@
           <input id="crp" name="crp" type="text" autocomplete="off"
                  placeholder="06/123456" required>
           <p class="hint">Ex.: 06/123456 — exatamente como registrado no CFP</p>
+          <div class="crp-verify-row">
+            <button class="verify-btn" id="verify-crp-btn" type="button">Verificar registro</button>
+            <span class="status" id="crp-status" role="status" aria-live="polite"></span>
+          </div>
         </div>
 
         <div class="field">
@@ -390,6 +428,66 @@
     makeToggle('password', 'pw-toggle');
     makeToggle('password2', 'pw2-toggle');
 
+    // ---- Verificação de registro (CRP) ----
+    const verifyBtn = document.getElementById('verify-crp-btn');
+    const crpStatus = document.getElementById('crp-status');
+
+    function setCrpStatus(msg, type = '') {
+      crpStatus.textContent = msg;
+      crpStatus.className = `status ${type}`.trim();
+    }
+
+    async function verificarRegistro() {
+      const crp = form.crp.value.trim();
+      if (!crp) {
+        setCrpStatus('Informe o número do CRP.', 'error');
+        return null;
+      }
+
+      const rotulo = verifyBtn.textContent;
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verificando...';
+      setCrpStatus('Consultando o registro...');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/crp/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ crp }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setCrpStatus(data.error || 'Não foi possível verificar agora.', 'error');
+          return null;
+        }
+
+        // situacao "desconhecido" = provider não conseguiu confirmar (stub ou falha):
+        //   mostrar como aviso neutro, nunca bloquear o cadastro.
+        if (data.situacao === 'desconhecido') {
+          setCrpStatus(data.mensagem || 'Registro em análise — nossa equipe vai confirmar manualmente.', 'warn');
+        } else if (data.situacao === 'ativo' && data.encontrado) {
+          setCrpStatus(data.mensagem || 'Registro confirmado e ativo.', 'success');
+        } else if (data.situacao === 'suspenso' || data.situacao === 'cancelado') {
+          setCrpStatus(data.mensagem || `Registro localizado com situação: ${data.situacao}.`, 'warn');
+        } else if (data.encontrado === false) {
+          // provider real respondeu que o registro não existe
+          setCrpStatus(data.mensagem || 'Registro não localizado.', 'error');
+        } else {
+          setCrpStatus(data.mensagem || 'Verificação concluída.', 'warn');
+        }
+        return data;
+      } catch {
+        setCrpStatus('Não foi possível verificar o registro agora. Tente novamente.', 'warn');
+        return null;
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = rotulo;
+      }
+    }
+
+    verifyBtn.addEventListener('click', verificarRegistro);
+
     // ---- Formulário de cadastro ----
     const form = document.getElementById('register-form');
     const statusEl = document.getElementById('form-status');
@@ -415,6 +513,13 @@
 
       if (password !== password2) {
         setStatus('As senhas não coincidem.');
+        return;
+      }
+
+      // Verificação de registro: bloqueia somente quando o provedor confirmou "não encontrado"
+      const verificacao = await verificarRegistro();
+      if (verificacao && verificacao.encontrado === false) {
+        setStatus('Número de CRP não localizado. Confira o número e tente novamente.');
         return;
       }
 
